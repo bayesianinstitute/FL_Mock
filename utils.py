@@ -1,30 +1,35 @@
-def get_global_ipfs_link():
-    """
-    This function retrieves the global IPFS link for the DFL model.
+class Utils:
+    def __init__(self):
+        # You can add any necessary initialization code here
+        pass
 
-    Algorithm:
-    1. Connect to the IPFS network or system.
-    2. Retrieve the global IPFS link for the DFL model.
-    3. Return the obtained IPFS link.
+    def get_global_ipfs_link(self):
+        """
+        This method retrieves the global IPFS link for the DFL model.
 
-    Returns:
-    A message confirming that the global IPFS link has been obtained.
-    """
-    return "Global IPFS link obtained"
+        Algorithm:
+        1. Connect to the IPFS network or system.
+        2. Retrieve the global IPFS link for the DFL model.
+        3. Return the obtained IPFS link.
 
-def is_model_better():
-    """
-    This function checks if the current model is better than the previous one.
+        Returns:
+        A message confirming that the global IPFS link has been obtained.
+        """
+        return "Global IPFS link obtained"
 
-    Pseudocode:
-    1. Compare the performance metrics of the current model with the previous model.
-    2. If current model's performance is better:
-        - Set model_is_better to True
-    3. Otherwise:
-        - Set model_is_better to False
-    4. Return model_is_better.
+    def is_model_better(self):
+        """
+        This method checks if the current model is better than the previous one.
 
-    Returns:
-    A message indicating whether the current model is better than the previous one.
-    """
-    return "Model is better"
+        Pseudocode:
+        1. Compare the performance metrics of the current model with the previous model.
+        2. If the current model's performance is better:
+            - Set model_is_better to True
+        3. Otherwise:
+            - Set model_is_better to False
+        4. Return model_is_better.
+
+        Returns:
+        A message indicating whether the current model is better than the previous one.
+        """
+        return "Model is better"
