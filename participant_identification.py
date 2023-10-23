@@ -2,7 +2,7 @@ def identify_participants():
     """
     This function identifies the participants in the distributed federated learning (DFL) process.
 
-    Algorithm:
+    Pseudocode:
     1. Connect to the network or system where participants are registered.
     2. Retrieve a list of registered participants.
     3. Return the list of identified participants.
@@ -16,11 +16,16 @@ def determine_winner():
     """
     This function determines the winner among the identified participants.
 
-    Algorithm:
-    1. Evaluate the performance or criteria for selecting a winner.
-    2. Compare the performance of each participant.
-    3. Select the participant with the best performance as the winner.
-    
+    Pseudocode:
+    1. Initialize winner as None
+    2. Initialize best_performance as -1 (or a suitable initial value)
+    3. For each participant in the list of identified participants:
+        a. Evaluate the participant's performance or criteria for winning.
+        b. If the participant's performance is better than best_performance:
+            - Update winner to the current participant.
+            - Update best_performance to the current participant's performance.
+    4. Return True if the current participant is the winner, else False.
+
     Returns:
     True if the current participant is the winner, else False.
     """

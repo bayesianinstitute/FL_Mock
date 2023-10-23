@@ -16,13 +16,15 @@ def is_model_better():
     """
     This function checks if the current model is better than the previous one.
 
-    Algorithm:
+    Pseudocode:
     1. Compare the performance metrics of the current model with the previous model.
-    2. Determine if the current model is better based on defined criteria.
-    3. Return a message indicating whether the current model is better.
+    2. If current model's performance is better:
+        - Set model_is_better to True
+    3. Otherwise:
+        - Set model_is_better to False
+    4. Return model_is_better.
 
     Returns:
     A message indicating whether the current model is better than the previous one.
     """
     return "Model is better"
-

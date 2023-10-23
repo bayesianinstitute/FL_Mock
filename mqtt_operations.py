@@ -2,9 +2,10 @@ def winner_creates_mqtt_broker():
     """
     This function represents the action taken when the winner of the DFL process creates an MQTT broker.
 
-    Algorithm:
+    Pseudocode:
     1. Check if the current node is the winner.
-    2. If the current node is the winner, create an MQTT broker to facilitate communication.
+    2. If the current node is the winner:
+        a. Create an MQTT broker to facilitate communication.
     3. Return a message indicating that the MQTT broker has been created.
 
     Returns:
@@ -16,11 +17,12 @@ def send_communication_link_to_others():
     """
     This function represents the action taken when the winner sends a communication link to other participants.
 
-    Algorithm:
+    Pseudocode:
     1. Check if the current node is the winner.
-    2. If the current node is the winner, generate a communication link.
-    3. Send the communication link to other participants in the DFL process.
-    4. Return a message confirming the successful transmission of the communication link.
+    2. If the current node is the winner:
+        a. Generate a communication link.
+        b. Send the communication link to other participants in the DFL process.
+    3. Return a message confirming the successful transmission of the communication link.
 
     Returns:
     A message confirming that the communication link has been sent to other participants.
@@ -31,7 +33,7 @@ def receive_mqtt_broker_link():
     """
     This function represents the action taken when a participant receives the MQTT broker link from the winner.
 
-    Algorithm:
+    Pseudocode:
     1. Wait for the winner to send the MQTT broker link.
     2. Receive the MQTT broker link.
     3. Return a message indicating that the MQTT broker link has been received.
@@ -45,7 +47,7 @@ def start_dfl_using_mqtt():
     """
     This function represents the action taken to start distributed federated learning (DFL) using MQTT communication.
 
-    Algorithm:
+    Pseudocode:
     1. Initialize the DFL process.
     2. Configure DFL to use MQTT for communication.
     3. Start the DFL process using MQTT as the communication method.
@@ -59,9 +61,10 @@ def winner_becomes_aggregator():
     """
     This function represents the action taken when the winner node becomes the aggregator in the DFL process.
 
-    Algorithm:
+    Pseudocode:
     1. Check if the current node is the winner.
-    2. If the current node is the winner, assume the role of the aggregator.
+    2. If the current node is the winner:
+        a. Assume the role of the aggregator.
     3. Return a message confirming that the winner node has become the aggregator.
 
     Returns:
