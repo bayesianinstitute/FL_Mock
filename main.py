@@ -19,6 +19,7 @@ class DFLWorkflow:
             sys.exit()
 
     def run(self,cluster_name,internal_cluster_topic,id):
+        get_list=None
 
         mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt(internal_cluster_topic,cluster_name,id)
         #self.global_ipfs_link = self.utils.get_global_ipfs_link()
@@ -37,8 +38,19 @@ class DFLWorkflow:
             mqtt_obj.receive_internal_messages()
             self.pause_execution()
 
-            # print(self.ml_operations.aggregator_receives_models())
-            # self.pause_execution()
+            if (mqtt_obj.send_model_hash())==False:
+                continue
+            else :
+                get_list=mqtt_obj.send_model_hash()
+                self.ml_operations.aggregate_models(get_list)
+
+                self.pause_execution()
+
+
+
+   
+
+            self.pause_execution()
             # print(self.ml_operations.aggregate_models())
             # self.pause_execution()
             # print(self.ml_operations.send_global_model_to_others())

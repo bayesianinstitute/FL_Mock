@@ -13,7 +13,7 @@ class MQTTCluster:
         self.round = 0
         self.inter_cluster_topic=inter_cluster_topic
         self.internal_cluster_topic=internal_cluster_topic
-        self.glb_msg=[]
+        self.glb_msg=list()
         self.client=None
     
 
@@ -44,11 +44,16 @@ class MQTTCluster:
             # if client != self.worker_head_node:
                 self.client.unsubscribe(self.internal_cluster_topic)
 
+    def send_model_hash(self, ):
+          if len(self.glb_msg)==2:
+                return self.glb_msg
+          else :
+                return False
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
         cluster_id = self.cluster_name
-        receive=0
+
 
         print(f"Received message: {message.payload.decode('utf-8')}")
 
@@ -68,10 +73,12 @@ class MQTTCluster:
                 print("length",len(self.glb_msg))
 
                 time.sleep(2)
-                receive=+1
-                if receive==2:
+                
+                if len(self.glb_msg)==2:
                     print("Got all train message from client in cluster ")
                     print("model hash",self.glb_msg)
+
+
 
 
                     time.sleep(5)
@@ -117,6 +124,9 @@ class MQTTCluster:
         # Re-create clients with the new broker address
         self.create_clients()
     
+
+
+
     def run(self):
         self.switch_worker_head_node()
         try:

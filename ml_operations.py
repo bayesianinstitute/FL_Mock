@@ -81,7 +81,8 @@ class MLOperations:
         """
         return "Model sent to the aggregator"
 
-    def aggregator_receives_models(self):
+    def aggregator_receives_models(self,):
+
         """
         This method represents the action taken when the aggregator node receives models from participants.
 
@@ -92,9 +93,13 @@ class MLOperations:
         Returns:
         A message indicating that the aggregator has received the models.
         """
+
+
+
+
         return "Aggregator received models"
 
-    def aggregate_models(self):
+    def aggregate_models(self,get_model_list):
         """
         This method represents the action taken when the aggregator aggregates received models.
 
@@ -105,7 +110,50 @@ class MLOperations:
         Returns:
         A message indicating that the models have been successfully aggregated.
         """
-        return "Models aggregated"
+        # Convert the set to a list
+
+        data=get_model_list
+
+        # Convert each set to a list and extract the values
+        values = [list(s)[0] for s in data]
+
+        # Now, the 'values' list contains the extracted values
+        print(values)
+
+
+        models = []
+        for value in values:
+            model = self.ipfs.fetch_model(value)
+            models.append(model)
+
+        # Aggregate model weights
+        global_model = self.aggregate_weights(models)
+
+        print("Global model Aggregate weights")
+
+        print("global model ",global_model.summary())
+
+        return global_model
+
+        # return "Models aggregated"
+    
+    def aggregate_weights(self, models):
+        # Initialize global model with the architecture of the first model
+        global_model = models[0]
+
+        # Iterate through layers and aggregate weights
+        for i in range(len(models[0].layers)):
+            if 'Dense' in str(models[0].layers[i].get_config()):
+                # Extract the weights from all models for this layer
+                layer_weights = [model.layers[i].get_weights() for model in models]
+
+                # Calculate the average weights
+                average_weights = [sum(w) / len(models) for w in zip(*layer_weights)]
+
+                # Set the average weights to the global model
+                global_model.layers[i].set_weights(average_weights)
+
+        return global_model
 
     def is_model_better(self):
         """

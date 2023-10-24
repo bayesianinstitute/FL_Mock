@@ -3,23 +3,8 @@ import ipfshttpclient
 import io
 import tensorflow as tf
 from tensorflow import keras
+import tempfile
 
-# # Define a simple model using Keras
-# model = keras.Sequential([
-#     keras.layers.Dense(1, input_shape=(10,))
-# ])
-
-# model.compile(optimizer='sgd', loss='mean_squared_error')
-
-# # Generate some random data for training
-# input_data = tf.random.normal((100, 10))
-# target = tf.random.normal((100, 1))
-
-# # Train the model
-# model.fit(input_data, target, epochs=100)
-
-# # Save the trained model using Keras's format
-# model.save('saved_model.h5')
 
 # IPFS communication class (similar to the PyTorch version)
 class IPFS:
@@ -28,14 +13,25 @@ class IPFS:
 
     def fetch_model(self, model_hash):
         model_bytes = self.client.cat(model_hash)
-        model = keras.models.load_model(io.BytesIO(model_bytes))
+                # Create a temporary file to save the model bytes
+        with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
+            temp_model_file.write(model_bytes)
+
+        # Load the model from the temporary file
+        model = keras.models.load_model(temp_model_file.name)
+
         return model
+        # model = keras.models.load_model(io.BytesIO(model_bytes))
+        # return model
 
     def push_model(self, saved_model_path):
         model_hash = self.client.add(saved_model_path)['Hash']
         return model_hash
 
     def download_model(self, model_hash, destination_folder):
+        # Create the directory if it doesn't exist
+        os.makedirs(destination_folder, exist_ok=True)
+
         model_bytes = self.client.cat(model_hash)
 
         # Specify the path for saving the model file locally
