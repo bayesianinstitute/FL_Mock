@@ -17,20 +17,20 @@ class DFLWorkflow:
             sys.exit()
 
     def run(self):
-        print(self.participant_identification.identify_participants())
-        self.pause_execution()
+        # print(self.participant_identification.identify_participants())
+        # self.pause_execution()
 
-        if self.participant_identification.determine_winner():
-            print(self.mqtt_operations.winner_creates_mqtt_broker())
-            self.pause_execution()
-            if self.mqtt_operations.send_communication_link_to_others():
-                print(self.mqtt_operations.send_communication_link_to_others())
-            else:
-                print(self.mqtt_operations.receive_mqtt_broker_link())
-            self.pause_execution()
+        # if self.participant_identification.determine_winner():
+        #     print(self.mqtt_operations.winner_creates_mqtt_broker())
+        #     self.pause_execution()
+        #     if self.mqtt_operations.send_communication_link_to_others():
+        #         print(self.mqtt_operations.send_communication_link_to_others())
+        #     else:
+        #         print(self.mqtt_operations.receive_mqtt_broker_link())
+        #     self.pause_execution()
 
         print(self.mqtt_operations.start_dfl_using_mqtt())
-        self.global_ipfs_link = self.utils.get_global_ipfs_link()
+        #self.global_ipfs_link = self.utils.get_global_ipfs_link()
         print(self.mqtt_operations.winner_becomes_aggregator())
         self.pause_execution()
 
