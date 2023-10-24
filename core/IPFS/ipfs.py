@@ -4,22 +4,22 @@ import io
 import tensorflow as tf
 from tensorflow import keras
 
-# Define a simple model using Keras
-model = keras.Sequential([
-    keras.layers.Dense(1, input_shape=(10,))
-])
+# # Define a simple model using Keras
+# model = keras.Sequential([
+#     keras.layers.Dense(1, input_shape=(10,))
+# ])
 
-model.compile(optimizer='sgd', loss='mean_squared_error')
+# model.compile(optimizer='sgd', loss='mean_squared_error')
 
-# Generate some random data for training
-input_data = tf.random.normal((100, 10))
-target = tf.random.normal((100, 1))
+# # Generate some random data for training
+# input_data = tf.random.normal((100, 10))
+# target = tf.random.normal((100, 1))
 
-# Train the model
-model.fit(input_data, target, epochs=100)
+# # Train the model
+# model.fit(input_data, target, epochs=100)
 
-# Save the trained model using Keras's format
-model.save('saved_model.h5')
+# # Save the trained model using Keras's format
+# model.save('saved_model.h5')
 
 # IPFS communication class (similar to the PyTorch version)
 class IPFS:

@@ -3,9 +3,13 @@ from tensorflow import keras
 import joblib
 from core.MqttCluster.mqttCluster import MQTTCluster
 
+from core.Ipfs.ipfs import IPFS
+
 class MLOperations:
     def __init__(self):
         # You can add any necessary initialization code here
+        self.ipfs=IPFS()
+        self.path_model="saved_model.h5"
         pass
 
     def train_machine_learning_model(self):
@@ -50,9 +54,15 @@ class MLOperations:
         test_loss, test_acc = model.evaluate(x_test, y_test, verbose=2)
 
         # Save the trained model
-        model.save("mnist_model")
+        model.save(self.path_model)
 
-        return f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as 'mnist_model'."
+        print(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
+
+        hash=self.ipfs.push_model(self.path_model)
+
+        print("Ipfs Hash: {}".format(hash))
+
+        return hash 
 
     def send_model_to_aggregator(self):
         """

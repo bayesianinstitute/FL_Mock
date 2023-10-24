@@ -5,6 +5,7 @@ from ml_operations import MLOperations
 from utils import Utils
 import argparse
 
+
 class DFLWorkflow:
     def __init__(self):
         self.global_ipfs_link = None
@@ -36,15 +37,15 @@ class DFLWorkflow:
         self.pause_execution()
 
         while True:
-            print(self.ml_operations.train_machine_learning_model())
+            hash=self.ml_operations.train_machine_learning_model()
             self.pause_execution()
-            print(self.ml_operations.send_model_to_aggregator())
-            self.pause_execution()
-            print(self.ml_operations.aggregator_receives_models())
-            self.pause_execution()
-            print(self.ml_operations.aggregate_models())
-            self.pause_execution()
-            print(self.ml_operations.send_global_model_to_others())
+            # print(self.ml_operations.send_model_to_aggregator(hash))
+            # self.pause_execution()
+            # print(self.ml_operations.aggregator_receives_models())
+            # self.pause_execution()
+            # print(self.ml_operations.aggregate_models())
+            # self.pause_execution()
+            # print(self.ml_operations.send_global_model_to_others())
             self.pause_execution()
 
             if self.ml_operations.is_model_better():
