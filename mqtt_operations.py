@@ -56,7 +56,7 @@ class MqttOperations:
         """
         return "Received MQTT broker link"
 
-    def start_dfl_using_mqtt(self,internal_cluster_topic,cluster_name,num):
+    def start_dfl_using_mqtt(self,internal_cluster_topic,cluster_name,id):
         """
         This method represents the action taken to start distributed federated learning (DFL) using MQTT communication.
 
@@ -74,13 +74,19 @@ class MqttOperations:
         self.cluster = MQTTCluster(self.initial_broker, self.num_workers, cluster_name, self.inter_cluster_topic, internal_cluster_topic)
 
         # Create clients for  clusters
-        self.cluster.create_clients(num)
+        self.cluster.create_clients(id)
+
+        # self.cluster.switch_worker_head_node()
+
+        print(f' head node {self.cluster.worker_head_node}')
         
-        # Run the logic for cluster
-        self.cluster.run()
 
+        print("Started DFL Process")
 
-        return "DFL started using MQTT"
+        return self.cluster
+    
+    # def receive_message(self,internal_cluster_topic,cluster_name):
+    #     self.cluster.sub
 
     def winner_becomes_aggregator(self):
         """
@@ -100,5 +106,6 @@ class MqttOperations:
         return f"Winner node became the aggregator and node is {head_node}"
     
     def send_model_to_aggregator(self, hash_model):
-        self.cluster.send_internal_messages_model()
+        print("hash in send model",hash_model)
+        self.cluster.send_internal_messages_model(hash_model)
         pass

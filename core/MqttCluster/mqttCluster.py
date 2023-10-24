@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import random
 import time
 import json
-clients = []
+# clients = []
 class MQTTCluster:
     def __init__(self, broker_address, num_clients, cluster_name,inter_cluster_topic,internal_cluster_topic):
         self.broker_address = broker_address
@@ -14,22 +14,35 @@ class MQTTCluster:
         self.inter_cluster_topic=inter_cluster_topic
         self.internal_cluster_topic=internal_cluster_topic
         self.glb_msg=[]
+        self.client=None
+    
 
     def create_clients(self,client_num):
-        client = mqtt.Client(f"{self.cluster_name}_Client_{client_num}")
-        client.connect(self.broker_address, 1883)
-        client.subscribe(self.inter_cluster_topic, qos=0)
-        client.subscribe(self.internal_cluster_topic, qos=0)
-        client.on_message = self.on_message
-        client.loop_start()
-        clients.append(client)
+        self.client = mqtt.Client(f"{self.cluster_name}_Client_{client_num}")
+        self.client.connect(self.broker_address, 1883)
+        self.client.subscribe(self.inter_cluster_topic, qos=0)
+        self.client.subscribe(self.internal_cluster_topic, qos=0)
+        self.client.on_message = self.on_message
+        self.client.loop_start()
+        # clients.append(client)
 
-    def is_valid_model_hash(self, model_hash):
-        if len(model_hash) == 32:  # Assuming a valid model hash has 32 characters
-            return True
-        else:
-            return False
+
             
+    def subscribe_to_internal_messages(self):
+        # Subscribe to the internal_cluster_topic for message reception
+        # for client in self.client:
+            # if client != self.worker_head_node:
+                self.client.subscribe(self.internal_cluster_topic, qos=0)
+
+    def receive_internal_messages(self):
+        # for client in self.client:
+            # if client != self.worker_head_node:
+                self.client.on_message = self.on_message
+
+    def stop_receiving_messages(self):
+        # for client in self.client:
+            # if client != self.worker_head_node:
+                self.client.unsubscribe(self.internal_cluster_topic)
 
 
     def on_message(self, client, userdata, message):
@@ -37,23 +50,30 @@ class MQTTCluster:
         cluster_id = self.cluster_name
         receive=0
 
+        print(f"Received message: {message.payload.decode('utf-8')}")
+
+        print("Topic: {}".format(self.internal_cluster_topic))
+
 
         if message.topic == self.internal_cluster_topic:
             
 
-            if self.is_worker_head(client):
+            # if self.is_worker_head(client):
             # To Receive to head Only
                 print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')} ")
                 model_hash=message.payload.decode('utf-8')
-                if self.is_valid_model_hash(model_hash):
-                    self.model_hash_list.append(model_hash)
-                    print(f"Received and appended model hash: {model_hash}")
 
-                self.glb_msg.append({message.payload.decode('utf-8')})
+                self.glb_msg.append({model_hash})
+                print("model hash",self.glb_msg)
+                print("length",len(self.glb_msg))
+
                 time.sleep(2)
                 receive=+1
-                if receive==len(clients)-1:
+                if receive==2:
                     print("Got all train message from client in cluster ")
+                    print("model hash",self.glb_msg)
+
+
                     time.sleep(5)
                     receive=0                
         elif message.topic == self.inter_cluster_topic:
@@ -68,33 +88,26 @@ class MQTTCluster:
 
     # Send 
     def send_internal_messages(self):
-        for client in clients:
-            if client != self.worker_head_node:
-                client.publish(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
+        # for client in client:
+            # if client != self.worker_head_node:
+                self.client.publish(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
     
-    def send_internal_messages_model(self,modelhash=None):
-        for client in clients:
-            if client != self.worker_head_node:
-                client.publish(self.internal_cluster_topic, f"{modelhash}")
+    def send_internal_messages_model(self,modelhash):
+        print("send_internal_messages_model : ",modelhash)
+
+        print("Internal topic",self.internal_cluster_topic)    
+        self.client.publish(self.internal_cluster_topic, f"{modelhash}")
+        print("Successfully send_internal_messages_model  ")
 
     # get worker head
     def is_worker_head(self, client):
         return client == self.worker_head_node
 
-    def get_head_node(self):
-        return self.worker_head_node._client_id.decode('utf-8').split('_')[-1]
-
-
-
-
-    def switch_worker_head_node(self):
-        self.worker_head_node = random.choice(clients)
-
 
 
     def switch_broker(self, new_broker_address):
         # Disconnect existing clients
-        for client in clients:
+        for client in client:
             client.loop_stop()
             client.disconnect()
 
@@ -106,9 +119,9 @@ class MQTTCluster:
     
     def run(self):
         self.switch_worker_head_node()
-        self.send_internal_messages_model()
         try:
-            pass
+            # pass
+            print("")
         #     while self.round < 10:  # Run for a specified number of rounds
 
         #         # Switch broker after round 6
@@ -133,7 +146,7 @@ class MQTTCluster:
         #             pass
 
         #         # Send internal messages
-        #         self.send_internal_messages()
+                # self.send_internal_messages()
         #         time.sleep(5)
         #         self.round += 1
         #         print("Round completed:", self.round)
@@ -144,6 +157,6 @@ class MQTTCluster:
         #         time.sleep(5)  # Sleep for 5 seconds between rounds
 
         except KeyboardInterrupt:
-            for client in clients:
+            for client in self.client:
                 client.loop_stop()
                 client.disconnect()

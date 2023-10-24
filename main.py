@@ -18,31 +18,25 @@ class DFLWorkflow:
         if input("Press Enter to continue (or type 'q' and press Enter to quit): ").strip().lower() == 'q':
             sys.exit()
 
-    def run(self,cluster_name,internal_cluster_topic):
-        # print(self.participant_identification.identify_participants())
-        # self.pause_execution()
+    def run(self,cluster_name,internal_cluster_topic,id):
 
-        # if self.participant_identification.determine_winner():
-        #     print(self.mqtt_operations.winner_creates_mqtt_broker())
-        #     self.pause_execution()
-        #     if self.mqtt_operations.send_communication_link_to_others():
-        #         print(self.mqtt_operations.send_communication_link_to_others())
-        #     else:
-        #         print(self.mqtt_operations.receive_mqtt_broker_link())
-        #     self.pause_execution()
-
-        print(self.mqtt_operations.start_dfl_using_mqtt(internal_cluster_topic,cluster_name))
+        mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt(internal_cluster_topic,cluster_name,id)
         #self.global_ipfs_link = self.utils.get_global_ipfs_link()
-        print(self.mqtt_operations.winner_becomes_aggregator())
+        mqtt_obj.subscribe_to_internal_messages()
+        # mqtt_obj.get_head_node()
         self.pause_execution()
 
         while True:
             hash=self.ml_operations.train_machine_learning_model()
+            print("hash: {}".format(hash))
             self.pause_execution()
-            print(self.mqtt_operations.send_model_to_aggregator(hash))
+            mqtt_obj.send_internal_messages_model(hash)
 
 
             self.pause_execution()
+            mqtt_obj.receive_internal_messages()
+            self.pause_execution()
+
             # print(self.ml_operations.aggregator_receives_models())
             # self.pause_execution()
             # print(self.ml_operations.aggregate_models())
