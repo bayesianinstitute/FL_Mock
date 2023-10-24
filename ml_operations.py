@@ -68,7 +68,7 @@ class MLOperations:
         return self.ipfs.push_model(path)
         
 
-    def send_model_to_aggregator(self,hash):
+    def send_model_to_aggregator(self):
         """
         This method represents the action taken when a participant sends their trained model to the aggregator.
 
@@ -93,6 +93,7 @@ class MLOperations:
         Returns:
         A message indicating that the aggregator has received the models.
         """
+        
 
 
 
