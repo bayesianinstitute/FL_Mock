@@ -99,5 +99,5 @@ class MqttOperations:
         return f"Winner node became the aggregator and node is {head_node}"
     
     def send_model_to_aggregator(self, hash_model):
-        self.cluster.send_internal_messages()
+        self.cluster.send_internal_messages_model()
         pass
