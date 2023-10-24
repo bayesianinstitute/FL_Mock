@@ -3,6 +3,7 @@ from participant_identification import ParticipantIdentification
 from mqtt_operations import MqttOperations
 from ml_operations import MLOperations
 from utils import Utils
+import argparse
 
 class DFLWorkflow:
     def __init__(self):
@@ -12,11 +13,11 @@ class DFLWorkflow:
         self.ml_operations = MLOperations()
         self.utils = Utils()
 
-    def pause_execution(self):
+    def pause_execution(self,):
         if input("Press Enter to continue (or type 'q' and press Enter to quit): ").strip().lower() == 'q':
             sys.exit()
 
-    def run(self):
+    def run(self,cluster_name,internal_cluster_topic):
         # print(self.participant_identification.identify_participants())
         # self.pause_execution()
 
@@ -29,7 +30,7 @@ class DFLWorkflow:
         #         print(self.mqtt_operations.receive_mqtt_broker_link())
         #     self.pause_execution()
 
-        print(self.mqtt_operations.start_dfl_using_mqtt())
+        print(self.mqtt_operations.start_dfl_using_mqtt(internal_cluster_topic,cluster_name))
         #self.global_ipfs_link = self.utils.get_global_ipfs_link()
         print(self.mqtt_operations.winner_becomes_aggregator())
         self.pause_execution()
@@ -68,4 +69,8 @@ class DFLWorkflow:
 
 if __name__ == "__main__":
     workflow = DFLWorkflow()
-    workflow.run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("cluster_name", help="Name of the cluster")
+    parser.add_argument("internal_cluster_topic", help="internal Cluster topic")
+    args = parser.parse_args()
+    workflow.run(args.cluster_name,args.internal_cluster_topic)

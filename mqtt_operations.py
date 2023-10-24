@@ -1,6 +1,14 @@
+from core.MqttCluster.mqttCluster import MQTTCluster
+
 class MqttOperations:
     def __init__(self):
         # You can add any necessary initialization code here
+        self.inter_cluster_topic = "inter-cluster-topic"
+        self.num_workers =3
+        self.initial_broker="test.mosquitto.org"
+        self.cluster=None
+
+
         pass
 
     def winner_creates_mqtt_broker(self):
@@ -48,7 +56,7 @@ class MqttOperations:
         """
         return "Received MQTT broker link"
 
-    def start_dfl_using_mqtt(self):
+    def start_dfl_using_mqtt(self,internal_cluster_topic,cluster_name):
         """
         This method represents the action taken to start distributed federated learning (DFL) using MQTT communication.
 
@@ -60,6 +68,17 @@ class MqttOperations:
         Returns:
         A message indicating that DFL has started using MQTT for communication.
         """
+        # Configuration and create 3 client
+
+        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, cluster_name, self.inter_cluster_topic, internal_cluster_topic)
+
+        # Create clients for  clusters
+        self.cluster.create_clients()
+        
+        # Run the logic for cluster
+        self.cluster.run()
+
+
         return "DFL started using MQTT"
 
     def winner_becomes_aggregator(self):
@@ -75,4 +94,6 @@ class MqttOperations:
         Returns:
         A message indicating that the winner node has assumed the role of the aggregator.
         """
-        return "Winner node became the aggregator"
+
+        head_node=self.cluster.get_head_node() 
+        return f"Winner node became the aggregator and node is {head_node}"

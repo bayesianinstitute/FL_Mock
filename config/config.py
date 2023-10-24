@@ -1,0 +1,6 @@
+internal_cluster_topic_1="internal_cluster_topic_cluster_1_INDIA"
+cluster_name_1="cluster_1_INDIA"
+
+
+internal_cluster_topic_2="internal_cluster_topic_cluster_1_USA"
+cluster_name_2="cluster_1_USA"
