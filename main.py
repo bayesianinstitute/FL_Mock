@@ -75,5 +75,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("cluster_name", help="Name of the cluster")
     parser.add_argument("internal_cluster_topic", help="internal Cluster topic")
+    parser.add_argument("id", help="client_id")
+
     args = parser.parse_args()
-    workflow.run(args.cluster_name,args.internal_cluster_topic)
+    workflow.run(args.cluster_name,args.internal_cluster_topic,args.id)

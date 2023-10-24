@@ -2,12 +2,12 @@ import paho.mqtt.client as mqtt
 import random
 import time
 import json
-
+clients = []
 class MQTTCluster:
     def __init__(self, broker_address, num_clients, cluster_name,inter_cluster_topic,internal_cluster_topic):
         self.broker_address = broker_address
         self.num_clients = num_clients
-        self.clients = []
+        
         self.cluster_name = cluster_name
         self.worker_head_node = None
         self.round = 0
@@ -15,28 +15,21 @@ class MQTTCluster:
         self.internal_cluster_topic=internal_cluster_topic
         self.glb_msg=[]
 
-    def create_clients(self):
-        for i in range(self.num_clients):
-            client = mqtt.Client(f"{self.cluster_name}_Client_{i}")
-            client.connect(self.broker_address, 1883)
-            client.subscribe(self.inter_cluster_topic, qos=0)
-            client.subscribe(self.internal_cluster_topic, qos=0)
-            client.on_message = self.on_message
-            client.loop_start()
-            self.clients.append(client)
+    def create_clients(self,client_num):
+        client = mqtt.Client(f"{self.cluster_name}_Client_{client_num}")
+        client.connect(self.broker_address, 1883)
+        client.subscribe(self.inter_cluster_topic, qos=0)
+        client.subscribe(self.internal_cluster_topic, qos=0)
+        client.on_message = self.on_message
+        client.loop_start()
+        clients.append(client)
 
     def is_valid_model_hash(self, model_hash):
-            # Implement your logic to validate the model hash here
-            # You can add custom validation rules as needed
-            # For example, you might check the length or format of the model hash
         if len(model_hash) == 32:  # Assuming a valid model hash has 32 characters
             return True
         else:
             return False
             
-
-        # Check if the received message is a valid model hash
-
 
 
     def on_message(self, client, userdata, message):
@@ -59,7 +52,7 @@ class MQTTCluster:
                 self.glb_msg.append({message.payload.decode('utf-8')})
                 time.sleep(2)
                 receive=+1
-                if receive==len(self.clients)-1:
+                if receive==len(clients)-1:
                     print("Got all train message from client in cluster ")
                     time.sleep(5)
                     receive=0                
@@ -75,12 +68,12 @@ class MQTTCluster:
 
     # Send 
     def send_internal_messages(self):
-        for client in self.clients:
+        for client in clients:
             if client != self.worker_head_node:
                 client.publish(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
     
     def send_internal_messages_model(self,modelhash=None):
-        for client in self.clients:
+        for client in clients:
             if client != self.worker_head_node:
                 client.publish(self.internal_cluster_topic, f"{modelhash}")
 
@@ -95,13 +88,13 @@ class MQTTCluster:
 
 
     def switch_worker_head_node(self):
-        self.worker_head_node = random.choice(self.clients)
+        self.worker_head_node = random.choice(clients)
 
 
 
     def switch_broker(self, new_broker_address):
         # Disconnect existing clients
-        for client in self.clients:
+        for client in clients:
             client.loop_stop()
             client.disconnect()
 
@@ -113,6 +106,7 @@ class MQTTCluster:
     
     def run(self):
         self.switch_worker_head_node()
+        self.send_internal_messages_model()
         try:
             pass
         #     while self.round < 10:  # Run for a specified number of rounds
@@ -133,7 +127,7 @@ class MQTTCluster:
         #             time.sleep(2)
 
         #         # send Agregated message in inter-Cluster
-        #         if len(self.glb_msg)>=len(self.clients)-1:
+        #         if len(self.glb_msg)>=len(clients)-1:
         #             self.aggratedglobalMsg()
         #             time.sleep(6)
         #             pass
@@ -150,6 +144,6 @@ class MQTTCluster:
         #         time.sleep(5)  # Sleep for 5 seconds between rounds
 
         except KeyboardInterrupt:
-            for client in self.clients:
+            for client in clients:
                 client.loop_stop()
                 client.disconnect()
