@@ -48,7 +48,7 @@ class MLOperations:
                       metrics=['accuracy'])
 
         # Train the model
-        model.fit(x_train, y_train, epochs=5)
+        model.fit(x_train, y_train, epochs=1)
 
         # Evaluate the model on the test data
         test_loss, test_acc = model.evaluate(x_test, y_test, verbose=2)
@@ -58,13 +58,17 @@ class MLOperations:
 
         print(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
 
-        hash=self.ipfs.push_model(self.path_model)
+        hash=self.send_model_to_ipfs(self.path_model)
 
         print("Ipfs Hash: {}".format(hash))
 
         return hash 
+    
+    def send_model_to_ipfs(self,path):
+        return self.ipfs.push_model(path)
+        
 
-    def send_model_to_aggregator(self):
+    def send_model_to_aggregator(self,hash):
         """
         This method represents the action taken when a participant sends their trained model to the aggregator.
 

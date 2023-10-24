@@ -25,27 +25,37 @@ class MQTTCluster:
             client.loop_start()
             self.clients.append(client)
 
-    def aggratedglobalMsg(self):
-        if len(self.glb_msg)>=len(self.clients)-1:
-            aggregator = f"\n Aggrated Message ".join(str(item) for item in self.glb_msg)  # Convert elements to strings before joining
-            self.send_inter_cluster_message(aggregator)
-            # Clear
-            self.glb_msg.clear()
+    def is_valid_model_hash(self, model_hash):
+            # Implement your logic to validate the model hash here
+            # You can add custom validation rules as needed
+            # For example, you might check the length or format of the model hash
+        if len(model_hash) == 32:  # Assuming a valid model hash has 32 characters
+            return True
+        else:
+            return False
+            
 
-            time.sleep(4)
+        # Check if the received message is a valid model hash
+
 
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
         cluster_id = self.cluster_name
         receive=0
-     
+
 
         if message.topic == self.internal_cluster_topic:
+            
 
             if self.is_worker_head(client):
             # To Receive to head Only
                 print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')} ")
+                model_hash=message.payload.decode('utf-8')
+                if self.is_valid_model_hash(model_hash):
+                    self.model_hash_list.append(model_hash)
+                    print(f"Received and appended model hash: {model_hash}")
+
                 self.glb_msg.append({message.payload.decode('utf-8')})
                 time.sleep(2)
                 receive=+1
@@ -69,6 +79,11 @@ class MQTTCluster:
             if client != self.worker_head_node:
                 client.publish(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
     
+    def send_internal_messages_model(self,modelhash=None):
+        for client in self.clients:
+            if client != self.worker_head_node:
+                client.publish(self.internal_cluster_topic, f"{modelhash}")
+
     # get worker head
     def is_worker_head(self, client):
         return client == self.worker_head_node

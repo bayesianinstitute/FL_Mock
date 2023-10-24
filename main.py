@@ -39,8 +39,8 @@ class DFLWorkflow:
         while True:
             hash=self.ml_operations.train_machine_learning_model()
             self.pause_execution()
-            # print(self.ml_operations.send_model_to_aggregator(hash))
-            # self.pause_execution()
+            print(self.ml_operations.send_model_to_aggregator(hash))
+            self.pause_execution()
             # print(self.ml_operations.aggregator_receives_models())
             # self.pause_execution()
             # print(self.ml_operations.aggregate_models())
