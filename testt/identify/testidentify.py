@@ -72,7 +72,7 @@ class IdentifyParticipant:
             if shared_count < 2:
                 time.sleep(10)  # Wait for more clients to share data
             else:
-                self.client.disconnect()  # Disconnect the client
+                # self.client.disconnect()  # Disconnect the client
                 # Check if this node has the highest RAM usage
                 ram_usage = self.measure_ram_usage()
                 if self.is_highest_ram_usage(ram_usage):
