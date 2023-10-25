@@ -77,6 +77,7 @@ class MQTTCluster:
         if message.topic == self.internal_cluster_topic:
             
 
+
             if self.is_worker_head(client):
             # To Receive to head Only
                 print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')} ")
@@ -100,6 +101,8 @@ class MQTTCluster:
                 print(f"Received Global Model message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')}")
                 model_hash = message.payload.decode('utf-8')
                 # Process the global model message as needed for non-head nodes
+                
+
                                  
 
         elif message.topic == self.inter_cluster_topic:

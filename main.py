@@ -57,6 +57,8 @@ class DFLWorkflow:
                 print(self.ml_operations.send_global_model_to_others(mqtt_obj,self.global_model))
                 self.pause_execution()
 
+            
+
 
             
 
