@@ -66,9 +66,11 @@ def main():
             if is_highest_ram_usage(ram_usage, ram_usages):
                 declare_aggregator(client, participant_id)
                 print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                break
+                return True
+                # break
             else :
                 print("I am not the aggregator")
+                return False
 
 def is_highest_ram_usage(current_ram_usage, ram_usages):
     # Check if current_ram_usage is equal to or higher than the highest RAM usage
