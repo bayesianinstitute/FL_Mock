@@ -41,13 +41,13 @@ def measure_bandwidth():
     return 0  # Default to 0 if measurement fails
 
 def main():
-    broker = 'localhost'
+    broker = 'test.mosquitto.org'
     participant_id = f"Machine1 - {random.randint(1,1000)}"  # Unique identifier for each machine
 
     client = mqtt.Client(userdata={"speeds": {}, "shared_count": 0})
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect(broker)
+    client.connect(broker,1883)
     client.loop_start()
 
     # Measure the node's bandwidth
