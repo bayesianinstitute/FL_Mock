@@ -67,30 +67,21 @@ class IdentifyParticipant:
         # Announce RAM usage
         self.announce_ram_usage()
 
-        while True:
-            shared_count = self.client._userdata["shared_count"]
-            if shared_count < 2:
-                time.sleep(10)  # Wait for more clients to share data
-            else:
-                self.client.disconnect()  # Disconnect the client
-                # Check if this node has the highest RAM usage
-                ram_usage = self.measure_ram_usage()
-                if self.is_highest_ram_usage(ram_usage):
-                    self.declare_aggregator()
-                   
-                    print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                    
-                    
-                    return True
+        # Wait for a while to allow other participants to report RAM usage
+        time.sleep(30)  # Adjust the time as needed
 
-                    
+        shared_count = self.client._userdata["shared_count"]
+        if shared_count < 2:
+            self.client.disconnect()
+            print("Not enough participants have reported RAM usage. Exiting.")
+            return False
 
-                    
-                else:
-                    print("I am not the aggregator")
-                    return False
-
-if __name__ == '__main__':
-    participant = IdentifyParticipant()
-    status=participant.main()
-    print(status)
+        # Check if this node has the highest RAM usage
+        ram_usage = self.measure_ram_usage()
+        if self.is_highest_ram_usage(ram_usage):
+            self.declare_aggregator()
+            print(f"I am the aggregator! RAM usage: {ram_usage} MB")
+            return True
+        else:
+            print("I am not the aggregator")
+            return False
