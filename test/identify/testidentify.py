@@ -71,8 +71,8 @@ class IdentifyParticipant:
         time.sleep(30)  # Adjust the time as needed
 
         shared_count = self.client._userdata["shared_count"]
-        if shared_count < 2:
-            self.client.disconnect()
+        if shared_count < 3:
+            # self.client.disconnect()
             print("Not enough participants have reported RAM usage. Exiting.")
             return False
 
