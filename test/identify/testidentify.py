@@ -3,75 +3,72 @@ import time
 import subprocess
 import json
 import random
+import psutil  # Import the psutil library
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
-    client.subscribe("speed_topic")
+    client.subscribe("ram_topic")
 
 def on_message(client, userdata, message):
-    speed_info = json.loads(message.payload.decode("utf-8"))
-    node_id = speed_info["node_id"]
-    download_speed = speed_info["download_speed"]
-    print(f"Received speed from {node_id}: {download_speed} Mbps")
-    userdata[node_id] = download_speed
+    ram_info = json.loads(message.payload.decode("utf-8"))
+    node_id = ram_info["node_id"]
+    ram_usage = ram_info["ram_usage"]
+    print(f"Received RAM usage from {node_id}: {ram_usage} MB")
+    userdata[node_id] = ram_usage
 
-def announce_speed(client, participant_id, download_speed):
-    topic = 'speed_topic'
-    speed_info = {
+def announce_ram_usage(client, participant_id, ram_usage):
+    topic = 'ram_topic'
+    ram_info = {
         "node_id": participant_id,
-        "download_speed": download_speed
+        "ram_usage": ram_usage
     }
-    client.publish(topic, json.dumps(speed_info))
+    client.publish(topic, json.dumps(ram_info))
 
 def declare_aggregator(client, participant_id):
     topic = 'aggregator_topic'
     aggregator_message = f"Machine {participant_id} is the aggregator!"
     client.publish(topic, aggregator_message)
 
-def measure_bandwidth():
+def measure_ram_usage():
     try:
-        # Use the speedtest-cli library to measure bandwidth
-        result = subprocess.check_output(["speedtest-cli", "--simple"]).decode("utf-8")
-        for line in result.split('\n'):
-            if "Download" in line:
-                download_speed = float(line.split(':')[1].split()[0])
-                return download_speed
+        ram_usage = psutil.virtual_memory().used / (1024 ** 2)  # Get RAM usage in MB
+        return ram_usage
     except Exception as e:
-        print(f"Error measuring bandwidth: {str(e)}")
+        print(f"Error measuring RAM usage: {str(e)}")
     return 0  # Default to 0 if measurement fails
 
 def main():
     broker = 'test.mosquitto.org'
-    participant_id = f"Machine1 - {random.randint(1,1000)}"  # Unique identifier for each machine
+    participant_id = f"Machine1 - {random.randint(1, 1000)}"  # Unique identifier for each machine
 
-    client = mqtt.Client(userdata={"speeds": {}, "shared_count": 0})
+    client = mqtt.Client(userdata={"ram_usages": {}, "shared_count": 0})
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect(broker,1883)
+    client.connect(broker, 1883)
     client.loop_start()
 
-    # Measure the node's bandwidth
-    download_speed = measure_bandwidth()
+    # Measure the node's RAM usage
+    ram_usage = measure_ram_usage()
 
-    # Announce speed
-    announce_speed(client, participant_id, download_speed)
+    # Announce RAM usage
+    announce_ram_usage(client, participant_id, ram_usage)
 
     while True:
-        shared_count = client.user_data["shared_count"]
+        shared_count = client._userdata["shared_count"]
         if shared_count < 3:
             time.sleep(10)  # Wait for more clients to share data
         else:
-            # Check if this node has the highest bandwidth speed
-            speeds = client.user_data["speeds"]
-            if is_highest_bandwidth_speed(download_speed, speeds):
+            # Check if this node has the highest RAM usage
+            ram_usages = client._userdata["ram_usages"]
+            if is_highest_ram_usage(ram_usage, ram_usages):
                 declare_aggregator(client, participant_id)
-                print(f"I am the aggregator! Bandwidth: {download_speed} Mbps")
+                print(f"I am the aggregator! RAM usage: {ram_usage} MB")
                 break
 
-def is_highest_bandwidth_speed(current_speed, speeds):
-    # Check if current_speed is the highest among all participants' speeds
-    max_speed = max(speeds.values())
-    return current_speed == max_speed
+def is_highest_ram_usage(current_ram_usage, ram_usages):
+    # Check if current_ram_usage is equal to or higher than the highest RAM usage
+    max_ram_usage = max(ram_usages.values())
+    return current_ram_usage >= max_ram_usage
 
 if __name__ == '__main__':
     main()
