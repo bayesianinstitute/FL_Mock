@@ -51,9 +51,9 @@ class IdentifyParticipant:
             return 0  # Default to 0 if measurement fails
 
     def is_highest_ram_usage(self, current_ram_usage):
-        # Check if current_ram_usage is equal to or higher than the highest RAM usage
-        max_ram_usage = max(self.client._userdata["ram_usages"].values())
-        return current_ram_usage >= max_ram_usage
+        # Check if current_ram_usage is higher than any other participant's RAM usage
+        other_ram_usages = self.client._userdata["ram_usages"]
+        return all(current_ram_usage >= ram_usage for ram_usage in other_ram_usages.values())
 
     def on_disconnect(self, client, userdata, rc):
         if rc != 0:
