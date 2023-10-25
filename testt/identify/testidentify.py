@@ -65,7 +65,7 @@ class IdentifyParticipant:
         print("My ID:", self.participant_id)
         aggregator=False
 
-        # Announce RAM usage
+        # Announce RAM usages
         self.announce_ram_usage()
 
         while True:
