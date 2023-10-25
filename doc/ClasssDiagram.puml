@@ -1,0 +1,43 @@
+@startuml
+
+class Participant {
+  - machineLearningMachine
+  - mqttCommunicationMachine
+  - isWinnerNode
+  - globalModelLink
+  + vote()
+  + getGlobalIPFSLink()
+}
+
+class MachineLearningNode {
+  - modelHash
+  + trainModel()
+  + sendModelIPFS(model)
+  + receiveModelHash()
+  + receiveGlobalModel()
+  + updateWeights()
+}
+
+class AggregatorMQTTBroker {
+  - globalModelHash
+  + createBroker()
+  + sendCommunicationLink()
+  + aggregateModels()
+  + saveGlobalModel()
+  + storeGlobalIPFS(model)
+  + sendAggregateModelHash()
+  + stopService()
+}
+
+class Voting{
+
+    + Evaluation()
+}
+
+class IPFSStorage {
+  + connect()
+  + saveModel(model)  
+  + retrieveModel(hash)
+}
+
+@enduml

@@ -13,6 +13,7 @@ class DFLWorkflow:
         self.mqtt_operations = MqttOperations()
         self.ml_operations = MLOperations()
         self.utils = Utils()
+        self.global_model=None
 
     def pause_execution(self,):
         if input("Press Enter to continue (or type 'q' and press Enter to quit): ").strip().lower() == 'q':
@@ -42,19 +43,18 @@ class DFLWorkflow:
                 continue
             else :
                 get_list=mqtt_obj.send_model_hash()
-                self.ml_operations.aggregate_models(get_list)
+                print("Send global model")
+                self.pause_execution()
 
+                self.global_model=self.ml_operations.aggregate_models(get_list)
+                print(" got Global model hash: {}".format(self.global_model))
+
+                self.pause_execution()
+                print(self.ml_operations.send_global_model_to_others(mqtt_obj,self.global_model))
                 self.pause_execution()
 
 
-
-   
-
-            self.pause_execution()
-            # print(self.ml_operations.aggregate_models())
-            # self.pause_execution()
-            # print(self.ml_operations.send_global_model_to_others())
-            self.pause_execution()
+            
 
             if self.ml_operations.is_model_better():
                 continue

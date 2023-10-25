@@ -10,6 +10,7 @@ class MLOperations:
         # You can add any necessary initialization code here
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
+        self.path_global_model="global_model.h5"
         pass
 
     def train_machine_learning_model(self):
@@ -134,7 +135,14 @@ class MLOperations:
 
         print("global model ",global_model.summary())
 
-        return global_model
+        # Save the trained model
+        model.save(self.path_global_model)
+
+        global_model_hash=self.ipfs.push_model(self.path_global_model)
+
+        print("hash global model ",global_model_hash)
+
+        return global_model_hash
 
         # return "Models aggregated"
     
@@ -181,7 +189,7 @@ class MLOperations:
         """
         return "Post-training steps completed"
 
-    def send_global_model_to_others(self):
+    def send_global_model_to_others(self,mqtt_obj,global_model_hash):
         """
         This method represents the action taken when the global model is sent to other participants.
 
@@ -192,6 +200,7 @@ class MLOperations:
         Returns:
         A message indicating that the global model has been sent to others.
         """
+        mqtt_obj.send_internal_messages_model(global_model_hash)
         return "Global model sent to others"
 
     def aggregator_saves_global_model_in_ipfs(self):

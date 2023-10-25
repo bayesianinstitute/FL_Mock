@@ -19,6 +19,7 @@ class MQTTCluster:
 
     def create_clients(self,client_num):
         self.client = mqtt.Client(f"{self.cluster_name}_Client_{client_num}")
+        self.client.on_connect=self.on_connect
         self.client.connect(self.broker_address, 1883)
         self.client.subscribe(self.inter_cluster_topic, qos=0)
         self.client.subscribe(self.internal_cluster_topic, qos=0)
@@ -26,7 +27,12 @@ class MQTTCluster:
         self.client.loop_start()
         # clients.append(client)
 
+    
+    def on_connect(self,client, userdata, flags, rc):
+        if rc == 0:
+            print("connected to broker")
 
+ 
             
     def subscribe_to_internal_messages(self):
         # Subscribe to the internal_cluster_topic for message reception

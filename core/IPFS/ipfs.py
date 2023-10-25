@@ -6,7 +6,7 @@ from tensorflow import keras
 import tempfile
 
 
-# IPFS communication class (similar to the PyTorch version)
+# IPFS communication class (for to the Tensorflow version)
 class IPFS:
     def __init__(self,):
         self.client = ipfshttpclient.connect('/ip4/127.0.0.1/tcp/5001/http')
@@ -21,10 +21,10 @@ class IPFS:
         model = keras.models.load_model(temp_model_file.name)
 
         return model
-        # model = keras.models.load_model(io.BytesIO(model_bytes))
-        # return model
+
 
     def push_model(self, saved_model_path):
+        
         model_hash = self.client.add(saved_model_path)['Hash']
         return model_hash
 
