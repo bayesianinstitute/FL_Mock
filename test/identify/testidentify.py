@@ -60,7 +60,6 @@ class IdentifyParticipant:
         # Announce RAM usage
         self.announce_ram_usage()
 
-<<<<<<< HEAD
         while True:
             shared_count = self.client._userdata["shared_count"]
             if shared_count < 2:
@@ -71,36 +70,9 @@ class IdentifyParticipant:
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
                     print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                    return True
                     break
                 else:
                     print("I am not the aggregator")
-                    return False
-=======
-    # Announce RAM usage
-    announce_ram_usage(client, participant_id, ram_usage)
-
-    while True:
-        shared_count = client._userdata["shared_count"]
-        if shared_count < 2:
-            time.sleep(10)  # Wait for more clients to share data
-        else:
-            # Check if this node has the highest RAM usage
-            ram_usages = client._userdata["ram_usages"]
-            if is_highest_ram_usage(ram_usage, ram_usages):
-                declare_aggregator(client, participant_id)
-                print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                return True
-                # break
-            else :
-                print("I am not the aggregator")
-                return False
-
-def is_highest_ram_usage(current_ram_usage, ram_usages):
-    # Check if current_ram_usage is equal to or higher than the highest RAM usage
-    max_ram_usage = max(ram_usages.values())
-    return current_ram_usage >= max_ram_usage
->>>>>>> d33708bb19a0753e8da9e92b795e3c9ca3ca7ca9
 
 if __name__ == '__main__':
     participant = IdentifyParticipant()
