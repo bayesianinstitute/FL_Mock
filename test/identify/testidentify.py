@@ -70,10 +70,15 @@ class IdentifyParticipant:
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
                     print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                    break
+                    return True
+                    
+
+                    
                 else:
                     print("I am not the aggregator")
+                    return False
 
 if __name__ == '__main__':
     participant = IdentifyParticipant()
-    participant.main()
+    status=participant.main()
+    print(status)
