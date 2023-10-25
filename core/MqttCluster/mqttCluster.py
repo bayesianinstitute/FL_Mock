@@ -38,9 +38,6 @@ class MQTTCluster:
         if self.worker_head_node :
              return client
              
-        
-        # return client == self.worker_head_node
-
 
 
             
@@ -97,11 +94,14 @@ class MQTTCluster:
 
                     self.send_model_hash()
 
-
-
-
                     time.sleep(5)
-                    receive=0                
+            else:
+                # Node is not the head; receive global model message sent by the head
+                print(f"Received Global Model message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')}")
+                model_hash = message.payload.decode('utf-8')
+                # Process the global model message as needed for non-head nodes
+                                 
+
         elif message.topic == self.inter_cluster_topic:
             data=message.payload.decode('utf-8')
             if self.is_worker_head(client):
@@ -118,6 +118,14 @@ class MQTTCluster:
             # if client != self.worker_head_node:
                 self.client.publish(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
     
+    def send_internal_messages_global_model(self,modelhash):
+        print("send_internal_messages _ Global_model : ",modelhash)
+
+        print("Internal topic",self.internal_cluster_topic)    
+        if self.is_worker_head(self.client):
+            self.client.publish(self.internal_cluster_topic, f"{modelhash}")
+            print("Successfully send_internal_messages_model  ")
+
     def send_internal_messages_model(self,modelhash):
         print("send_internal_messages_model : ",modelhash)
 
