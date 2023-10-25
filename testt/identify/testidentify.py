@@ -69,7 +69,7 @@ class IdentifyParticipant:
 
         while True:
             shared_count = self.client._userdata["shared_count"]
-            if shared_count < 2:
+            if shared_count < 1:
                 time.sleep(10)  # Wait for more clients to share data
             else:
                 # self.client.disconnect()  # Disconnect the client
