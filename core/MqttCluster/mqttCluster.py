@@ -51,8 +51,10 @@ class MQTTCluster:
                 self.client.unsubscribe(self.internal_cluster_topic)
 
     def send_model_hash(self, ):
-          
+        if len(self.glb_msg)==2:  
           return self.glb_msg
+        else :
+            return False
 
 
     def on_message(self, client, userdata, message):
@@ -83,7 +85,7 @@ class MQTTCluster:
                     print("Got all train message from client in cluster ")
                     print("model hash",self.glb_msg)
 
-                    self.send_model_hash()
+                    # self.send_model_hash()
 
 
 
