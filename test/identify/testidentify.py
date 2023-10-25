@@ -32,6 +32,7 @@ def declare_aggregator(client, participant_id):
 def measure_ram_usage():
     try:
         ram_usage = psutil.virtual_memory().used / (1024 ** 2)  # Get RAM usage in MB
+        print("ram_usage : {ram_usage} MB",ram_usage)
         return ram_usage
     except Exception as e:
         print(f"Error measuring RAM usage: {str(e)}")
