@@ -40,7 +40,9 @@ def measure_ram_usage():
 
 def main():
     broker = 'test.mosquitto.org'
-    participant_id = f"Machine1 - {random.randint(1, 1000)}"  # Unique identifier for each machine
+    participant_id = f"Machine-id- {random.randint(1, 1000)}"  # Unique identifier for each machine
+
+    print("my id ",participant_id)
 
     client = mqtt.Client(userdata={"ram_usages": {}, "shared_count": 0})
     client.on_connect = on_connect
