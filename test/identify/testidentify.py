@@ -34,7 +34,7 @@ class IdentifyParticipant:
             "node_id": self.participant_id,
             "ram_usage": ram_usage
         }
-        self.client.publish(topic, json.dumps(ram_info), qos=1, retain=True)
+        self.client.publish(topic, json.dumps(ram_info), qos=2, retain=True)
 
     def declare_aggregator(self):
         topic = 'aggregator_topic'
