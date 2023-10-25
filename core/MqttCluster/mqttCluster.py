@@ -32,7 +32,17 @@ class MQTTCluster:
         if rc == 0:
             print("connected to broker")
 
- 
+        # get worker head
+    def is_worker_head(self, client):
+
+        if self.worker_head_node :
+             return client
+             
+        
+        # return client == self.worker_head_node
+
+
+
             
     def subscribe_to_internal_messages(self):
         # Subscribe to the internal_cluster_topic for message reception
@@ -70,7 +80,7 @@ class MQTTCluster:
         if message.topic == self.internal_cluster_topic:
             
 
-            if self.worker_head_node(client):
+            if self.is_worker_head(client):
             # To Receive to head Only
                 print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')} ")
                 model_hash=message.payload.decode('utf-8')
@@ -85,7 +95,7 @@ class MQTTCluster:
                     print("Got all train message from client in cluster ")
                     print("model hash",self.glb_msg)
 
-                    # self.send_model_hash()
+                    self.send_model_hash()
 
 
 
@@ -114,12 +124,6 @@ class MQTTCluster:
         print("Internal topic",self.internal_cluster_topic)    
         self.client.publish(self.internal_cluster_topic, f"{modelhash}")
         print("Successfully send_internal_messages_model  ")
-
-    # # get worker head
-    # def is_worker_head(self, client):
-        
-    #     return client == self.worker_head_node
-
 
 
     def switch_broker(self, new_broker_address):
