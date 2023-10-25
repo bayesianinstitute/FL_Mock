@@ -70,7 +70,7 @@ class MQTTCluster:
         if message.topic == self.internal_cluster_topic:
             
 
-            if self.is_worker_head(client):
+            if self.worker_head_node(client):
             # To Receive to head Only
                 print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')} ")
                 model_hash=message.payload.decode('utf-8')
@@ -115,10 +115,10 @@ class MQTTCluster:
         self.client.publish(self.internal_cluster_topic, f"{modelhash}")
         print("Successfully send_internal_messages_model  ")
 
-    # get worker head
-    def is_worker_head(self, client):
+    # # get worker head
+    # def is_worker_head(self, client):
         
-        return client == self.worker_head_node
+    #     return client == self.worker_head_node
 
 
 

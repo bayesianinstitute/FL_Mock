@@ -90,7 +90,7 @@ class IdentifyParticipant:
                     
                 else:
                     print("I am not the aggregator")
-                    return False
+                    return aggregator
 
 if __name__ == '__main__':
     participant = IdentifyParticipant()
