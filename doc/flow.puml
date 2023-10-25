@@ -1,20 +1,17 @@
 @startuml
 start
-:Identify Participants;
-: VotingParticipants;
+:topic='Connected',broker='localhost';
+:userConnect to mqtt;
+:Identify Participants in connected mqtt;
+: VotingParticipants(random Participant);
 if (Determine Winner) then (Yes)
-  :Winner Node Creates MQTT Broker;
-  if (Send Communication Link to Others?) then (Yes)
-    :Send Communication Link to Others;
-  else (No)
-    :Others Receive MQTT Broker Link;
-  endif
-else (No)
-  :Receive MQTT Broker Link;
+  :Winner Node Becomes Aggregator;
+  :Send IPFS Link for Data Storage;
+
 endif
 :Start DFL Using MQTT;
-:Get Global IPFS Link for Data Storage;
-:Winner Node Becomes Aggregator;
+
+
 
 repeat
   :Train Machine Learning Model;
@@ -22,27 +19,5 @@ repeat
   :Aggregator Receives Models;
   :Aggregate Models;
   :Send Global Model to Others;
-  
-  if (Is Model Better?) then (Yes)
-    :Yes, continue the iteration;
-  else (No)
-    :No, exit the loop;
-  endif
 
-repeat while (Continue Iterations?);
-
-:Post-Training Steps;
-if (Aggregator Saves Global Model in IPFS?) then (Yes)
-  :Aggregator Saves Global Model in IPFS;
-else (No)
-  :No Action Required;
-endif
-:Disconnect All Nodes;
-:Cleanup;
-if (Aggregator Stops MQTT Broker Service?) then (Yes)
-  :Aggregator Stops MQTT Broker Service;
-else (No)
-  :No Action Required;
-endif
-stop
 @enduml
