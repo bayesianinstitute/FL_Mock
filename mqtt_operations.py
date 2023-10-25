@@ -55,8 +55,9 @@ class MqttOperations:
         A message confirming the reception of the MQTT broker link.
         """
         return "Received MQTT broker link"
+    
 
-    def start_dfl_using_mqtt(self,internal_cluster_topic,cluster_name,id):
+    def start_dfl_using_mqtt(self,internal_cluster_topic,cluster_name,id,status):
         """
         This method represents the action taken to start distributed federated learning (DFL) using MQTT communication.
 
@@ -71,7 +72,7 @@ class MqttOperations:
         # Configuration and create 3 client
 
 
-        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, cluster_name, self.inter_cluster_topic, internal_cluster_topic)
+        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, cluster_name, self.inter_cluster_topic, internal_cluster_topic,status)
 
         # Create clients for  clusters
         self.cluster.create_clients(id)

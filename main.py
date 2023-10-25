@@ -4,7 +4,7 @@ from mqtt_operations import MqttOperations
 from ml_operations import MLOperations
 from utils import Utils
 import argparse
-
+from testt.identify.testidentify import IdentifyParticipant
 
 class DFLWorkflow:
     def __init__(self):
@@ -21,8 +21,12 @@ class DFLWorkflow:
 
     def run(self,cluster_name,internal_cluster_topic,id):
         get_list=None
+        participant = IdentifyParticipant()
+        status=participant.main()
+        print("is worker head ",status)
 
-        mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt(internal_cluster_topic,cluster_name,id)
+
+        mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt(internal_cluster_topic,cluster_name,id,status)
         #self.global_ipfs_link = self.utils.get_global_ipfs_link()
         mqtt_obj.subscribe_to_internal_messages()
         # mqtt_obj.get_head_node()

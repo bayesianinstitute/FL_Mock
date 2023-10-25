@@ -4,12 +4,12 @@ import time
 import json
 # clients = []
 class MQTTCluster:
-    def __init__(self, broker_address, num_clients, cluster_name,inter_cluster_topic,internal_cluster_topic):
+    def __init__(self, broker_address, num_clients, cluster_name,inter_cluster_topic,internal_cluster_topic,head_status):
         self.broker_address = broker_address
         self.num_clients = num_clients
         
         self.cluster_name = cluster_name
-        self.worker_head_node = None
+        self.worker_head_node = head_status
         self.round = 0
         self.inter_cluster_topic=inter_cluster_topic
         self.internal_cluster_topic=internal_cluster_topic
@@ -51,10 +51,9 @@ class MQTTCluster:
                 self.client.unsubscribe(self.internal_cluster_topic)
 
     def send_model_hash(self, ):
-          if len(self.glb_msg)==2:
-                return self.glb_msg
-          else :
-                return False
+          
+          return self.glb_msg
+
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
@@ -69,7 +68,7 @@ class MQTTCluster:
         if message.topic == self.internal_cluster_topic:
             
 
-            # if self.is_worker_head(client):
+            if self.is_worker_head(client):
             # To Receive to head Only
                 print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')} ")
                 model_hash=message.payload.decode('utf-8')
@@ -83,6 +82,8 @@ class MQTTCluster:
                 if len(self.glb_msg)==2:
                     print("Got all train message from client in cluster ")
                     print("model hash",self.glb_msg)
+
+                    self.send_model_hash()
 
 
 
@@ -114,6 +115,7 @@ class MQTTCluster:
 
     # get worker head
     def is_worker_head(self, client):
+        
         return client == self.worker_head_node
 
 
