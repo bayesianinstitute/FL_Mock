@@ -11,6 +11,7 @@ class IdentifyParticipant:
         self.client = mqtt.Client(userdata={"ram_usages": {}, "shared_count": 0})
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        self.client.on_disconnect=self.on_disconnect
         self.client.connect(self.broker, 1883)
         self.client.loop_start()
 
