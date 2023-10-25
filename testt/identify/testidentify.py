@@ -63,6 +63,7 @@ class IdentifyParticipant:
 
     def main(self):
         print("My ID:", self.participant_id)
+        aggregator=False
 
         # Announce RAM usage
         self.announce_ram_usage()
@@ -77,11 +78,12 @@ class IdentifyParticipant:
                 ram_usage = self.measure_ram_usage()
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
-                   
                     print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                    
-                    
-                    return True
+                    aggregator = True  # Set aggregator status to True
+                    time.sleep(10)  # Wait for others to process the message
+                    self.client.disconnect()
+
+                    return aggregator
 
                     
 
