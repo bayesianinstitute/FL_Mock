@@ -54,6 +54,12 @@ class IdentifyParticipant:
         max_ram_usage = max(self.client._userdata["ram_usages"].values())
         return current_ram_usage >= max_ram_usage
 
+    def on_disconnect(self, client, userdata, rc):
+        if rc != 0:
+            print(f"Unexpected disconnection with result code {rc}")
+        else:
+            print("Disconnected successfully")
+
     def main(self):
         print("My ID:", self.participant_id)
 
@@ -69,8 +75,12 @@ class IdentifyParticipant:
                 ram_usage = self.measure_ram_usage()
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
+                   
                     print(f"I am the aggregator! RAM usage: {ram_usage} MB")
+                    self.client.disconnect()  # Disconnect the client
+                    
                     return True
+
                     
 
                     
