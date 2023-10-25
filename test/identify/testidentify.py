@@ -49,9 +49,10 @@ def main():
     broker = 'test.mosquitto.org'
     participant_id = f"Machine-id- {random.randint(1, 1000)}"  # Unique identifier for each machine
 
+    time.sleep(30)
     print("my id ",participant_id)
 
-    client = mqtt.Client(userdata={"ram_usages": {}, "shared_count": 0})
+    client = mqtt.Client(userdata={"ram_usages": {}, "shared_count": 0},clean_session=False)
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(broker, 1883)
