@@ -22,6 +22,7 @@ def on_message(client, userdata, message):
     ram_usage = ram_info["ram_usage"]
     print(f"Received RAM usage from {node_id}: {ram_usage} MB")
     userdata[node_id] = ram_usage
+    userdata["shared_count"] += 1  # Increment the shared count
 
 def announce_ram_usage(client, participant_id, ram_usage):
     topic = 'ram_topic'
@@ -67,8 +68,10 @@ def main():
     announce_ram_usage(client, participant_id, ram_usage)
 
     while True:
+        
         shared_count = client._userdata["shared_count"]
         if shared_count < 2:
+            print("Wait for more clients to share data shared count :",shared_count)
             time.sleep(10)  # Wait for more clients to share data
         else:
             # Check if this node has the highest RAM usage
