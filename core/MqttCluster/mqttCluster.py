@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import random
 import time
 import json
+import logging
 # clients = []
 class MQTTCluster:
     def __init__(self, broker_address, num_clients, cluster_name,inter_cluster_topic,internal_cluster_topic,head_status):
@@ -20,63 +21,44 @@ class MQTTCluster:
 
     def create_clients(self,client_num):
         self.client = mqtt.Client(f"{self.cluster_name}_Client_{client_num}")
+        self.client.connected_flag = False
+        self.client.bad_conn_flag = False
+
         self.client.on_connect=self.on_connect
-        self.client.connect(self.broker_address, 1883)
-        self.client.subscribe(self.inter_cluster_topic, qos=0)
-        self.client.subscribe(self.internal_cluster_topic, qos=0)
         self.client.on_message = self.on_message
+        self.client.on_disconnect=self.on_disconnect
+        self.client.on_log=self._on_log
+
+
+        self.client.connect(self.broker_address, 1883)
+        self.client.subscribe(self.inter_cluster_topic, qos=1)
+        self.client.subscribe(self.internal_cluster_topic, qos=1)
+        # Set the "last will" message for client disconnection
+        self.client.will_set("status/disconnect", "Client has disconnected", qos=1, retain=True)
+
         self.client.loop_start()
         # clients.append(client)
 
+    def _on_log(self, client, userdata, level, buf):
+        logging.info("mqtt log {}, client id {}.".format(buf, self.mqtt_connection_id))
+
     
-    def on_connect(self,client, userdata, flags, rc):
+    def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print("connected to broker")
-
+            client.connected_flag = True
         # get worker head
-    def is_worker_head(self, client):
+        else:
+            print(f"Connection failed with code {rc}")
 
-        if self.worker_head_node :
-             return client
-             
+    def on_disconnect(self, client, userdata, rc):
+        if rc != 0:
+            print(f"Unexpected disconnection with code {rc}")
+        else:
+            print("Disconnected from MQTT broker")
+        # Inform other clients about the disconnection
+        client.publish("status/disconnect", "Client has disconnected", qos=1, retain=True)
 
-
-            
-    def subscribe_to_internal_messages(self):
-        # Subscribe to the internal_cluster_topic for message reception
-        # for client in self.client:
-            # if client != self.worker_head_node:
-                self.client.subscribe(self.internal_cluster_topic, qos=0)
-
-    def receive_internal_messages(self):
-        # for client in self.client:
-            # if client != self.worker_head_node:
-                self.client.on_message = self.on_message
-
-    def stop_receiving_messages(self):
-        # for client in self.client:
-            # if client != self.worker_head_node:
-                self.client.unsubscribe(self.internal_cluster_topic)
-
-    def send_model_hash(self, ):
-        if len(self.glb_msg)==2:  
-          return self.glb_msg
-        else :
-            return False
-
-    def global_model(self):
-         
-        if self.global_model_hash:
-            return self.global_model_hash
-        else :
-            print("No global model hashs")
-         
-         
-    # def get_global_model_hash(self):
-    #      return hash
-    def receive_global_model_on_message(self):
-         
-         pass
 
 
     def on_message(self, client, userdata, message):
@@ -136,6 +118,53 @@ class MQTTCluster:
                 print(f"Inter-cluster message in {cluster_id} from {client_id} \n : {data}")
                 time.sleep(5)
 
+        
+    def is_worker_head(self, client):
+
+        if self.worker_head_node :
+             return client
+             
+
+
+            
+    def subscribe_to_internal_messages(self):
+        # Subscribe to the internal_cluster_topic for message reception
+        # for client in self.client:
+            # if client != self.worker_head_node:
+                self.client.subscribe(self.internal_cluster_topic, qos=0)
+
+    def receive_internal_messages(self):
+        # for client in self.client:
+            # if client != self.worker_head_node:
+                self.client.on_message = self.on_message
+
+    def stop_receiving_messages(self):
+        # for client in self.client:
+            # if client != self.worker_head_node:
+                self.client.unsubscribe(self.internal_cluster_topic)
+
+    def send_model_hash(self, ):
+        if len(self.glb_msg)==2:  
+          return self.glb_msg
+        else :
+            return False
+
+    def global_model(self):
+         
+        if self.global_model_hash:
+            return self.global_model_hash
+        else :
+            print("No global model hashs")
+         
+         
+    # def get_global_model_hash(self):
+    #      return hash
+    def receive_global_model_on_message(self):
+         
+         pass
+
+
+
     # Send Inter-cluster
     def send_inter_cluster_message(self, message):
         self.worker_head_node.publish(self.inter_cluster_topic, message)
@@ -176,7 +205,6 @@ class MQTTCluster:
 
 
     def run(self):
-        self.switch_worker_head_node()
         try:
             # pass
             print("")
@@ -197,24 +225,11 @@ class MQTTCluster:
         #             print("New Head Node:", self.get_head_node())
         #             time.sleep(2)
 
-        #         # send Agregated message in inter-Cluster
-        #         if len(self.glb_msg)>=len(clients)-1:
-        #             self.aggratedglobalMsg()
-        #             time.sleep(6)
-        #             pass
 
-        #         # Send internal messages
-                # self.send_internal_messages()
-        #         time.sleep(5)
-        #         self.round += 1
-        #         print("Round completed:", self.round)
 
-        #         if self.round == 10:
-        #             print("All Rounds completed!")
-
-        #         time.sleep(5)  # Sleep for 5 seconds between rounds
 
         except KeyboardInterrupt:
             for client in self.client:
                 client.loop_stop()
                 client.disconnect()
+

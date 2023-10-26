@@ -73,14 +73,10 @@ class MLOperations:
 
             print(" model: ", self.current_model)
 
-
-            
             pass
         else :
             # For First time build model
             self.current_model=self.build_model()
-            
-
 
         # Train the model
         self.current_model.fit(x_train, y_train, epochs=1)
@@ -159,9 +155,9 @@ class MLOperations:
 
         models = []
         for value in values:
-            print("vales in loop : ",value)
+            # print("vales in loop : ",value)
             model = self.ipfs.fetch_model(value)
-            print("after fetching model : ",model)
+            # print("after fetching model : ",model)
             models.append(model)
 
         # Aggregate model weights
