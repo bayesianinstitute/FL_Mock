@@ -82,11 +82,14 @@ class IdentifyParticipant:
                 ram_usage = self.measure_ram_usage()
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
-                    print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                    self.aggregator = True  # Set aggregator status to True
+                    print(f"I am the aggregator! RAM usage: {ram_usage} MB but")
+                    self.aggregator = False  # Set aggregator status to True
+                    break
 
                 else:
+                    
                     print("I am not the aggregator")
+                    break
 
             time.sleep(5)  # Add a delay to avoid constantly checking
 
