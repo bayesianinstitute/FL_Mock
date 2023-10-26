@@ -74,6 +74,10 @@ class MQTTCluster:
          
     # def get_global_model_hash(self):
     #      return hash
+    def receive_global_model_on_message(self):
+         
+         pass
+
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
@@ -96,8 +100,7 @@ class MQTTCluster:
             if data.find(string)==0:
                 lenght=len(string)+1
                 extract=data[lenght:]
-                # print(extract)
-                if self.is_worker_head(client)==False :
+                if self.worker_head_node==False :
                     print(f"Received  Global message in {cluster_id} from {client_id} as \n : {extract} ")
                     self.global_model_hash=extract
 
@@ -119,6 +122,7 @@ class MQTTCluster:
                     print("model hash",self.glb_msg)
 
                     self.send_model_hash()
+                    self.glb_msg.clear()
 
                     time.sleep(5)
 
