@@ -78,10 +78,10 @@ class IdentifyParticipant:
                     self.declare_aggregator()
                     print(f"I am the aggregator! RAM usage: {ram_usage} GB")
                     self.aggregator = True
-                    break
+                    return self.aggregator
                 else:
                     print("I am not the aggregator")
-                    break
+                    return self.aggregator
 
             time.sleep(5)  # Add a delay to avoid constantly checking
 
