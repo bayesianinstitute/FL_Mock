@@ -159,7 +159,9 @@ class MLOperations:
 
         models = []
         for value in values:
+            print("vales in loop : ",value)
             model = self.ipfs.fetch_model(value)
+            print("after fetching model : ",model)
             models.append(model)
 
         # Aggregate model weights
@@ -195,6 +197,8 @@ class MLOperations:
 
                 # Set the average weights to the global model
                 global_model.layers[i].set_weights(average_weights)
+        
+        print("Aggregated weights")
 
         return global_model
 
