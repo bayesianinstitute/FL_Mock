@@ -5,6 +5,7 @@ Before using this script, ensure that you have the following dependencies instal
 
 - Python 3.x
 - Required Python packages 
+- Ipfs
 
 ## Usage
 

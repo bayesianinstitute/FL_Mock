@@ -15,6 +15,7 @@ class MQTTCluster:
         self.internal_cluster_topic=internal_cluster_topic
         self.glb_msg=list()
         self.client=None
+        self.global_model_hash=None
     
 
     def create_clients(self,client_num):
@@ -63,25 +64,49 @@ class MQTTCluster:
         else :
             return False
 
+    def global_model(self):
+         
+        if self.global_model_hash:
+            return self.global_model_hash
+        else :
+            print("No global model hashs")
+         
+         
+    # def get_global_model_hash(self):
+    #      return hash
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
         cluster_id = self.cluster_name
 
 
-        print(f"Received message: {message.payload.decode('utf-8')}")
+        # print(f"Received message: {message.payload.decode('utf-8')}")
 
         print("Topic: {}".format(self.internal_cluster_topic))
 
 
         if message.topic == self.internal_cluster_topic:
-            
+
+            data=message.payload.decode('utf-8')
+
+            extract_global_message=data.find('global_model')
+
+            string='global_model'
+            # Check global_model
+            if data.find(string)==0:
+                lenght=len(string)+1
+                extract=data[lenght:]
+                # print(extract)
+                if self.is_worker_head(client)==False :
+                    print(f"Received  Global message in {cluster_id} from {client_id} as \n : {extract} ")
+                    self.global_model_hash=extract
 
 
+                      
             if self.is_worker_head(client):
             # To Receive to head Only
-                print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')} ")
-                model_hash=message.payload.decode('utf-8')
+                print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {data} ")
+                model_hash=data
 
                 self.glb_msg.append({model_hash})
                 print("model hash",self.glb_msg)
@@ -96,12 +121,8 @@ class MQTTCluster:
                     self.send_model_hash()
 
                     time.sleep(5)
-            else:
-                # Node is not the head; receive global model message sent by the head
-                print(f"Received Global Model message in {cluster_id} from {client_id} as \n : {message.payload.decode('utf-8')}")
-                model_hash = message.payload.decode('utf-8')
-                # Process the global model message as needed for non-head nodes
-                
+
+
 
                                  
 
@@ -122,12 +143,10 @@ class MQTTCluster:
                 self.client.publish(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
     
     def send_internal_messages_global_model(self,modelhash):
-        print("send_internal_messages _ Global_model : ",modelhash)
-
-        print("Internal topic",self.internal_cluster_topic)    
+        print(" trying to Global model to internal_messages_model : ",modelhash)
         if self.is_worker_head(self.client):
-            self.client.publish(self.internal_cluster_topic, f"{modelhash}")
-            print("Successfully send_internal_messages_model  ")
+            self.client.publish(self.internal_cluster_topic, f"global_model {modelhash}")
+            print("Successfully send Global model to internal_messages_model  ")
 
     def send_internal_messages_model(self,modelhash):
         print("send_internal_messages_model : ",modelhash)

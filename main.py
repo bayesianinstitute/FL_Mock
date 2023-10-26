@@ -45,6 +45,7 @@ class DFLWorkflow:
 
             if (mqtt_obj.send_model_hash())==False:
                 continue
+            
             else :
                 get_list=mqtt_obj.send_model_hash()
                 print("Send global model")
@@ -56,11 +57,12 @@ class DFLWorkflow:
                 self.pause_execution()
                 print(self.ml_operations.send_global_model_to_others(mqtt_obj,self.global_model))
                 self.pause_execution()
-
+            
             
 
+            if status==False:
+                self.global_model
 
-            
 
             if self.ml_operations.is_model_better():
                 continue

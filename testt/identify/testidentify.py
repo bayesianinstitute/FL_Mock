@@ -16,8 +16,13 @@ class IdentifyParticipant:
         self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
-        print(f"Connected with result code {rc}")
-        client.subscribe("ram_topic")
+        if rc == 0:
+            print(f"Connected to Broker")
+            time.sleep(30)
+
+            client.subscribe("ram_topic")
+        else :
+            print("Unable to connect to Broker result code: {}".format(rc))
 
     def on_message(self, client, userdata, message):
         ram_info = json.loads(message.payload.decode("utf-8"))
@@ -79,7 +84,7 @@ class IdentifyParticipant:
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
                     print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                    aggregator = True  # Set aggregator status to True
+                    # aggregator = True  # Set aggregator status to True
                     time.sleep(10)  # Wait for others to process the message
                     self.client.disconnect()
 
