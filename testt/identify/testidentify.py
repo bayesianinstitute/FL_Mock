@@ -19,6 +19,7 @@ class IdentifyParticipant:
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print(f"Connected to Broker")
+            time.sleep(30)
             client.subscribe("ram_topic")
         else:
             print("Unable to connect to Broker result code: {}".format(rc))
