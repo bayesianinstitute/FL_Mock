@@ -8,20 +8,19 @@ class IdentifyParticipant:
     def __init__(self, broker='test.mosquitto.org'):
         self.broker = broker
         self.participant_id = f"Machine-id-{random.randint(1, 1000)}"
-        self.client = mqtt.Client(client_id=self.participant_id,userdata={"ram_usages": {}, "shared_count": 0})
+        self.client = mqtt.Client(client_id=self.participant_id, userdata={"ram_usages": {}, "shared_count": 0})
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.client.on_disconnect=self.on_disconnect
+        self.client.on_disconnect = self.on_disconnect
         self.client.connect(self.broker, 1883)
         self.client.loop_start()
+        self.aggregator = False  # Initialize as non-aggregator
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print(f"Connected to Broker")
-            time.sleep(30)
-
             client.subscribe("ram_topic")
-        else :
+        else:
             print("Unable to connect to Broker result code: {}".format(rc))
 
     def on_message(self, client, userdata, message):
@@ -68,7 +67,6 @@ class IdentifyParticipant:
 
     def main(self):
         print("My ID:", self.participant_id)
-        aggregator=False
 
         # Announce RAM usages
         self.announce_ram_usage()
@@ -78,26 +76,18 @@ class IdentifyParticipant:
             if shared_count < 1:
                 time.sleep(10)  # Wait for more clients to share data
             else:
-                # self.client.disconnect()  # Disconnect the client
                 # Check if this node has the highest RAM usage
                 ram_usage = self.measure_ram_usage()
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
                     print(f"I am the aggregator! RAM usage: {ram_usage} MB")
-                    # aggregator = True  # Set aggregator status to True
-                    time.sleep(10)  # Wait for others to process the message
-                    self.client.disconnect()
+                    self.aggregator = True  # Set aggregator status to True
 
-                    return aggregator
-
-                    
-
-                    
                 else:
                     print("I am not the aggregator")
-                    return aggregator
+
+            time.sleep(5)  # Add a delay to avoid constantly checking
 
 if __name__ == '__main__':
     participant = IdentifyParticipant()
-    status=participant.main()
-    print(status)
+    participant.main()
