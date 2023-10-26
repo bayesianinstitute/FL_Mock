@@ -1,13 +1,13 @@
 import paho.mqtt.client as mqtt
 import time
 import json
-import random
 import psutil
 
 class IdentifyParticipant:
     def __init__(self, broker='test.mosquitto.org'):
         self.broker = broker
-        self.participant_id = f"Machine-id-{random.randint(1, 1000)}"
+        self.computer_info = self.get_computer_info()
+        self.participant_id = f"Machine-{self.computer_info['ram']}GB"
         self.client = mqtt.Client(client_id=self.participant_id, userdata={"ram_usages": {}, "shared_count": 0})
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -16,12 +16,15 @@ class IdentifyParticipant:
         self.client.loop_start()
         self.aggregator = False  # Initialize as non-aggregator
 
+    def get_computer_info(self):
+        total_ram = psutil.virtual_memory().total / (1024 ** 3)  # RAM in GB
+        return {"ram": total_ram}
+
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print(f"Connected to Broker")
             client.subscribe("ram_topic")
             time.sleep(5)
-
         else:
             print("Unable to connect to Broker result code: {}".format(rc))
 
@@ -29,13 +32,13 @@ class IdentifyParticipant:
         ram_info = json.loads(message.payload.decode("utf-8"))
         node_id = ram_info["node_id"]
         ram_usage = ram_info["ram_usage"]
-        print(f"Received RAM usage from {node_id}: {ram_usage} MB")
+        print(f"Received RAM usage from {node_id}: {ram_usage} GB")
         userdata["ram_usages"][node_id] = ram_usage
         userdata["shared_count"] += 1
 
     def announce_ram_usage(self):
         topic = 'ram_topic'
-        ram_usage = self.measure_ram_usage()
+        ram_usage = self.computer_info["ram"]
         ram_info = {
             "node_id": self.participant_id,
             "ram_usage": ram_usage
@@ -46,15 +49,6 @@ class IdentifyParticipant:
         topic = 'aggregator_topic'
         aggregator_message = f"Machine {self.participant_id} is the aggregator!"
         self.client.publish(topic, aggregator_message)
-
-    def measure_ram_usage(self):
-        try:
-            ram_usage = psutil.virtual_memory().used / (1024 ** 2)  # Get RAM usage in MB
-            print(f"ram_usage: {ram_usage} MB")
-            return ram_usage
-        except Exception as e:
-            print(f"Error measuring RAM usage: {str(e)}")
-            return 0  # Default to 0 if measurement fails
 
     def is_highest_ram_usage(self, current_ram_usage):
         # Check if current_ram_usage is higher than any other participant's RAM usage
@@ -79,17 +73,14 @@ class IdentifyParticipant:
                 time.sleep(10)  # Wait for more clients to share data
             else:
                 # Check if this node has the highest RAM usage
-                ram_usage = self.measure_ram_usage()
+                ram_usage = self.computer_info["ram"]
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
-                    print(f"I am the aggregator! RAM usage: {ram_usage} MB but")
-                    return  False  # Set aggregator status to True
+                    print(f"I am the aggregator! RAM usage: {ram_usage} GB")
+                    self.aggregator = True
                     break
-
                 else:
-                    
                     print("I am not the aggregator")
-                    return False
                     break
 
             time.sleep(5)  # Add a delay to avoid constantly checking
