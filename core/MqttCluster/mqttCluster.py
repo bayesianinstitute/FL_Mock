@@ -122,7 +122,7 @@ class MQTTCluster:
                     print("model hash",self.glb_msg)
 
                     self.send_model_hash()
-                    self.glb_msg.clear()
+                    # self.glb_msg.clear()
 
                     time.sleep(5)
 
