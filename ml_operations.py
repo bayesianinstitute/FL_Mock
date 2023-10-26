@@ -11,7 +11,39 @@ class MLOperations:
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
         self.path_global_model="global_model.h5"
+        self.global_model_hash=None
+        self.current_model=None
         pass
+
+    def is_global_model_hash(self,model_hash):    
+        self.global_model_hash=model_hash
+
+    def get_data(self):
+        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+
+                # Preprocess the data
+        x_train, x_test = x_train / 255.0, x_test / 255.0
+
+        return x_train, y_train, x_test, y_test
+    
+    def build_model(self,):
+                # Build a simple neural network model
+        model = keras.models.Sequential([
+            keras.layers.Flatten(input_shape=(28, 28)),
+            keras.layers.Dense(128, activation='relu'),
+            keras.layers.Dropout(0.2),
+            keras.layers.Dense(10)
+        ])
+
+        # Compile the model
+        model.compile(optimizer='adam',
+                      loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                      metrics=['accuracy'])
+        
+
+        
+        return model
+        
 
     def train_machine_learning_model(self):
         """
@@ -30,32 +62,34 @@ class MLOperations:
         A message indicating that the machine learning model has been trained with test accuracy and saved.
         """
         # Load the MNIST dataset
-        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
-        # Preprocess the data
-        x_train, x_test = x_train / 255.0, x_test / 255.0
+        x_train, y_train, x_test, y_test=self.get_data()
 
-        # Build a simple neural network model
-        model = keras.models.Sequential([
-            keras.layers.Flatten(input_shape=(28, 28)),
-            keras.layers.Dense(128, activation='relu'),
-            keras.layers.Dropout(0.2),
-            keras.layers.Dense(10)
-        ])
+        if self.global_model_hash:
 
-        # Compile the model
-        model.compile(optimizer='adam',
-                      loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      metrics=['accuracy'])
+            # get model from ipfs
+            self.current_model=self.ipfs.fetch_model(self.global_model_hash)
+
+
+            print(" model: ", self.current_model)
+
+
+            
+            pass
+        else :
+            # For First time build model
+            self.current_model=self.build_model()
+            
+
 
         # Train the model
-        model.fit(x_train, y_train, epochs=1)
+        self.current_model.fit(x_train, y_train, epochs=1)
 
         # Evaluate the model on the test data
-        test_loss, test_acc = model.evaluate(x_test, y_test, verbose=2)
+        test_loss, test_acc = self.current_model.evaluate(x_test, y_test, verbose=2)
 
         # Save the trained model
-        model.save(self.path_model)
+        self.current_model.save(self.path_model)
 
         print(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
 

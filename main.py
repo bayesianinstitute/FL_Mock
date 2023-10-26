@@ -61,28 +61,32 @@ class DFLWorkflow:
             
 
             if status==False:
-                self.global_model
+                global_model_hash=mqtt_obj.global_model()
+                print("i am not aggregator got global model hash: {}".format(global_model_hash))
+                self.ml_operations.is_global_model_hash(global_model_hash)
+
+                
 
 
-            if self.ml_operations.is_model_better():
-                continue
-            else:
-                break
+        #     if self.ml_operations.is_model_better():
+        #         continue
+        #     else:
+        #         break
 
-        print(self.ml_operations.post_training_steps())
-        if self.ml_operations.aggregator_saves_global_model_in_ipfs():
-            print(self.ml_operations.aggregator_saves_global_model_in_ipfs())
-        self.pause_execution()
+        # print(self.ml_operations.post_training_steps())
+        # if self.ml_operations.aggregator_saves_global_model_in_ipfs():
+        #     print(self.ml_operations.aggregator_saves_global_model_in_ipfs())
+        # self.pause_execution()
 
-        print(self.ml_operations.disconnect_all_nodes())
-        self.pause_execution()
+        # print(self.ml_operations.disconnect_all_nodes())
+        # self.pause_execution()
 
-        print(self.ml_operations.cleanup())
-        self.pause_execution()
+        # print(self.ml_operations.cleanup())
+        # self.pause_execution()
 
-        if self.ml_operations.aggregator_stops_mqtt_broker_service():
-            print(self.ml_operations.aggregator_stops_mqtt_broker_service())
-        self.pause_execution()
+        # if self.ml_operations.aggregator_stops_mqtt_broker_service():
+        #     print(self.ml_operations.aggregator_stops_mqtt_broker_service())
+        # self.pause_execution()
 
 if __name__ == "__main__":
     workflow = DFLWorkflow()
