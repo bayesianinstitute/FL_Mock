@@ -19,7 +19,18 @@ class IdentifyParticipant:
 
     def get_computer_info(self):
         # total_ram = psutil.virtual_memory().total / (1024 ** 3)  # RAM in GB
-        return {"ram": self.id}
+        # Get RAM usage
+        ram = psutil.virtual_memory()
+        used_ram = ram.used
+        total_ram = ram.total
+
+        # Get available RAM
+        available_ram = ram.available
+
+        print(f"Used RAM: {used_ram / (1024 ** 3):.2f} GB")
+        print(f"Total RAM: {total_ram / (1024 ** 3):.2f} GB")
+        print(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
+        return {"ram": available_ram}
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
