@@ -65,7 +65,7 @@ class IdentifyParticipant:
 
         while True:
             shared_count = self.client._userdata["shared_count"]
-            if shared_count < 2:
+            if shared_count < 3:
                 time.sleep(4)  # Wait for more clients to share data
             else:
                 # Check if this node has the highest RAM usage
