@@ -4,8 +4,8 @@ import json
 import psutil
 
 class IdentifyParticipant:
-    def __init__(self, id,):
-        self.broker = 	'broker.hivemq.com'
+    def __init__(self, id,broker='test.mosquitto.org',):
+        self.broker = broker
         self.id=id
         self.computer_info = self.get_computer_info()
         self.participant_id = f"Machine-id-{self.id}"
@@ -19,7 +19,18 @@ class IdentifyParticipant:
 
     def get_computer_info(self):
         # total_ram = psutil.virtual_memory().total / (1024 ** 3)  # RAM in GB
-        return {"ram": self.id}
+        # Get RAM usage
+        ram = psutil.virtual_memory()
+        used_ram = ram.used
+        total_ram = ram.total
+
+        # Get available RAM
+        available_ram = ram.available
+
+        print(f"Used RAM: {used_ram / (1024 ** 3):.2f} GB")
+        print(f"Total RAM: {total_ram / (1024 ** 3):.2f} GB")
+        print(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
+        return {"ram": available_ram}
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -31,7 +42,7 @@ class IdentifyParticipant:
     def on_message(self, client, userdata, message):
         ram_info = json.loads(message.payload.decode("utf-8"))
         node_id = ram_info["node_id"]
-        ram_usage = int(ram_info["ram_usage"])  # Convert the value to an integer
+        ram_usage = int(ram_info["ram_usage"])
         print(f"Received RAM usage from {node_id}: {ram_usage} GB")
         userdata["ram_usages"][node_id] = ram_usage
         userdata["shared_count"] += 1
@@ -49,7 +60,7 @@ class IdentifyParticipant:
     def declare_aggregator(self):
         topic = 'aggregator_topic'
         aggregator_message = f"Machine {self.participant_id} is the aggregator!"
-        # time.sleep(10)
+
         self.client.publish(topic, aggregator_message)
 
     def is_highest_ram_usage(self, current_ram_usage):
@@ -74,12 +85,9 @@ class IdentifyParticipant:
                     self.declare_aggregator()
                     print(f"I am the aggregator! RAM usage: {ram_usage} GB")
                     self.aggregator = True
-                    self.client.disconnect()
                     return self.aggregator
                 else:
                     print("I am not the aggregator")
-                    self.client.disconnect()
-
                     return self.aggregator
 
             # time.sleep(10)  # Add a delay to avoid constantly checking
