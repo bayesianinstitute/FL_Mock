@@ -31,7 +31,7 @@ class IdentifyParticipant:
     def on_message(self, client, userdata, message):
         ram_info = json.loads(message.payload.decode("utf-8"))
         node_id = ram_info["node_id"]
-        ram_usage = int(ram_info["ram_usage"])
+        ram_usage = int(ram_info["ram_usage"])  # Convert the value to an integer
         print(f"Received RAM usage from {node_id}: {ram_usage} GB")
         userdata["ram_usages"][node_id] = ram_usage
         userdata["shared_count"] += 1
