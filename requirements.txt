@@ -1,0 +1,6 @@
+paho-mqtt
+tensorflow
+keras
+ipfshttpclient==0.8.0a2
+joblib
+psutil
