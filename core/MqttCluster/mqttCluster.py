@@ -71,6 +71,7 @@ class MQTTCluster:
         # print(f"Received message: {message.payload.decode('utf-8')}")
 
         print("Topic: {}".format(self.internal_cluster_topic))
+        print("worker_head_node : ",self.worker_head_node)
 
 
         if message.topic == self.internal_cluster_topic:
