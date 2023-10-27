@@ -7,12 +7,27 @@ This project is focused on MQTT communication ,IPFS , Decentralized FL.
 ## Getting Started
 To run the project, you can use the following steps:
 
+### Directly Installed
+Note that in your current directory you should have all AWS System .PEM Keys to run the code
+```bash
+bash run_multiple.sh
+```
 
 
 ### Installation
+### Clone this repository to your local machine.
+
+```
+https://github.com/bayesianinstitute/FL_Mock.git
+```
+
+Navigate to the project directory.
+```
+cd FL_Mock
+```
+
 1. Install pip and virtual env
 ```bash
-sudo apt install python3-pip
 sudo pip install virtualenv
 ```
 
@@ -35,11 +50,6 @@ source myenv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-#### Install IPFS 
-
-```
-bash run install_ipfs.sh
-```
 
 #### Run IPFS 
 
@@ -48,16 +58,6 @@ bash run run_ipfs.sh
 ``` 
 
 
-### Clone this repository to your local machine.
-
-```
-https://github.com/bayesianinstitute/FL_Mock.git
-```
-
-Navigate to the project directory.
-```
-cd FL_Mock
-```
 
 
 ### Running the Project
