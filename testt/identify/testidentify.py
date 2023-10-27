@@ -88,7 +88,6 @@ class IdentifyParticipant:
                     return self.aggregator
                 else:
                     print("I am not the aggregator")
-                    time.sleep(15)
                     return self.aggregator
 
             # time.sleep(10)  # Add a delay to avoid constantly checking
