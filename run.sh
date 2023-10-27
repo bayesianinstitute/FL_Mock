@@ -1,1 +1,1 @@
-python main.py USA internal_USA_topic 1
+python main.py USA internal_USA_topic 3

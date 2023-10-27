@@ -9,7 +9,4 @@ cd kubo
 sudo bash install.sh
 ipfs --version
 
-ipfs init
-
-ipfs daemon
 
