@@ -11,6 +11,7 @@ class IdentifyParticipant:
         self.client = mqtt.Client(client_id=self.participant_id, userdata={"ram_usages": {}, "shared_count": 0})
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        self.client.on_disconnect = self.on_disconnect
         self.client.connect(self.broker, 1883)
         self.client.loop_start()
         self.aggregator = False  # Initialize as non-aggregator
@@ -43,7 +44,7 @@ class IdentifyParticipant:
             "node_id": self.participant_id,
             "ram_usage": ram_usage
         }
-        self.client.publish(topic, json.dumps(ram_info), qos=1)
+        self.client.publish(topic, json.dumps(ram_info), qos=1, retain=True)
 
     def declare_aggregator(self):
         topic = 'aggregator_topic'
@@ -55,19 +56,23 @@ class IdentifyParticipant:
         other_ram_usages = self.client._userdata["ram_usages"]
         return all(current_ram_usage >= ram_usage for ram_usage in other_ram_usages.values())
 
-
+    def on_disconnect(self, client, userdata, rc):
+        if rc != 0:
+            print(f"Unexpected disconnection with result code {rc}")
+        else:
+            print("Disconnected successfully")
 
     def main(self):
         print("My ID:", self.participant_id)
 
         # Announce RAM usages
-        time.sleep(20)
+        time.sleep(10)
 
         self.announce_ram_usage()
 
         while True:
             shared_count = self.client._userdata["shared_count"]
-            if shared_count < 1:
+            if shared_count < 2:
                 time.sleep(10)  # Wait for more clients to share data
             else:
                 # Check if this node has the highest RAM usage
@@ -85,5 +90,4 @@ class IdentifyParticipant:
 
 if __name__ == '__main__':
     participant = IdentifyParticipant()
-    status=participant.main()
-    print("is worker head ",status)
+    participant.main()
