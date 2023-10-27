@@ -49,7 +49,7 @@ class IdentifyParticipant:
     def declare_aggregator(self):
         topic = 'aggregator_topic'
         aggregator_message = f"Machine {self.participant_id} is the aggregator!"
-        time.sleep(10)
+
         self.client.publish(topic, aggregator_message)
 
     def is_highest_ram_usage(self, current_ram_usage):
@@ -77,6 +77,7 @@ class IdentifyParticipant:
                     return self.aggregator
                 else:
                     print("I am not the aggregator")
+                    time.sleep(15)
                     return self.aggregator
 
             # time.sleep(10)  # Add a delay to avoid constantly checking
