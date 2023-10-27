@@ -10,10 +10,11 @@ class IdentifyParticipant:
         self.computer_info = self.get_computer_info()
         self.participant_id = f"Machine-id-{self.id}"
         self.client = mqtt.Client(client_id=self.participant_id, userdata={"ram_usages": {}, "shared_count": 0})
-        self.client.on_connect = self.on_connect
+        # self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         # self.client.on_disconnect = self.on_disconnect
         self.client.connect(self.broker, 1883)
+        self.client.subscribe("ram_topic")
         self.client.loop_start()
         self.aggregator = False  # Initialize as non-aggregator
 
@@ -32,12 +33,12 @@ class IdentifyParticipant:
         print(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
         return {"ram": available_ram}
 
-    def on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
-            print(f"Connected to Broker")
-            client.subscribe("ram_topic")
-        else:
-            print("Unable to connect to Broker result code: {}".format(rc))
+    # def on_connect(self, client, userdata, flags, rc):
+    #     if rc == 0:
+    #         print(f"Connected to Broker")
+    #         client.subscribe("ram_topic")
+    #     else:
+    #         print("Unable to connect to Broker result code: {}".format(rc))
 
     def on_message(self, client, userdata, message):
         ram_info = json.loads(message.payload.decode("utf-8"))
