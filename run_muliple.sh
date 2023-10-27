@@ -11,8 +11,8 @@ run_ipfs_commands() {
 }
 
 # Define an array of private key files and corresponding instance addresses
-private_keys=("mqtt_fl_client_2.pem" "mqtt_fl_client_3.pem" "mqtt_fl_client_4.pem" "mqtt_fl_client_5.pem")
-instance_addresses=("ubuntu@ec2-54-183-13-28.us-west-1.compute.amazonaws.com" "ubuntu@ec2-52-8-56-54.us-west-1.compute.amazonaws.com" "ubuntu@ec2-54-176-41-237.us-west-1.compute.amazonaws.com" "ubuntu@ec2-52-53-208-249.us-west-1.compute.amazonaws.com")
+private_keys=("mqtt_fl_client_2.pem" "mqtt_fl_client_3.pem" "mqtt_fl_client_4.pem")
+instance_addresses=("ubuntu@ec2-54-183-13-28.us-west-1.compute.amazonaws.com" "ubuntu@ec2-52-8-56-54.us-west-1.compute.amazonaws.com" "ubuntu@ec2-54-176-41-237.us-west-1.compute.amazonaws.com")
 
 # Export the function to make it available in child shells
 export -f run_ipfs_commands
