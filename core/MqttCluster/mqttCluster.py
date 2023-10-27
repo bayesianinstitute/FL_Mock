@@ -24,13 +24,14 @@ class MQTTCluster:
         self.client.connected_flag = False
         self.client.bad_conn_flag = False
 
-        self.client.on_connect=self.on_connect
+        # self.client.on_connect=self.on_connect
         self.client.on_message = self.on_message
         # self.client.on_disconnect=self.on_disconnect
-        self.client.on_log=self._on_log
+        # self.client.on_log=self._on_log
 
 
         self.client.connect(self.broker_address, 1883)
+        # print("")
         self.client.subscribe(self.inter_cluster_topic, qos=1)
         self.client.subscribe(self.internal_cluster_topic, qos=1)
         # Set the "last will" message for client disconnection
