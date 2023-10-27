@@ -145,6 +145,10 @@ class MQTTCluster:
                 self.client.unsubscribe(self.internal_cluster_topic)
 
     def send_model_hash(self, ):
+
+        # TODO
+        #  : identify if this is the worker different model
+        #    should not be not hardcode
         if len(self.glb_msg)==2:  
           return self.glb_msg
         else :

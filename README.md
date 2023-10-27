@@ -37,39 +37,16 @@ pip install -r requirements.txt
 ```
 #### Install IPFS 
 
-1) Update your system packages:
+```
+bash run install_ipfs.sh
+```
+
+#### Run IPFS 
 
 ```
-sudo apt update
-```
-2) Install Snapd (if not already installed):
-```
-sudo apt install snapd
-```
-2) Install Snapd (if not already installed):
-```
-sudo apt install snapd
-```
-3) Download and install IPFS:
-```
-curl -L -o kubo_v0.23.0_linux-amd64.tar.gz https://dist.ipfs.tech/kubo/v0.23.0/kubo_v0.23.0_linux-amd64.tar.gz
-tar -xvzf kubo_v0.23.0_linux-amd64.tar.gz
-cd kubo
-sudo bash install.sh
+bash run run_ipfs.sh
+``` 
 
-```
-4) Check the IPFS version:
-```
-ipfs --version
-```
-5) Initialize IPFS:
-```
-ipfs init
-``` 
-6) Start the IPFS daemon:
-```
-ipfs daemon
-``` 
 
 ### Clone this repository to your local machine.
 
