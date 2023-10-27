@@ -18,8 +18,8 @@ class IdentifyParticipant:
         self.aggregator = False  # Initialize as non-aggregator
 
     def get_computer_info(self):
-        total_ram = psutil.virtual_memory().total / (1024 ** 3)  # RAM in GB
-        return {"ram": total_ram}
+        # total_ram = psutil.virtual_memory().total / (1024 ** 3)  # RAM in GB
+        return {"ram": self.id}
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -55,6 +55,7 @@ class IdentifyParticipant:
     def is_highest_ram_usage(self, current_ram_usage):
         # Check if current_ram_usage is higher than any other participant's RAM usage
         other_ram_usages = self.client._userdata["ram_usages"]
+        print("other_ram_usages :  ",other_ram_usages)
         return all(current_ram_usage >= ram_usage for ram_usage in other_ram_usages.values())
 
     def main(self):
