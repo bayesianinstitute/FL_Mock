@@ -52,11 +52,12 @@ class MQTTCluster:
             print(f"Connection failed with code {rc}")
 
     def on_disconnect(self, client, userdata, rc):
-        if rc != 0:
-            print(f"Unexpected disconnection with code {rc}")
-        else:
-            print("Disconnected from MQTT broker")
+        # if rc != 0:
+        #     print(f"Unexpected disconnection with code {rc}")
+        # else:
+        #     print("Disconnected from MQTT broker")
         # Inform other clients about the disconnection
+        print("Disconnected from MQTT broker")
         client.publish("status/disconnect", "Client has disconnected", qos=1, retain=True)
 
 
