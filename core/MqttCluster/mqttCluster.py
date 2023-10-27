@@ -44,13 +44,13 @@ class MQTTCluster:
         logging.info("mqtt log {}, client id {}.".format(buf, self.mqtt_connection_id))
 
     
-    def on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
-            print("connected to broker")
-            client.connected_flag = True
-        # get worker head
-        else:
-            print(f"Connection failed with code {rc}")
+    # def on_connect(self, client, userdata, flags, rc):
+    #     if rc == 0:
+    #         print("connected to broker")
+    #         client.connected_flag = True
+    #     # get worker head
+    #     else:
+    #         print(f"Connection failed with code {rc}")
 
     def on_disconnect(self, client, userdata, rc):
         # if rc != 0:
