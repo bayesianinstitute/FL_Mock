@@ -1,4 +1,4 @@
 paho-mqtt
 tensorflow
 keras
-ipfshttpclient
+ipfshttpclient==0.8.0a2
