@@ -21,7 +21,7 @@ class DFLWorkflow:
 
     def run(self,cluster_name,internal_cluster_topic,id):
         get_list=None
-        participant = IdentifyParticipant()
+        participant = IdentifyParticipant(id)
         status=participant.main()
         print("is worker head ",status)
 
