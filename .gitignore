@@ -3,3 +3,4 @@ mnist_model
 downloaded_models
 saved_model.h5
 global_model.h5
+myenv/
