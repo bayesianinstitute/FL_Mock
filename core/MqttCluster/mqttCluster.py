@@ -21,8 +21,8 @@ class MQTTCluster:
 
     def create_clients(self,client_num):
         self.client = mqtt.Client(f"{self.cluster_name}_Client_{client_num}")
-        self.client.connected_flag = False
-        self.client.bad_conn_flag = False
+        # self.client.connected_flag = False
+        # self.client.bad_conn_flag = False
 
         # self.client.on_connect=self.on_connect
         self.client.on_message = self.on_message
@@ -35,7 +35,7 @@ class MQTTCluster:
         self.client.subscribe(self.inter_cluster_topic, qos=1)
         self.client.subscribe(self.internal_cluster_topic, qos=1)
         # Set the "last will" message for client disconnection
-        self.client.will_set("status/disconnect", "Client has disconnected", qos=1, retain=True)
+        # self.client.will_set("status/disconnect", "Client has disconnected", qos=1, retain=True)
 
         self.client.loop_start()
         # clients.append(client)
