@@ -26,7 +26,7 @@ class MQTTCluster:
 
         self.client.on_connect=self.on_connect
         self.client.on_message = self.on_message
-        self.client.on_disconnect=self.on_disconnect
+        # self.client.on_disconnect=self.on_disconnect
         self.client.on_log=self._on_log
 
 
