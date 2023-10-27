@@ -62,15 +62,31 @@ cd FL_Mock
 
 ### Running the Project
 
+#### For Linux
 ```
-bash run.sh
+bash run.sh your-id
+```
+Example
+
+```
+bash run.sh 3
 ```
 
-or
+#### For Windows
+```
+run.bat your-id
+```
+Example
+
+```
+run.bat 3
+```
+### For All OS
 
 ```
 python main.py USA internal_USA_topic 1
 ```
+
 
 
 ### Core Functions
