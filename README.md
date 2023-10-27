@@ -1,40 +1,41 @@
+# Mqtt_Comm_Test
+Testing MQTT and Experiment
 
-## Prerequisites
+## Overview
+This project is focused on testing MQTT communication and conducting experiments with MQTT clusters.
 
-Before using this script, ensure that you have the following dependencies installed:
-
-- Python 3.x
-- Required Python packages 
-- Ipfs
-
-## Usage
-
-1. Clone this repository to your local machine:
-
-```
-    git clone https://github.com/bayesianinstitute/FL_Mock.git
-```
+## Getting Started
+To run the project, you can use the following steps:
 
 
-2. Navigate to the script's directory:
+
+### Installation
+1. Clone this repository to your local machine.
 
 ```
-  cd FL_Mock
+https://github.com/bayesianinstitute/FL_Mock.git
+```
+
+Navigate to the project directory.
+```
+cd FL_Mock
+```
+
+### Running the Project
+
+```
+bash run.sh
+```
+
+or
+
+```
+python main.py USA internal_USA_topic 1
 ```
 
 
-3. Run the script:
+### Core Functions
+The project's core contains the main MqttCluster class that handles the MQTT cluster communication. The core functionalities include:
 
-```
-    python3 main.py
-```
-
-
-## Notes
-
-- The script provides a command-line interface to guide you through the DFL process.
-
-- You can pause the execution at any time by pressing Enter and quitting by typing 'q' and then Enter.
-
-- Make sure to install and configure the required packages and services as needed.
-
+Creating and managing MQTT clients.
+Running the logic for the cluster.
