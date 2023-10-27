@@ -4,7 +4,7 @@ import json
 import psutil
 
 class IdentifyParticipant:
-    def __init__(self, id,broker='test.mosquitto.org',):
+    def __init__(self, id,broker='broker.hivemq.com',):
         self.broker = broker
         self.id=id
         self.computer_info = self.get_computer_info()
@@ -55,7 +55,7 @@ class IdentifyParticipant:
             "ram_usage": ram_usage
         }
         time.sleep(10)
-        self.client.publish(topic, json.dumps(ram_info), qos=1,)
+        self.client.publish(topic, json.dumps(ram_info), qos=1,retain=True)
 
     def declare_aggregator(self):
         topic = 'aggregator_topic'
