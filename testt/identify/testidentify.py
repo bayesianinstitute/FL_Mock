@@ -4,7 +4,7 @@ import json
 import psutil
 
 class IdentifyParticipant:
-    def __init__(self, id,broker='broker.hivemq.com',):
+    def __init__(self, id,broker,):
         self.broker = broker
         self.id=id
         self.computer_info = self.get_computer_info()
@@ -12,7 +12,7 @@ class IdentifyParticipant:
         self.client = mqtt.Client(client_id=self.participant_id, userdata={"ram_usages": {}, "shared_count": 0})
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        # self.client.on_disconnect = self.on_disconnect
+        # self.client.on_disconnect = self.on_disconnect 
         self.client.connect(self.broker, 1883)
         self.client.loop_start()
         self.aggregator = False  # Initialize as non-aggregator
@@ -99,7 +99,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    participant = IdentifyParticipant(args.id)
+    broker='broker.hivemq.com'
+
+    participant = IdentifyParticipant(args.id,broker)
     status=participant.main()
 
     print("Status : " , status)

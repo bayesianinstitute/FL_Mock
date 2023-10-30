@@ -1,12 +1,16 @@
 from core.MqttCluster.mqttCluster import MQTTCluster
 
 class MqttOperations:
-    def __init__(self):
+    def __init__(self,internal_cluster_topic,global_cluster_topic,initial_broker,num_workers,status,id):
         # You can add any necessary initialization code here
-        self.inter_cluster_topic = "inter-cluster-topic"
-        self.num_workers =3
-        self.initial_broker="test.mosquitto.org"
+        self.internal_cluster_topic=internal_cluster_topic
+        self.global_cluster_topic = global_cluster_topic
+        self.num_workers =num_workers
+        self.initial_broker=initial_broker
         self.cluster=None
+        self.cluster_name=global_cluster_topic
+        self.status=status
+        self.id=id
 
 
         pass
@@ -57,7 +61,7 @@ class MqttOperations:
         return "Received MQTT broker link"
     
 
-    def start_dfl_using_mqtt(self,internal_cluster_topic,cluster_name,id,status):
+    def start_dfl_using_mqtt(self,):
         """
         This method represents the action taken to start distributed federated learning (DFL) using MQTT communication.
 
@@ -67,19 +71,19 @@ class MqttOperations:
         3. Start the DFL process using MQTT as the communication method.
 
         Returns:
-        A message indicating that DFL has started using MQTT for communication.
+         MQTTCluster Object for communication.
         """
         # Configuration and create 3 client
 
 
-        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, cluster_name, self.inter_cluster_topic, internal_cluster_topic,status)
+        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name, self.global_cluster_topic, self.internal_cluster_topic,self.status)
 
         # Create clients for  clusters
-        self.cluster.create_clients(id)
+        self.cluster.create_clients(self.id)
 
         # self.cluster.switch_worker_head_node()
 
-        print(f' head node {self.cluster.worker_head_node}')
+        print(f' head node {self.status}')
         
 
         print("Started DFL Process")
