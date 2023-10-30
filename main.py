@@ -1,32 +1,46 @@
 import sys
-from participant_identification import ParticipantIdentification
+# from participant_identification import ParticipantIdentification
 from mqtt_operations import MqttOperations
 from ml_operations import MLOperations
 from utils import Utils
 import argparse
 from testt.identify.testidentify import IdentifyParticipant
 
+
+
 class DFLWorkflow:
-    def __init__(self):
+    def __init__(self, broker_service, global_cluster_topic, internal_cluster_topic, id):
         self.global_ipfs_link = None
-        self.participant_identification = ParticipantIdentification()
-        self.mqtt_operations = MqttOperations()
+        self.participant_identification = None
+        self.broker_service = broker_service
+        self.internal_cluster_topic = internal_cluster_topic
+        self.global_cluster_topic = global_cluster_topic
+        self.mqtt_operations = None
         self.ml_operations = MLOperations()
         self.utils = Utils()
-        self.global_model=None
+        self.global_model = None
+
+        self.id = id
+        self.is_status=None
+
+
+
 
     def pause_execution(self,):
         if input("Press Enter to continue (or type 'q' and press Enter to quit): ").strip().lower() == 'q':
             sys.exit()
 
-    def run(self,cluster_name,internal_cluster_topic,id):
+    def run(self,):
         get_list=None
-        participant = IdentifyParticipant(id)
-        status=participant.main()
-        print("is worker head ",status)
+        self.participant = IdentifyParticipant(self.id,self.broker_service)
+        self.is_status=self.participant.main()
+        print("is worker head ",self.is_status)
+        Num=3
+
+        self.mqtt_operations = MqttOperations(self.internal_cluster_topic,self.global_cluster_topic,self.broker_service,Num,self.is_status,self.id)
 
 
-        mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt(internal_cluster_topic,cluster_name,id,status)
+        mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt()
         #self.global_ipfs_link = self.utils.get_global_ipfs_link()
         mqtt_obj.subscribe_to_internal_messages()
         # mqtt_obj.get_head_node()
@@ -60,7 +74,7 @@ class DFLWorkflow:
             
             
 
-            if status==False:
+            if self.is_status==False:
                 global_model_hash=mqtt_obj.global_model()
                 print("i am not aggregator got global model hash: {}".format(global_model_hash))
                 self.ml_operations.is_global_model_hash(global_model_hash)
@@ -89,11 +103,15 @@ class DFLWorkflow:
         self.pause_execution()
 
 if __name__ == "__main__":
-    workflow = DFLWorkflow()
+
     parser = argparse.ArgumentParser()
+    parser.add_argument("broker_service",help="Name of broker service")
     parser.add_argument("cluster_name", help="Name of the cluster")
     parser.add_argument("internal_cluster_topic", help="internal Cluster topic")
     parser.add_argument("id", help="client_id")
 
     args = parser.parse_args()
-    workflow.run(args.cluster_name,args.internal_cluster_topic,args.id)
+
+    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id)
+
+    workflow.run()

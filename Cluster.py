@@ -9,8 +9,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Configuration
-    inter_cluster_topic = "inter-cluster-topic"
-    cluster = MQTTCluster("test.mosquitto.org", int(args.num_workers), args.cluster_name, inter_cluster_topic, args.internal_cluster_topic)
+    global_cluster_topic = "inter-cluster-topic"
+    broker="test.mosquitto.org"
+    cluster = MQTTCluster(broker, int(args.num_workers), args.cluster_name, global_cluster_topic, args.internal_cluster_topic)
 
     # Create clients for  clusters
     cluster.create_clients()

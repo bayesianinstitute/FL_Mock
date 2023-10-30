@@ -5,14 +5,14 @@ import json
 import logging
 # clients = []
 class MQTTCluster:
-    def __init__(self, broker_address, num_clients, cluster_name,inter_cluster_topic,internal_cluster_topic,head_status):
+    def __init__(self, broker_address, num_clients, cluster_name,global_cluster_topic,internal_cluster_topic,head_status):
         self.broker_address = broker_address
         self.num_clients = num_clients
         
         self.cluster_name = cluster_name
         self.worker_head_node = head_status
         self.round = 0
-        self.inter_cluster_topic=inter_cluster_topic
+        self.global_cluster_topic=global_cluster_topic
         self.internal_cluster_topic=internal_cluster_topic
         self.glb_msg=list()
         self.client=None
@@ -32,7 +32,7 @@ class MQTTCluster:
 
         self.client.connect(self.broker_address, 1883)
         # print("")
-        self.client.subscribe(self.inter_cluster_topic, qos=1)
+        self.client.subscribe(self.global_cluster_topic, qos=1)
         self.client.subscribe(self.internal_cluster_topic, qos=1)
         # Set the "last will" message for client disconnection
         # self.client.will_set("status/disconnect", "Client has disconnected", qos=1, retain=True)
@@ -65,13 +65,17 @@ class MQTTCluster:
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
+        print("cluster name " , self.cluster_name)
         cluster_id = self.cluster_name
 
 
         # print(f"Received message: {message.payload.decode('utf-8')}")
 
         print("Topic: {}".format(self.internal_cluster_topic))
+        print("message topic : {} ".format(message.topic))
         print("worker_head_node : ",self.worker_head_node)
+
+        print("This is the Worker_head : ",self.is_worker_head(client))
 
 
         if message.topic == self.internal_cluster_topic:
@@ -115,7 +119,7 @@ class MQTTCluster:
 
                                  
 
-        elif message.topic == self.inter_cluster_topic:
+        elif message.topic == self.global_cluster_topic:
             data=message.payload.decode('utf-8')
             if self.is_worker_head(client):
                 print(f"Inter-cluster message in {cluster_id} from {client_id} \n : {data}")
@@ -174,13 +178,15 @@ class MQTTCluster:
 
     # Send Inter-cluster
     def send_inter_cluster_message(self, message):
-        self.worker_head_node.publish(self.inter_cluster_topic, message)
+        self.worker_head_node.publish(self.global_cluster_topic, message)
 
     # Send 
     def send_internal_messages(self):
         # for client in client:
             # if client != self.worker_head_node:
                 self.client.publish(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
+                print(self.internal_cluster_topic, f" Here is  in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
+
     
     def send_internal_messages_global_model(self,modelhash):
         print(" trying to Global model to internal_messages_model : ",modelhash)
