@@ -69,6 +69,3 @@ if __name__ == "__main__":
     print("Model downloaded:", downloaded_model)
 
 
-    # model=ipfs_communicator.fetch_model(model_hash)
-
-    # model.summary()
