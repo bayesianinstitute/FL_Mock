@@ -19,6 +19,7 @@ class IdentifyParticipant:
         self.aggregator_topic=aggregator_topic
         self.minimum_participate=minimum_participate
 
+    # Get  performance infor
     def get_computer_info(self):
 
         ram = psutil.virtual_memory()
@@ -32,6 +33,7 @@ class IdentifyParticipant:
         print(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
         return {"ram": available_ram}
 
+        # Get  Connect to Broker
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print(f"Connected to Broker")
@@ -45,12 +47,22 @@ class IdentifyParticipant:
             ram_info = json.loads(message.payload.decode("utf-8"))
             node_id = ram_info["node_id"]
             ram_usage = int(ram_info["ram_usage"])
-            print(f"Received RAM usage from {node_id}: {ram_usage} GB")
-            userdata["ram_usages"][node_id] = ram_usage
-            userdata["shared_count"] += 1
+
+            if node_id not in userdata["ram_usages"]:
+                # Node is not in the dictionary, so we treat it as a new node
+                print(f"Received RAM usage from {node_id}: {ram_usage} GB")
+                userdata["ram_usages"][node_id] = ram_usage
+                userdata["shared_count"] += 1
+            else:
+                if userdata["ram_usages"][node_id] != ram_usage:
+                    # Node is in the dictionary, but the RAM usage is different
+                    print(f"Received RAM usage from {node_id}: {ram_usage} GB")
+                    userdata["ram_usages"][node_id] = ram_usage
+
         except json.decoder.JSONDecodeError:
             print(f"Received an invalid JSON message from {message.topic}: {message.payload}")
 
+    # Pushing computer info to Mqtt
     def announce_ram_usage(self):
 
         ram_usage = self.computer_info["ram"]
@@ -75,23 +87,16 @@ class IdentifyParticipant:
     def main(self):
         print("My ID:", self.participant_id)
 
-        # Track the messages received from other participants
-        messages_received = 0
 
         while True:
+
+            # Announce untill we meet the minimum participant
             self.announce_ram_usage()
-            
-            print(f"id ",self.client._userdata.get("id")," particpate id", self.participant_id)
 
-            if self.id != self.participant_id:  # Fix the comparison
-                    print("Received message")
-                    time.sleep(5) # Adjust the sleep time as needed
-                    messages_received += 1
+            shared_count = self.client._userdata.get("shared_count")
 
-            shared_count = messages_received  # Update shared_count based on received messages
-
-            if shared_count < self.minimum_participate - 1:  # Subtract 1 to exclude self
-                print(f"Waiting for {self.minimum_participate - 1 - shared_count} more machine(s) to start the process...")
+            if shared_count < self.minimum_participate :  
+                print(f"Waiting for {self.minimum_participate  - shared_count} more machine(s) to start the process...")
             else:
                 ram_usage = self.computer_info["ram"]
                 if self.is_highest_ram_usage(ram_usage):
@@ -114,7 +119,7 @@ if __name__ == '__main__':
     broker='broker.hivemq.com'
     ram_topic="ram_topicc"
     declare_winner_topic="aggregator_topicc"
-    Minimum_participate=3
+    Minimum_participate=5
 
     participant = IdentifyParticipant(args.id,broker,ram_topic,declare_winner_topic,Minimum_participate)
     status=participant.main()
