@@ -119,6 +119,6 @@ if __name__ == "__main__":
     declare_winner_topic=f'Winner Topic on Cluster {args.cluster_name}'
 
 
-    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic)
+    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,minimum)
 
     workflow.run()
