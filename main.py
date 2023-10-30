@@ -8,7 +8,7 @@ from core.FL_System.identify.identify_participants import IdentifyParticipant
 
 
 class DFLWorkflow:
-    def __init__(self, broker_service, global_cluster_topic, internal_cluster_topic, id,voting_topic,declare_winner_topic):
+    def __init__(self, broker_service, global_cluster_topic, internal_cluster_topic, id,voting_topic,declare_winner_topic,min_node):
         self.global_ipfs_link = None
         self.participant_identification = None
         self.broker_service = broker_service
@@ -24,6 +24,7 @@ class DFLWorkflow:
 
         self.id = id
         self.is_status=None
+        self.min_node=min_node
 
 
 
@@ -111,6 +112,8 @@ if __name__ == "__main__":
     parser.add_argument("cluster_name", help="Name of the cluster",type=str,)
     parser.add_argument("internal_cluster_topic", help="internal Cluster topic",type=str)
     parser.add_argument("id", help="client_id",type=str)
+    parser.add_argument("min_node", help="minimun Node",type=str)
+
 
     args = parser.parse_args()
 
@@ -119,6 +122,6 @@ if __name__ == "__main__":
     declare_winner_topic=f'Winner Topic on Cluster {args.cluster_name}'
 
 
-    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,minimum)
+    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,args.min_node)
 
     workflow.run()
