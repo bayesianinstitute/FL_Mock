@@ -1,15 +1,14 @@
 import sys
-# from participant_identification import ParticipantIdentification
 from mqtt_operations import MqttOperations
 from ml_operations import MLOperations
 from utils import Utils
 import argparse
-from testt.identify.testidentify import IdentifyParticipant
+from core.FL_System.identify.identify_participants import IdentifyParticipant
 
 
 
 class DFLWorkflow:
-    def __init__(self, broker_service, global_cluster_topic, internal_cluster_topic, id):
+    def __init__(self, broker_service, global_cluster_topic, internal_cluster_topic, id,voting_topic,declare_winner_topic):
         self.global_ipfs_link = None
         self.participant_identification = None
         self.broker_service = broker_service
@@ -19,6 +18,9 @@ class DFLWorkflow:
         self.ml_operations = MLOperations()
         self.utils = Utils()
         self.global_model = None
+
+        self.voting_topic=voting_topic
+        self.winner_declare=declare_winner_topic
 
         self.id = id
         self.is_status=None
@@ -32,7 +34,7 @@ class DFLWorkflow:
 
     def run(self,):
         get_list=None
-        self.participant = IdentifyParticipant(self.id,self.broker_service)
+        self.participant = IdentifyParticipant(self.id,self.broker_service,self.voting_topic,self.winner_declare)
         self.is_status=self.participant.main()
         print("is worker head ",self.is_status)
         Num=3
@@ -105,13 +107,18 @@ class DFLWorkflow:
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("broker_service",help="Name of broker service")
-    parser.add_argument("cluster_name", help="Name of the cluster")
-    parser.add_argument("internal_cluster_topic", help="internal Cluster topic")
-    parser.add_argument("id", help="client_id")
+    parser.add_argument("broker_service",help="Name of broker service",type=str)
+    parser.add_argument("cluster_name", help="Name of the cluster",type=str,)
+    parser.add_argument("internal_cluster_topic", help="internal Cluster topic",type=str)
+    parser.add_argument("id", help="client_id",type=str)
 
     args = parser.parse_args()
 
-    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id)
+    voting_topic=f'Voting topic on Cluster {args.cluster_name}'
+
+    declare_winner_topic=f'Winner Topic on Cluster {args.cluster_name}'
+
+
+    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic)
 
     workflow.run()
