@@ -9,22 +9,23 @@ Installation
 To use the IPFS and TensorFlow functionalities in this code, install the required Python packages:
 
 bash
-Copy code
+```
 pip install ipfshttpclient tensorflow
-IPFS Communication Class
+```
+## IPFS Communication Class
 The IPFS class provides methods to push, fetch, and download TensorFlow models using IPFS:
 
-fetch_model(model_hash)
-Fetch a model from IPFS using its hash.
-Returns the loaded TensorFlow model.
-push_model(saved_model_path)
-Push a TensorFlow model file to IPFS.
-Returns the IPFS hash of the pushed model.
-download_model(model_hash, destination_folder)
-Download a model from IPFS using its hash and save it to a specified destination folder.
-Returns the loaded TensorFlow model.
-Usage
-Here's an example of how to use the IPFS class to push, fetch, and download a TensorFlow model:
+* fetch_model(model_hash)
+* Fetch a model from IPFS using its hash.
+  * Returns the loaded TensorFlow model.
+* push_model(saved_model_path)
+  * Push a TensorFlow model file to IPFS.
+* Returns the IPFS hash of the pushed model.
+  * download_model(model_hash, destination_folder)
+* Download a model from IPFS using its hash and save it to a specified destination folder.
+* Returns the loaded TensorFlow model.
+* Usage
+* Here's an example of how to use the IPFS class to push, fetch, and download a TensorFlow model:
 
 python
 ```Copy code
