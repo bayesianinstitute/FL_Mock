@@ -31,14 +31,28 @@
             </select>
           </div>
 
-          <button onclick="trainModel()" class="btn btn-primary">Train</button>
+          <!-- Add the optimizer dropdown -->
+          <div class="form-group">
+            <label for="optimizer">Optimizer:</label>
+            <select id="optimizer" class="form-control">
+              <option value="adam">Adam</option>
+              <option value="sgd">SGD</option>
+              <!-- Add more optimizer options as needed -->
+            </select>
+          </div>
+
+          <button onclick="trainModel()" class="btn btn-primary">
+            Start Training
+          </button>
+
+          <!-- Add the stop button -->
+          <button onclick="stopTraining()" class="btn btn-danger">
+            Stop Training
+          </button>
         </div>
       </div>
 
       <div class="card mt-4">
-        <div class="card-header">
-          <h2 class="card-title">Results</h2>
-        </div>
         <div class="card-body">
           <div class="row">
             <div class="col-md-6">
@@ -54,23 +68,25 @@
           </div>
         </div>
       </div>
-
-      <div class="card mt-4">
-        <div class="card-header">
-          <h3 class="card-title">Model Training Log</h3>
-        </div>
-        <div class="card-body">
-          <div id="training-log">
-            <!-- Training log will be displayed here -->
-          </div>
-        </div>
-      </div>
     </div>
 
     <script>
+      // Add a global variable to track training status
+      var trainingStatus = 'not_started' // 'not_started', 'training', 'stopped', or 'completed'
+
       function trainModel() {
+        // Check the training status before starting training
+        if (trainingStatus === 'training') {
+          alert('Training is already in progress.')
+          return
+        }
+
+        // Set the training status to 'training'
+        trainingStatus = 'training'
+
         var modelName = document.getElementById('model-name').value
         var datasetName = document.getElementById('dataset-name').value
+        var optimizer = document.getElementById('optimizer').value // Get the selected optimizer
 
         // Make a POST request to your Flask API to trigger training
         fetch('/train', {
@@ -81,6 +97,7 @@
           body: JSON.stringify({
             model_name: modelName,
             dataset_name: datasetName,
+            optimizer: optimizer, // Include the selected optimizer in the request
           }),
         })
           .then((response) => response.json())
@@ -119,10 +136,38 @@
             document.getElementById(
               'training-log'
             ).innerHTML = `<pre>${data.training_log}</pre>`
+
+            // Set the training status to 'completed'
+            trainingStatus = 'completed'
           })
           .catch((error) => {
-            console.error('Error:', error)
+            if (trainingStatus === 'stopped') {
+              alert('Training has been stopped.')
+            } else {
+              console.error('Error:', error)
+              // Set the training status to 'not_started' in case of an error
+              trainingStatus = 'not_started'
+            }
           })
+      }
+
+      // Function to stop training
+      function stopTraining() {
+        if (trainingStatus === 'training') {
+          // Set the training status to 'stopped'
+          trainingStatus = 'stopped'
+
+          // Make a POST request to stop training
+          fetch('/stop_training', {
+            method: 'POST',
+          }).then((response) => {
+            if (response.status === 200) {
+              alert('Training is being stopped. Please wait...')
+            } else {
+              alert('Error stopping training.')
+            }
+          })
+        }
       }
     </script>
 

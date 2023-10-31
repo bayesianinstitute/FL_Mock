@@ -6,10 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import io
 import base64
-import plotly.express as px
-from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
+
 app = Flask(__name__)
+stop_training_flag = False
 
 # Create a simple UI for model selection and training
 @app.route('/webpage')
@@ -42,103 +43,107 @@ def load_and_preprocess_dataset(dataset_name):
     
     return (x_train, y_train, x_test, y_test)
 
-# CNN model
-cnn_model = keras.Sequential([
-    keras.layers.Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)),
-    keras.layers.MaxPooling2D(pool_size=(2, 2)),
-    keras.layers.Flatten(),
-    keras.layers.Dense(128, activation='relu'),
-    keras.layers.Dense(10, activation='softmax')
-])
+# Create and compile a model with dynamic optimizer selection
+def create_model(model_name, optimizer):
+    if model_name == 'CNN':
+        model = keras.Sequential([
+            keras.layers.Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)),
+            keras.layers.MaxPooling2D(pool_size=(2, 2)),
+            keras.layers.Flatten(),
+            keras.layers.Dense(128, activation='relu'),
+            keras.layers.Dense(10, activation='softmax')
+        ])
+    elif model_name == 'ANN':
+        model = keras.Sequential([
+            keras.layers.Flatten(input_shape=(28, 28)),
+            keras.layers.Dense(128, activation='relu'),
+            keras.layers.Dense(10, activation='softmax')
+        ])
+    else:
+        return None
 
-cnn_model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
-
-# ANN model
-ann_model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(28, 28)),
-    keras.layers.Dense(128, activation='relu'),
-    keras.layers.Dense(10, activation='softmax')
-])
-
-ann_model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
+    model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    return model
 
 @app.route('/train', methods=['POST'])
 def train_model():
-    global x_train, y_train  # Indicate that x_train and y_train are global variables
+    global x_train, y_train, stop_training_flag
     data = request.get_json()
     model_name = data.get('model_name')
     dataset_name = data.get('dataset_name')
+    optimizer = data.get('optimizer')
 
-    # Load and preprocess the selected dataset
     x_train, y_train, x_test, y_test = load_and_preprocess_dataset(dataset_name)
     if x_train is None or y_train is None:
         return jsonify({"error": f"Dataset '{dataset_name}' not found."})
 
-    if model_name == 'CNN':
-        model = cnn_model
-    elif model_name == 'ANN':
-        model = ann_model
-    else:
+    model = create_model(model_name, optimizer)
+
+    if model is None:
         return jsonify({"error": f"Model '{model_name}' not found."})
 
-    # Split the dataset into a training and testing set
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
 
-    # Train the selected model
-    history = model.fit(x_train, y_train, epochs=10, validation_data=(x_val, y_val))
+    stop_training_flag = False  # Reset the flag before training
 
-    # Get accuracy and loss values
-    accuracy = history.history['accuracy']
-    loss = history.history['loss']
-    val_accuracy = history.history['val_accuracy']
-    val_loss = history.history['val_loss']
+    for epoch in range(10):
+        if stop_training_flag:
+            return jsonify({"message": "Training stopped"})
 
-    # Calculate y_pred_classes
-    y_pred = model.predict(x_val)
-    y_pred_classes = np.argmax(y_pred, axis=1)
+        history = model.fit(x_train, y_train, epochs=10, validation_data=(x_val, y_val))
+        accuracy = history.history['accuracy']
+        loss = history.history['loss']
+        val_accuracy = history.history['val_accuracy']
+        val_loss = history.history['val_loss']
 
-    # Create plots for accuracy and loss
-    fig, axes = plt.subplots(2, 1, figsize=(8, 8))
-    axes[0].plot(accuracy, label='Training Accuracy')
-    axes[0].plot(val_accuracy, label='Validation Accuracy')
-    axes[0].set_title('Accuracy')
-    axes[0].legend()
-    axes[1].plot(loss, label='Training Loss')
-    axes[1].plot(val_loss, label='Validation Loss')
-    axes[1].set_title('Loss')
-    axes[1].legend()
+        y_pred = model.predict(x_val)
+        y_pred_classes = np.argmax(y_pred, axis=1)
 
-    # Save the plot to a BytesIO object
-    plot_buffer = io.BytesIO()
-    plt.savefig(plot_buffer, format='png')
-    plot_buffer.seek(0)
-    plot_data = base64.b64encode(plot_buffer.read()).decode()
+        fig, axes = plt.subplots(2, 1, figsize=(8, 8))
+        axes[0].plot(accuracy, label='Training Accuracy')
+        axes[0].plot(val_accuracy, label='Validation Accuracy')
+        axes[0].set_title('Accuracy')
+        axes[0].legend()
+        axes[1].plot(loss, label='Training Loss')
+        axes[1].plot(val_loss, label='Validation Loss')
+        axes[1].set_title('Loss')
+        axes[1].legend()
 
-    plt.close()  # Close the plot to free up resources
+        plot_buffer = io.BytesIO()
+        plt.savefig(plot_buffer, format='png')
+        plot_buffer.seek(0)
+        plot_data = base64.b64encode(plot_buffer.read()).decode()
 
-    # Compute and display the confusion matrix
-    labels = unique_labels(y_val, y_pred_classes)
-    cm = confusion_matrix(y_val, y_pred_classes, labels=labels)
-    cm_dict = {
-        "labels": labels.tolist(),
-        "matrix": cm.tolist(),
-    }
+        labels = unique_labels(y_val, y_pred_classes)
+        cm = confusion_matrix(y_val, y_pred_classes, labels=labels)
+        cm_dict = {
+            "labels": labels.tolist(),
+            "matrix": cm.tolist(),
+        }
 
-    return jsonify({
-        "model_name": model_name,
-        "dataset_name": dataset_name,
-        "accuracy": accuracy,
-        "loss": loss,
-        "val_accuracy": val_accuracy,
-        "val_loss": val_loss,
-        "confusion_matrix": cm_dict,
-        "plot_data": plot_data,  # Include the plot data in the response
-    })
+        if epoch < 9:  # Do not stop if it's the last epoch
+            return jsonify({
+                "model_name": model_name,
+                "dataset_name": dataset_name,
+                "accuracy": accuracy,
+                "loss": loss,
+                "val_accuracy": val_accuracy,
+                "val_loss": val_loss,
+                "confusion_matrix": cm_dict,
+                "plot_data": plot_data,
+            })
 
+    return jsonify({"message": "Training completed"})
+
+@app.route('/stop_training', methods=['POST'])
+def stop_training():
+    global stop_training_flag
+    if stop_training_flag:
+        return jsonify({"message": "Training is already stopped."})
+
+    stop_training_flag = True  # Set the flag to stop training
+
+    return jsonify({"message": "Stopping training"})
 
 if __name__ == '__main__':
     app.run(debug=True)
