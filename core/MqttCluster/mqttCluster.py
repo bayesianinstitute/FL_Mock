@@ -5,7 +5,7 @@ import json
 import logging
 # clients = []
 class MQTTCluster:
-    def __init__(self, broker_address, num_clients, cluster_name,global_cluster_topic,internal_cluster_topic,head_status):
+    def __init__(self, broker_address, num_clients, cluster_name,global_cluster_topic,internal_cluster_topic,head_status,id):
         self.broker_address = broker_address
         self.num_clients = num_clients
         
@@ -14,52 +14,22 @@ class MQTTCluster:
         self.round = 0
         self.global_cluster_topic=global_cluster_topic
         self.internal_cluster_topic=internal_cluster_topic
-        self.glb_msg=list()
         self.client=None
         self.global_model_hash=None
+        self.client_hash_mapping = {}
+        self.round = 0
+        self.id=f"{self.cluster_name}_Client_{id}"
     
 
-    def create_clients(self,client_num):
-        self.client = mqtt.Client(f"{self.cluster_name}_Client_{client_num}")
-        # self.client.connected_flag = False
-        # self.client.bad_conn_flag = False
-
-        # self.client.on_connect=self.on_connect
+    def create_clients(self):
+        self.client = mqtt.Client(self.id)
         self.client.on_message = self.on_message
-        # self.client.on_disconnect=self.on_disconnect
-        # self.client.on_log=self._on_log
-
-
         self.client.connect(self.broker_address, 1883)
-        # print("")
+
         self.client.subscribe(self.global_cluster_topic, qos=1)
         self.client.subscribe(self.internal_cluster_topic, qos=1)
-        # Set the "last will" message for client disconnection
-        # self.client.will_set("status/disconnect", "Client has disconnected", qos=1, retain=True)
 
         self.client.loop_start()
-        # clients.append(client)
-
-    def _on_log(self, client, userdata, level, buf):
-        logging.info("mqtt log {}, client id {}.".format(buf, self.mqtt_connection_id))
-
-    
-    # def on_connect(self, client, userdata, flags, rc):
-    #     if rc == 0:
-    #         print("connected to broker")
-    #         client.connected_flag = True
-    #     # get worker head
-    #     else:
-    #         print(f"Connection failed with code {rc}")
-
-    def on_disconnect(self, client, userdata, rc):
-        # if rc != 0:
-        #     print(f"Unexpected disconnection with code {rc}")
-        # else:
-        #     print("Disconnected from MQTT broker")
-        # Inform other clients about the disconnection
-        print("Disconnected from MQTT broker")
-        client.publish("status/disconnect", "Client has disconnected", qos=1, retain=True)
 
 
 
@@ -96,23 +66,25 @@ class MQTTCluster:
 
                       
             if self.is_worker_head(client):
-            # To Receive to head Only
-                print(f"Received  Internal message in {cluster_id} from {client_id} as \n : {data} ")
-                model_hash=data
+                print(f"Received Internal message in {cluster_id} from {client_id} as:\n{data}")
+                get_data = json.loads(data)
+                client_id = get_data["client_id"]
+                model_hash = get_data["model_hash"]
+                print("Received client_id:", client_id)
+                print("Received model_hash:", model_hash)
 
-                self.glb_msg.append({model_hash})
-                print("model hash",self.glb_msg)
-                print("length",len(self.glb_msg))
+                time.sleep(5)
+                self.client_hash_mapping[client_id] = model_hash
+                print("Model hash received from", client_id, "Round",self.round)
+                self.round += 1
+                print("client_hash_mapping",self.client_hash_mapping )
 
-                time.sleep(2)
-                
-                if len(self.glb_msg)==2:
-                    print("Got all train message from client in cluster ")
-                    print("model hash",self.glb_msg)
+                print("num_clients is", self.num_clients)
+                print("length ",len(self.client_hash_mapping))
 
+                if len(self.client_hash_mapping) == self.num_clients:
+                    print("Received model hashes from all clients in the cluster.")
                     self.send_model_hash()
-                    # self.glb_msg.clear()
-
                     time.sleep(5)
 
 
@@ -136,27 +108,20 @@ class MQTTCluster:
             
     def subscribe_to_internal_messages(self):
         # Subscribe to the internal_cluster_topic for message reception
-        # for client in self.client:
-            # if client != self.worker_head_node:
                 self.client.subscribe(self.internal_cluster_topic, qos=0)
 
     def receive_internal_messages(self):
-        # for client in self.client:
-            # if client != self.worker_head_node:
                 self.client.on_message = self.on_message
 
     def stop_receiving_messages(self):
-        # for client in self.client:
-            # if client != self.worker_head_node:
                 self.client.unsubscribe(self.internal_cluster_topic)
 
     def send_model_hash(self, ):
 
-        # TODO
-        #  : identify if this is the worker different model
-        #    should not be not hardcode
-        if len(self.glb_msg)==2:  
-          return self.glb_msg
+        if len(self.client_hash_mapping) == self.num_clients:  
+          # Extract all hashes
+          hashes = list(self.client_hash_mapping.values())
+          return hashes
         else :
             return False
 
@@ -166,16 +131,19 @@ class MQTTCluster:
             return self.global_model_hash
         else :
             print("No global model hashs")
-         
-         
-    # def get_global_model_hash(self):
-    #      return hash
-    def receive_global_model_on_message(self):
-         
-         pass
 
-
-
+    def send_internal_messages_model(self, modelhash):
+        message = {
+            "client_id": self.id,
+            "model_hash": modelhash
+        }
+        data = json.dumps(message)
+        print("send_internal_messages_model:", data)
+        print("Internal topic", self.internal_cluster_topic)
+        self.client.publish(self.internal_cluster_topic, data)
+        print("Successfully sent_internal_messages_model")
+            
+         
     # Send Inter-cluster
     def send_inter_cluster_message(self, message):
         self.worker_head_node.publish(self.global_cluster_topic, message)
@@ -194,13 +162,6 @@ class MQTTCluster:
             self.client.publish(self.internal_cluster_topic, f"global_model {modelhash}")
             print("Successfully send Global model to internal_messages_model  ")
 
-    def send_internal_messages_model(self,modelhash):
-        print("send_internal_messages_model : ",modelhash)
-
-        print("Internal topic",self.internal_cluster_topic)    
-        self.client.publish(self.internal_cluster_topic, f"{modelhash}")
-        print("Successfully send_internal_messages_model  ")
-
 
     def switch_broker(self, new_broker_address):
         # Disconnect existing clients
@@ -214,8 +175,6 @@ class MQTTCluster:
         # Re-create clients with the new broker address
         self.create_clients()
     
-
-
 
     def run(self):
         try:

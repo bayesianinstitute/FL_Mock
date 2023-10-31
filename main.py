@@ -3,7 +3,8 @@ from mqtt_operations import MqttOperations
 from ml_operations import MLOperations
 from utils import Utils
 import argparse
-from core.FL_System.identify.identify_participants import IdentifyParticipant
+
+from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
 
 
 
@@ -35,12 +36,12 @@ class DFLWorkflow:
 
     def run(self,):
         get_list=None
-        self.participant = IdentifyParticipant(self.id,self.broker_service,self.voting_topic,self.winner_declare)
+        self.participant = IdentifyParticipant(self.id,self.broker_service,self.voting_topic,self.winner_declare,self.min_node)
         self.is_status=self.participant.main()
         print("is worker head ",self.is_status)
-        Num=3
+        
 
-        self.mqtt_operations = MqttOperations(self.internal_cluster_topic,self.global_cluster_topic,self.broker_service,Num,self.is_status,self.id)
+        self.mqtt_operations = MqttOperations(self.internal_cluster_topic,self.global_cluster_topic,self.broker_service,self.min_node,self.is_status,self.id)
 
 
         mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt()
@@ -90,20 +91,20 @@ class DFLWorkflow:
             else:
                 break
 
-        print(self.ml_operations.post_training_steps())
-        if self.ml_operations.aggregator_saves_global_model_in_ipfs():
-            print(self.ml_operations.aggregator_saves_global_model_in_ipfs())
-        self.pause_execution()
+        # print(self.ml_operations.post_training_steps())
+        # if self.ml_operations.aggregator_saves_global_model_in_ipfs():
+        #     print(self.ml_operations.aggregator_saves_global_model_in_ipfs())
+        # self.pause_execution()
 
-        print(self.mqtt_operations.disconnect())
-        self.pause_execution()
+        # print(self.mqtt_operations.disconnect())
+        # self.pause_execution()
 
-        print(self.ml_operations.cleanup())
-        self.pause_execution()
+        # print(self.ml_operations.cleanup())
+        # self.pause_execution()
 
-        if self.ml_operations.aggregator_stops_mqtt_broker_service():
-            print(self.ml_operations.aggregator_stops_mqtt_broker_service())
-        self.pause_execution()
+        # if self.ml_operations.aggregator_stops_mqtt_broker_service():
+        #     print(self.ml_operations.aggregator_stops_mqtt_broker_service())
+        # self.pause_execution()
 
 if __name__ == "__main__":
 
@@ -112,7 +113,9 @@ if __name__ == "__main__":
     parser.add_argument("cluster_name", help="Name of the cluster",type=str,)
     parser.add_argument("internal_cluster_topic", help="internal Cluster topic",type=str)
     parser.add_argument("id", help="client_id",type=str)
-    parser.add_argument("min_node", help="minimun Node",type=str)
+    # parser.add_argument("min_node", help="minimun Node",type=str)
+
+    min_node = 3
 
 
     args = parser.parse_args()
@@ -122,6 +125,6 @@ if __name__ == "__main__":
     declare_winner_topic=f'Winner Topic on Cluster {args.cluster_name}'
 
 
-    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,args.min_node)
+    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,min_node)
 
     workflow.run()

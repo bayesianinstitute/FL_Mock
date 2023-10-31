@@ -1,5 +1,3 @@
-
-
 # MQTT Participant Identification Script
 
 ## Overview

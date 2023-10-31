@@ -76,10 +76,10 @@ class MqttOperations:
         # Configuration and create 3 client
 
 
-        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name, self.global_cluster_topic, self.internal_cluster_topic,self.status)
+        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name, self.global_cluster_topic, self.internal_cluster_topic,self.status,self.id)
 
         # Create clients for  clusters
-        self.cluster.create_clients(self.id)
+        self.cluster.create_clients()
 
         # self.cluster.switch_worker_head_node()
 

@@ -141,21 +141,16 @@ class MLOperations:
         2. Create a global model using the aggregated information.
 
         Returns:
-        A message indicating that the models have been successfully aggregated.
+        Send Global models to all client.
         """
         # Convert the set to a list
 
         data=get_model_list
 
-        # Convert each set to a list and extract the values
-        values = [list(s)[0] for s in data]
-
-        # Now, the 'values' list contains the extracted values
-        print(values)
 
 
         models = []
-        for value in values:
+        for value in data:
             # print("vales in loop : ",value)
             model = self.ipfs.fetch_model(value)
             # print("after fetching model : ",model)

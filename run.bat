@@ -6,4 +6,4 @@ if "%~1"=="" (
 )
 
 REM Execute main.py with the 'id' argument
-python main.py test.mosquitto.org USA internal_USA_topic %1
+python main.py test.mosquitto.org USA internal_USA_topic %1 
