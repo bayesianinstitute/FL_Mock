@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Train Model</title>
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-4">
+      <div class="card">
+        <div class="card-header">
+          <h1 class="card-title">Train a Model</h1>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="model-name">Model Name:</label>
+            <select id="model-name" class="form-control">
+              <option value="CNN">CNN</option>
+              <option value="ANN">ANN</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="dataset-name">Dataset Name:</label>
+            <select id="dataset-name" class="form-control">
+              <option value="MNIST">MNIST</option>
+              <option value="FashionMNIST">FashionMNIST</option>
+            </select>
+          </div>
+
+          <button onclick="trainModel()" class="btn btn-primary">Train</button>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header">
+          <h2 class="card-title">Results</h2>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div id="result-plot">
+                <!-- Plot will be displayed here -->
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div id="result-matrix">
+                <!-- Confusion matrix will be displayed here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3 class="card-title">Model Training Log</h3>
+        </div>
+        <div class="card-body">
+          <div id="training-log">
+            <!-- Training log will be displayed here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function trainModel() {
+        var modelName = document.getElementById('model-name').value
+        var datasetName = document.getElementById('dataset-name').value
+
+        // Make a POST request to your Flask API to trigger training
+        fetch('/train', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model_name: modelName,
+            dataset_name: datasetName,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // Display model name and dataset name
+            document.getElementById(
+              'result-plot'
+            ).innerHTML = `<p>Model Name: ${data.model_name}</p>`
+            document.getElementById(
+              'result-plot'
+            ).innerHTML += `<p>Dataset Name: ${data.dataset_name}</p>`
+
+            // Display accuracy and loss plots
+            var plots = `<div><img src="data:image/png;base64,${data.plot_data}" /></div>`
+
+            // Display confusion matrix
+            plots += '<p>Confusion Matrix:</p>'
+            plots += '<table class="table table-bordered">'
+            plots += '<tr><th></th>'
+            for (var label of data.confusion_matrix.labels) {
+              plots += `<th>${label}</th>`
+            }
+            plots += '</tr>'
+            for (var i = 0; i < data.confusion_matrix.matrix.length; i++) {
+              plots += `<tr><th>${data.confusion_matrix.labels[i]}</th>`
+              for (var j = 0; j < data.confusion_matrix.matrix[i].length; j++) {
+                plots += `<td>${data.confusion_matrix.matrix[i][j]}</td>`
+              }
+              plots += '</tr>'
+            }
+            plots += '</table>'
+
+            document.getElementById('result-matrix').innerHTML = plots
+
+            // Display training log
+            document.getElementById(
+              'training-log'
+            ).innerHTML = `<pre>${data.training_log}</pre>`
+          })
+          .catch((error) => {
+            console.error('Error:', error)
+          })
+      }
+    </script>
+
+    <!-- Include Bootstrap and other JavaScript libraries -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>

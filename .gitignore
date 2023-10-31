@@ -1,6 +1,8 @@
-__pycache__
+cd __pycache__
 mnist_model
 downloaded_models
 saved_model.h5
 global_model.h5
 myenv/
+visualization/tensorboard/logs
+__pycache__
