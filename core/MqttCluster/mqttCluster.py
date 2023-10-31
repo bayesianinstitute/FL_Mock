@@ -69,7 +69,8 @@ class MQTTCluster:
                             self.send_model_hash()
                             time.sleep(5)
                     else:
-                        print("'client_id' not found in the message data")
+                        pass
+                        # print("'client_id' not found in the message data")
             except json.JSONDecodeError as e:
                 # Handle JSON decoding errors
                 print(f"Error decoding JSON: {e}")
@@ -171,32 +172,15 @@ class MQTTCluster:
         print("Successfully Switch : ",new_broker_address)
     
 
-    def run(self):
-        try:
-            # pass
-            print("")
-        #     while self.round < 10:  # Run for a specified number of rounds
+if __name__ == "__main__":
+    # Instantiate an MQTT cluster
+    cluster = MQTTCluster("mqtt.broker.com", 5, "MyCluster", "global_topic", "internal_topic", True, 1)
 
-        #         # Switch broker after round 6
-        #         if self.round == 6:
-        #             new_broker_address = "broker.hivemq.com"  # Replace with your new broker address
-        #             print(f"Switching broker to {new_broker_address} after round 6")
-        #             self.switch_broker(new_broker_address)
+    # Create and connect MQTT clients
+    cluster.create_clients()
 
+    # Subscribe to internal messages
+    cluster.subscribe_to_internal_messages()
 
-
-        #         # Switch worker head node when the round is even
-        #         if self.round % 2 == 0:
-        #             print(f"Changing worker head in {self.cluster_name} !!!!!!!!!!!!!!!")
-        #             self.switch_worker_head_node()
-        #             print("New Head Node:", self.get_head_node())
-        #             time.sleep(2)
-
-
-
-
-        except KeyboardInterrupt:
-            for client in self.client:
-                client.loop_stop()
-                client.disconnect()
-
+# Implement custom logic for handling messages
+# Override the on_message method
