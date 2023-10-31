@@ -5,11 +5,12 @@ from utils import Utils
 import argparse
 
 from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
+import time
 
 
 
 class DFLWorkflow:
-    def __init__(self, broker_service, global_cluster_topic, internal_cluster_topic, id,voting_topic,declare_winner_topic,min_node):
+    def __init__(self, broker_service, global_cluster_topic, internal_cluster_topic, id,voting_topic,declare_winner_topic,min_node,updated_broker):
         self.global_ipfs_link = None
         self.participant_identification = None
         self.broker_service = broker_service
@@ -26,8 +27,7 @@ class DFLWorkflow:
         self.id = id
         self.is_status=None
         self.min_node=min_node
-
-
+        self.updated_broker=updated_broker
 
 
     def pause_execution(self,):
@@ -41,50 +41,66 @@ class DFLWorkflow:
         print("is worker head ",self.is_status)
         
 
-        self.mqtt_operations = MqttOperations(self.internal_cluster_topic,self.global_cluster_topic,self.broker_service,self.min_node,self.is_status,self.id)
+        self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
+                                              self.global_cluster_topic,
+                                              self.broker_service,
+                                              self.min_node,
+                                              self.is_status,
+                                              self.id)
 
 
         mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt()
-        #self.global_ipfs_link = self.utils.get_global_ipfs_link()
         mqtt_obj.subscribe_to_internal_messages()
-        # mqtt_obj.get_head_node()
-        self.pause_execution()
+
+        Round_Counter=0
 
         while True:
+            Round_Counter=Round_Counter+1
+
+            print("Round_Counter : ",Round_Counter )
+
+            time.sleep(5)
+
+            if Round_Counter==2:
+                print("Changing Broker")
+                time.sleep(10)
+                mqtt_obj.switch_broker(self.updated_broker)
+
+
             hash=self.ml_operations.train_machine_learning_model()
             print("hash: {}".format(hash))
-            self.pause_execution()
+            # self.pause_execution()
             mqtt_obj.send_internal_messages_model(hash)
 
 
-            self.pause_execution()
+            # self.pause_execution()
             mqtt_obj.receive_internal_messages()
-            self.pause_execution()
+            # self.pause_execution()
 
-            if (mqtt_obj.send_model_hash())==False:
-                continue
-            
-            else :
+
+            # if head status is True send,aggreagte and send global model to all workers
+            if self.is_status==True:
                 get_list=mqtt_obj.send_model_hash()
-                print("Send global model")
-                self.pause_execution()
+                print("Send global model",get_list)
+                # self.pause_execution()
 
                 self.global_model=self.ml_operations.aggregate_models(get_list)
                 print(" got Global model hash: {}".format(self.global_model))
 
-                self.pause_execution()
+                # self.pause_execution()
                 print(self.ml_operations.send_global_model_to_others(mqtt_obj,self.global_model))
-                self.pause_execution()
-            
-            
+                mqtt_obj.client_hash_mapping.clear()
+                print("clear all hash operations")
 
-            if self.is_status==False:
+                # time.sleep(10)
+
+                # self.pause_execution()            
+            else :
                 global_model_hash=mqtt_obj.global_model()
                 print("i am not aggregator got global model hash: {}".format(global_model_hash))
+
                 self.ml_operations.is_global_model_hash(global_model_hash)
-
-                
-
+            
 
             if self.ml_operations.is_model_better():
                 continue
@@ -113,9 +129,12 @@ if __name__ == "__main__":
     parser.add_argument("cluster_name", help="Name of the cluster",type=str,)
     parser.add_argument("internal_cluster_topic", help="internal Cluster topic",type=str)
     parser.add_argument("id", help="client_id",type=str)
-    # parser.add_argument("min_node", help="minimun Node",type=str)
+    parser.add_argument("min_node", help="minimun Node",type=str)
 
-    min_node = 3
+    # min_node = 3
+
+    updated_broker= 'broker.hivemq.com'
+    
 
 
     args = parser.parse_args()
@@ -125,6 +144,6 @@ if __name__ == "__main__":
     declare_winner_topic=f'Winner Topic on Cluster {args.cluster_name}'
 
 
-    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,min_node)
+    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,min_node,updated_broker)
 
     workflow.run()

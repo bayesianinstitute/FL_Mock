@@ -147,6 +147,8 @@ class MLOperations:
 
         data=get_model_list
 
+        print("listing models",data)
+
 
 
         models = []

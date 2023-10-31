@@ -14,6 +14,11 @@ class MqttOperations:
 
 
         pass
+    
+    def change_broker(self,):
+        
+        pass
+
 
     def winner_creates_mqtt_broker(self):
         """

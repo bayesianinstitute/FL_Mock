@@ -70,7 +70,7 @@ class IdentifyParticipant:
             "node_id": self.participant_id,
             "ram_usage": ram_usage
         }
-        time.sleep(10)
+        time.sleep(4)
         self.client.publish(self.ram_topic, json.dumps(ram_info), qos=1)
 
     def declare_aggregator(self):
