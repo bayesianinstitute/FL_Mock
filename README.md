@@ -83,9 +83,29 @@ run.bat 3
 ```
 ### For All OS
 
+
+To run the script, use the following command:
+
 ```
-python main.py USA internal_USA_topic 1 5
+python DFLWorkflow.py <broker_service> <cluster_name> <internal_cluster_topic> <id> <min_node>
 ```
+<broker_service>: Name of the MQTT broker service.
+<cluster_name>: Name of the cluster.
+<internal_cluster_topic>: Internal cluster topic.
+<id>   : Client ID.
+<min_node>: Minimum number of nodes required for the DFL workflow.
+
+
+## Workflow
+The DFL workflow implemented in this script consists of the following steps:
+
+* Participant identification.
+* MQTT setup and communication.
+* Training machine learning models.
+* Aggregation of models (if the participant is the aggregator).
+* Model validation and iteration.
+* The workflow can be customized based on your specific use case and requirements.
+
 
 
 
