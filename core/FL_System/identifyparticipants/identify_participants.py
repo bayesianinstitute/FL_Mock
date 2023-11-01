@@ -50,13 +50,13 @@ class IdentifyParticipant:
 
             if node_id not in userdata["ram_usages"]:
                 # Node is not in the dictionary, so we treat it as a new node
-                print(f"Received RAM usage from {node_id}: {ram_usage} GB")
+                print(f"Received RAM usage from {node_id}: {ram_usage} MB")
                 userdata["ram_usages"][node_id] = ram_usage
                 userdata["shared_count"] += 1
             else:
                 if userdata["ram_usages"][node_id] != ram_usage:
                     # Node is in the dictionary, but the RAM usage is different
-                    print(f"Received RAM usage from {node_id}: {ram_usage} GB")
+                    print(f"Received RAM usage from {node_id}: {ram_usage} MB")
                     userdata["ram_usages"][node_id] = ram_usage
 
         except json.decoder.JSONDecodeError:

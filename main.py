@@ -61,10 +61,11 @@ class DFLWorkflow:
 
             time.sleep(5)
 
-            if Round_Counter==2:
-                print("Changing Broker")
-                time.sleep(10)
-                mqtt_obj.switch_broker(self.updated_broker)
+            # if Round_Counter==2:
+            #     print("Changing Broker")
+            #     time.sleep(10)
+            #     mqtt_obj.switch_broker(self.updated_broker)
+
 
 
             hash=self.ml_operations.train_machine_learning_model()
@@ -89,6 +90,8 @@ class DFLWorkflow:
 
                 # self.pause_execution()
                 print(self.ml_operations.send_global_model_to_others(mqtt_obj,self.global_model))
+                # for key in mqtt_obj.client_hash_mapping:
+                #     mqtt_obj.client_hash_mapping[key] = None
                 mqtt_obj.client_hash_mapping.clear()
                 print("clear all hash operations")
 
@@ -101,15 +104,21 @@ class DFLWorkflow:
 
                 self.ml_operations.is_global_model_hash(global_model_hash)
             
-
-            if self.ml_operations.is_model_better():
-                continue
-            else:
+            if Round_Counter==6:
                 break
+
+
+        print(f"Training Completed with round {Round_Counter} !! ")
+
+        # if self.ml_operations.is_model_better():
+        #     continue
+        # else:
+        #     break
+        
 
         # print(self.ml_operations.post_training_steps())
         # if self.ml_operations.aggregator_saves_global_model_in_ipfs():
-        #     print(self.ml_operations.aggregator_saves_global_model_in_ipfs())
+        #     print(self.ml_operations.saves_final_global_model_in_ipfs())
         # self.pause_execution()
 
         # print(self.mqtt_operations.disconnect())

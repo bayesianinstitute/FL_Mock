@@ -22,58 +22,87 @@ class MQTTCluster:
     def create_clients(self):
         self.client = mqtt.Client(self.id)
         self.client.on_message = self.on_message
+            # Configure Last Will and Testament
+        will_set_msg=json.dumps({"Client-disconnected": self.id})
+        self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1,)
         self.client.connect(self.broker_address, 1883)
         self.client.subscribe(self.global_cluster_topic, qos=1)
         self.client.subscribe(self.internal_cluster_topic, qos=1)
         self.client.loop_start()
+
+
+        
+
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
         print(f"cluster name: {self.cluster_name} and topic: {message.topic}")
         cluster_id = self.cluster_name
 
+
         if message.topic == self.internal_cluster_topic:
             data = message.payload.decode('utf-8')
-
+    
             try:
-                json_data = json.loads(data)  # Parse the JSON data
+                    json_data = json.loads(data)  # Parse the JSON data
 
-                if 'global_model' in json_data:
-                    extract = json_data['global_model']
 
-                    if not self.worker_head_node:
-                        print(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
-                        self.global_model_hash = extract
 
-                if self.is_worker_head(client):
-                    print(f"Received Internal message in {cluster_id} from {client_id} as:\n{data}")
-                    get_data = json_data
+                    if 'global_model' in json_data:
+                        extract = json_data['global_model']
 
-                    if 'client_id' in get_data:
-                        client_id = get_data['client_id']
-                        model_hash = get_data['model_hash']
-                        print("Received client_id:", client_id)
-                        print("Received model_hash:", model_hash)
+                        if not self.worker_head_node:
+                            print(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
+                            self.global_model_hash = extract
 
-                        time.sleep(2)
-                        self.client_hash_mapping[client_id] = model_hash
-                        print("Model hash received from", client_id, "Round", self.round)
-                        self.round += 1
-                        print("client_hash_mapping", self.client_hash_mapping)
+                    if self.is_worker_head(client):
+                        print(f"Received Internal message in {cluster_id} from {client_id} as:\n{data}")
+                        get_data = json_data
 
-                        print("num_clients is", self.num_clients)
-                        print("length", len(self.client_hash_mapping))
+                        if 'Client-disconnected' in json_data:
+                            get_client_id = json_data['Client-disconnected']
+                            print("Disconnected node id", get_client_id)
 
-                        if len(self.client_hash_mapping) == self.num_clients:
-                            print("Received model hashes from all clients in the cluster.")
-                            self.send_model_hash()
+                            if get_client_id in self.client_hash_mapping:
+                                self.client_hash_mapping.pop(get_client_id)
+                                self.num_clients -= 1
+                                print("Remove client from dictionary, length", len(self.client_hash_mapping))
+                                print("Number of clients:", self.num_clients)
+                            else:
+                                print(f"Client {get_client_id} not found in the dictionary")
+
                             time.sleep(5)
-                    else:
-                        pass
-                        # print("'client_id' not found in the message data")
+
+
+                        if 'client_id' in get_data:
+                            client_id = get_data['client_id']
+                            model_hash = get_data['model_hash']
+                            print("Received client_id:", client_id)
+                            print("Received model_hash:", model_hash)
+
+                            time.sleep(2)
+                            self.client_hash_mapping[client_id] = model_hash
+                            print("Model hash received from", client_id, "Round", self.round)
+                            self.round += 1
+                            print("client_hash_mapping", self.client_hash_mapping)
+
+                            print("num_clients is", self.num_clients)
+                            print("length", len(self.client_hash_mapping))
+                            print("hash_mapping", self.client_hash_mapping)
+
+                                
+
+                            if len(self.client_hash_mapping) == self.num_clients:
+                                    # has_none_values = any(value is None for value in self.client_hash_mapping.values())
+                                    # if has_none_values==False: 
+                                        print("Received model hashes from all clients in the cluster.")
+                                        self.send_model_hash()
+                                        time.sleep(5)
+                                
+
             except json.JSONDecodeError as e:
-                # Handle JSON decoding errors
-                print(f"Error decoding JSON: {e}")
+                    # Handle JSON decoding errors
+                    print(f"Error decoding JSON: {e}")
 
         elif message.topic == self.global_cluster_topic:
             data = message.payload.decode('utf-8')
@@ -119,12 +148,8 @@ class MQTTCluster:
         while not self.global_model_hash:
             # You can add a sleep here to reduce CPU usage
             print("Waiting for global model")
-            time.sleep(5)  # Import time module
+            time.sleep(5)  
             pass
-        
-        # Clear After getting the global model
-
-
         return self.global_model_hash
             
 
