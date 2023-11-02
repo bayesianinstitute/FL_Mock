@@ -4,36 +4,39 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 import subprocess
 from sklearn.model_selection import train_test_split
+from sklearn import datasets  # Corrected import statement
 
 class ANNTabularClassification:
-    def __init__(self, optimizer='adam',log=' "custom_ANN_log"'):
+    def __init__(self, optimizer='adam', log="custom_ANN_log"):
         self.optimizer = optimizer
         self.x_train, self.y_train, self.x_test, self.y_test = self.load_and_preprocess_data()
 
         self.model = self.build_model()
-        self.dir_log = log # Set the log directory
+        self.dir_log = log  # Set the log directory
 
     def build_model(self):
         # Build a simple ANN model for tabular data
         model = Sequential()
         model.add(Dense(64, activation='relu', input_shape=(self.x_train.shape[1],)))
         model.add(Dense(32, activation='relu'))
-        model.add(Dense(1, activation='sigmoid'))
+        model.add(Dense(3, activation='softmax'))  # Changed output units to match the Iris dataset classes
 
-        model.compile(optimizer=self.optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=self.optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
         return model
 
     def load_and_preprocess_data(self):
-        # Load and preprocess the Titanic dataset (you should replace 'titanic.csv' with your dataset)
-        dataset = pd.read_csv('titanic.csv')
+        # Load the Iris dataset
+        data = datasets.load_iris()
 
-        # Preprocess data (replace this with your own data preprocessing)
-        x = dataset.drop(columns=['Survived'])
-        y = dataset['Survived']
+        # Access the feature data
+        X = data.data
+
+        # Access the target labels
+        y = data.target
 
         # Split data into training and testing sets
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+        x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
         return x_train, y_train, x_test, y_test
 
