@@ -1,0 +1,7 @@
+{
+    "company_name": "AAAA",
+    "model_name": "CNN",
+    "dataset_name": "FashionMNIST",
+    "no_of_cluster": "1",
+    "no_of_computers": "2"
+}

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from main import DFLWorkflow
+import json
 
 app = Flask(__name__)
 
@@ -17,13 +18,17 @@ def train():
     num_clusters = request.form['numClusters']
     num_computers = request.form['numComputers']
 
-    # Save the form data to a text file in a specific directory
-    with open('templates/data.txt', 'w') as file:
-        file.write(f"Company Name: {company_name}\n")
-        file.write(f"Model Name: {model_name}\n")
-        file.write(f"Dataset Name: {dataset_name}\n")
-        file.write(f"Number of Clusters: {num_clusters}\n")
-        file.write(f"Number of Computers: {num_computers}\n")
+    data = {
+        "company_name": company_name,
+        "model_name": model_name,
+        "dataset_name": dataset_name,
+        "no_of_cluster": num_clusters,
+        "no_of_computers": num_computers
+    }
+
+    # Write the JSON object to a file
+    with open('data.json', 'w') as json_file:
+        json.dump(data, json_file, indent=4)
 
     # You can define the parameters or configuration here or retrieve them from the request
     broker_service = "test.mosquitto.org"
@@ -39,7 +44,7 @@ def train():
     voting_topic = f'Voting topic on Cluster {cluster_name}'
     declare_winner_topic = f'Winner Topic on Cluster {cluster_name}'
 
-    workflow = DFLWorkflow(broker_service, cluster_name, internal_cluster_topic, client_id, voting_topic, declare_winner_topic, min_node, updated_broker)
+    workflow = DFLWorkflow(broker_service, cluster_name, internal_cluster_topic, client_id, voting_topic, declare_winner_topic, min_node, updated_broker,data["model_name"])
     workflow.run()
 
     # After saving the data, redirect back to the home page

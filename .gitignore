@@ -6,11 +6,8 @@ global_model.h5
 myenv/
 visualization/tensorboard/logs
 __pycache__
-<<<<<<< HEAD
 logs
 visualization/tensorboard/log
 ml_operations1
 data.txt
-=======
-custom_*/
->>>>>>> a92afdbf72fa1b1dd3dfcdda31f5f51e21e51fe4
+appcopy.py

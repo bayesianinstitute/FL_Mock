@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 import joblib
 from core.MqttCluster.mqttCluster import MQTTCluster
-from core.Ipfs.ipfs import IPFS
+from core.IPFS.ipfs import IPFS
 
 
 class MLOperations:
