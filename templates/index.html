@@ -60,29 +60,60 @@
             required
           >
             <option value="mnist">MNIST</option>
-            <option value="FashionMNIST">FashionMNIST</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="optimizerName">Optimizer</label>
+          <select
+            class="form-control"
+            id="optimizerName"
+            name="optimizerName"
+            required
+          >
+            <option value="sgd">sgd</option>
+            <option value="rmsprop">rmsprop</option>
+            <option value="adagrad">adagrad</option>
+            <option value="adadelta">adadelta</option>
+            <option value="adam">adam</option>
+            <option value="adamax">adamax</option>
+            <option value="nadam">nadam</option>
+            <option value="ftrl">ftrl</option>
+            <option value="sgd with momentum">sgd with momentum</option>
+            <option value="sgd with nesterov">sgd with nesterov</option>
           </select>
         </div>
         <div class="form-group">
           <label for="numClusters">Number of Clusters:</label>
-          <input
-            type="number"
+          <select
             class="form-control"
             id="numClusters"
             name="numClusters"
             required
-          />
+          >
+            <script>
+              for (let i = 1; i <= 10; i++) {
+                document.write(`<option value="${i}">${i}</option>`)
+              }
+            </script>
+          </select>
         </div>
+
         <div class="form-group">
           <label for="numComputers">Number of Computers:</label>
-          <input
-            type="number"
+          <select
             class="form-control"
             id="numComputers"
             name="numComputers"
             required
-          />
+          >
+            <script>
+              for (let i = 1; i <= 10; i++) {
+                document.write(`<option value="${i}">${i}</option>`)
+              }
+            </script>
+          </select>
         </div>
+
         <button type="submit" class="btn btn-primary mt-3 mb-3">
           Start Training
         </button>
