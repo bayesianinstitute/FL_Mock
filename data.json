@@ -1,14 +1,8 @@
 {
-<<<<<<< HEAD
-    "company_name": "Bayes",
+    "company_name": "Amam",
     "model_name": "CNN",
     "dataset_name": "mnist",
-    "optimizer_name": "adagrad",
-=======
-    "company_name": "Ama",
-    "model_name": "CNN",
-    "dataset_name": "mnist",
->>>>>>> 1a8dcec5b2a70b23da16848d13a597699ed7f860
+    "optimizer_name": "adam",
     "no_of_cluster": "1",
     "no_of_computers": "1"
 }

@@ -104,6 +104,9 @@ class MLOperations:
         # Train the model
         self.current_model.train_model(epochs=1,batch_size=32)
 
+        # Show Ui
+        self.current_model.run_tensorboard()
+
         # Evaluate the model on the test data
         test_loss, test_acc = self.current_model.evaluate_model()
 
