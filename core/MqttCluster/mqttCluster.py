@@ -73,9 +73,8 @@ class MQTTCluster:
     def handle_global_model(self, json_data, client_id, cluster_id):
         extract = json_data['global_model']
 
-        if not self.worker_head_node:
-            print(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
-            self.global_model_hash = extract
+        print(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
+        self.global_model_hash = extract
 
     def handle_internal_data(self, json_data, client_id, cluster_id):
         if 'Client-disconnected' in json_data:
@@ -96,7 +95,7 @@ class MQTTCluster:
         client_id = json_data['client_id']
         model_hash = json_data['model_hash']
         self.client_hash_mapping[client_id] = model_hash
-        print(f"Model hash {model_hash} received from {client_id} Round : {self.round}")
+        print(f"Model hash {model_hash} received from {client_id} ")
         time.sleep(2)
 
         self.round += 1
@@ -136,6 +135,12 @@ class MQTTCluster:
 
 
     def global_model(self):
+
+        if self.worker_head_node:
+            
+            return self.global_model_hash
+
+        
         while not self.global_model_hash:
             # You can add a sleep here to reduce CPU usage
             print("Waiting for global model")

@@ -51,6 +51,15 @@ class ANNTabularClassification:
         # Evaluate the model on the test data
         test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
         return test_loss, test_accuracy
+    
+    def save_model(self, model_filename):
+        # Save the model to a file
+        self.model.save(model_filename)
+        print(f"Model saved to {model_filename}")
+    
+    def set_weights(self, weights):
+        self.model.set_weights(weights)
+        return self.model
 
     def run_tensorboard(self):
         try:

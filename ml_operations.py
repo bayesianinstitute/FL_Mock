@@ -1,12 +1,11 @@
 import tensorflow as tf
 from tensorflow import keras
-import joblib
-from core.MqttCluster.mqttCluster import MQTTCluster
-from core.IPFS.ipfs import IPFS
 
+from core.IPFS.ipfs import IPFS
+import time
 
 class MLOperations:
-    def __init__(self,training_type):
+    def __init__(self,training_type,optimizer):
         # You can add any necessary initialization code here
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
@@ -14,35 +13,35 @@ class MLOperations:
         self.global_model_hash=None
         self.current_model=None
         self.training_type=training_type
+        self.optimizer=optimizer
+        self.get_weights=None
         pass
 
     def is_global_model_hash(self,model_hash):    
         self.global_model_hash=model_hash
 
-    def get_data(self):
-        (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-
-                # Preprocess the data
-        x_train, x_test = x_train / 255.0, x_test / 255.0
-
-        return x_train, y_train, x_test, y_test
     
-    def build_model(self,):
+    def get_model(self,):
                 # Build a simple neural network model
 
-        if training_type=='CCN':
-            model=get_model_CNN()
+        if self.training_type=='CCN':
+            from Model.deepLearningModel.CCN import CNNMnist
+
+            self.current_model=CNNMnist(self.optimizer)
 
 
-        elif training_type=='Regression':
-            model=get_model_Reg()
+        elif self.training_type=='Regression':
+            pass
+            # model=ANNTabularLinearRegression()
 
-        elif training_type=='Classification':  
-            model=get_model_nlp()
+        elif self.training_type=='Classification':  
+            from Model.deepLearningModel.ANN import ANNTabularClassification
+
+            self.current_model=ANNTabularClassification
 
 
         
-        return model
+        return self.current_model
         
 
     def train_machine_learning_model(self):
@@ -63,29 +62,42 @@ class MLOperations:
         """
         # Load the MNIST dataset
 
-        x_train, y_train, x_test, y_test=self.get_data()
 
         if self.global_model_hash:
 
+            
+
             # get model from ipfs
-            self.current_model=self.ipfs.fetch_model(self.global_model_hash)
+            ipfs_model=self.ipfs.fetch_model(self.global_model_hash)
 
 
-            print(" model: ", self.current_model)
+            # print(" model: ", self.current_model)
+            self.get_weights=ipfs_model.get_weights()
 
-            pass
+            # print("getti Weight: ", self.get_weights[0])
+
+            self.current_model.set_weights(self.get_weights)
+
+            
+            print("set Weight Successfully ")
+
         else :
             # For First time build model
-            self.current_model=self.build_model()
+            self.current_model=self.get_model()
+            self.current_model.build_model()
+            print("builded model: Successfully built model: ",self.current_model) 
+            import time
+            time.sleep(5)
+        
 
         # Train the model
-        self.current_model.fit(x_train, y_train, epochs=1)
+        self.current_model.train_model(epochs=1,batch_size=32)
 
         # Evaluate the model on the test data
-        test_loss, test_acc = self.current_model.evaluate(x_test, y_test, verbose=2)
+        test_loss, test_acc = self.current_model.evaluate_model()
 
         # Save the trained model
-        self.current_model.save(self.path_model)
+        self.current_model.save_model(self.path_model)
 
         print(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
 

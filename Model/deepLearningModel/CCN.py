@@ -26,11 +26,18 @@ class CNNMnist:
 
         model.compile(optimizer=self.optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
+
         return model
 
-    def load_and_preprocess_data(self):
+    def load_and_preprocess_data(self,subset_size=1000):
         # Load MNIST dataset
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+            # Select a smaller subset of the data
+        x_train = x_train[:subset_size]
+        y_train = y_train[:subset_size]
+        x_test = x_test[:subset_size]
+        y_test = y_test[:subset_size]
 
         # Preprocess data
         x_train = x_train.astype('float32') / 255.0
@@ -40,7 +47,7 @@ class CNNMnist:
 
         return x_train, y_train, x_test, y_test
 
-    def train_model(self, epochs=10, batch_size=32):
+    def train_model(self, epochs=10, batch_size=32,):
         # Train the model with TensorBoard callback
         self.model.fit(
             self.x_train, self.y_train,
@@ -49,10 +56,20 @@ class CNNMnist:
             callbacks=[self.tensorboard_callback]
         )
 
-    def evaluate_model(self):
+    def evaluate_model(self,):
         # Evaluate the model on the test data
         test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
         return test_loss, test_accuracy
+    
+    def save_model(self, model_filename):
+        # Save the model to a file
+        self.model.save(model_filename)
+        print(f"Model saved to {model_filename}")
+    
+    def set_weights(self, weights):
+        self.model.set_weights(weights)
+        return self.model
+        
 
     def run_tensorboard(self,):
         try:

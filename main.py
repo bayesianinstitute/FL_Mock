@@ -18,7 +18,9 @@ class DFLWorkflow:
                  declare_winner_topic,
                  min_node,
                  updated_broker,
-                 training_type
+                 training_type,
+                 optimizer,
+        
                  ):
         self.global_ipfs_link = None
         self.participant_identification = None
@@ -26,7 +28,7 @@ class DFLWorkflow:
         self.internal_cluster_topic = internal_cluster_topic
         self.global_cluster_topic = global_cluster_topic
         self.mqtt_operations = None
-        self.ml_operations = MLOperations(training_type)
+        self.ml_operations = MLOperations(training_type,optimizer)
         self.utils = Utils()
         self.global_model = None
 
@@ -104,6 +106,14 @@ class DFLWorkflow:
                 mqtt_obj.client_hash_mapping.clear()
                 print("clear all hash operations")
 
+                global_model_hash=mqtt_obj.global_model()
+                print("i am  aggregator here is the  global model hash: {}".format(global_model_hash))
+
+                self.ml_operations.is_global_model_hash(global_model_hash)
+
+
+
+
                 # time.sleep(10)
 
                 # self.pause_execution()            
@@ -154,6 +164,10 @@ if __name__ == "__main__":
     updated_broker= 'broker.hivemq.com'
 
     model_type='CCN'
+
+    optimizer ='adam'
+
+    # dataset='Mnist'
     
 
 
@@ -164,6 +178,6 @@ if __name__ == "__main__":
     declare_winner_topic=f'Winner Topic on Cluster {args.cluster_name}'
 
 
-    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,args.min_node,updated_broker,model_type)
+    workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,args.min_node,updated_broker,model_type,optimizer)
 
     workflow.run()
