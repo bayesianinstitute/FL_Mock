@@ -90,6 +90,23 @@ class TimeSeriesRNN:
         input_data = np.reshape(input_data, (1, self.sequence_length, 1))
         forecast = self.model.predict(input_data)
         return forecast
+    
+    def save_model(self, model_filename):
+        # Save the model to a file
+        self.model.save(model_filename)
+        print(f"Model saved to {model_filename}")
+    
+    def set_weights(self, weights):
+        self.model.set_weights(weights)
+        return self.model
+        
+
+    def run_tensorboard(self,):
+        import subprocess
+        try:
+            subprocess.run(["tensorboard", "--logdir", self.log_dir])
+        except Exception as e:
+            print(f"Error running TensorBoard: {e}")
 
 # Usage example:
 if __name__ == '__main__':
