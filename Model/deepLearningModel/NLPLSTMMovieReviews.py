@@ -27,7 +27,8 @@ class NLPLSTMMovieReviews:
 
     def load_and_preprocess_data(self):
         # Load IMDB dataset
-        (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=5000)  # You can adjust the number of words
+        (x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=1000)
+
 
         # Pad sequences to a fixed length (e.g., 200)
         max_review_length = 200

@@ -88,10 +88,12 @@ class TimeSeriesLSTM:
         return self.model
         
 
-    def run_tensorboard(self,):
+    def run_tensorboard(self):
         import subprocess
         try:
-            subprocess.run(["tensorboard", "--logdir", self.log_dir])
+            log_dir = f"custom_LSTM_logs/fit"  # Specify the log directory
+            tensorboard_callback = TensorBoard(log_dir=log_dir, write_graph=True)
+            subprocess.Popen(["cmd.exe", "/k", "tensorboard", "--logdir", log_dir])
         except Exception as e:
             print(f"Error running TensorBoard: {e}")
 
