@@ -18,6 +18,12 @@
       .header h1 {
         font-size: 36px; /* Adjust the font size as needed */
       }
+      #trainingModal .modal-dialog {
+        height: 90%;
+      }
+      #trainingModal .modal-content {
+        height: 100%;
+      }
     </style>
   </head>
   <body>
@@ -122,7 +128,7 @@
       aria-labelledby="trainingModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="trainingModalLabel">
@@ -141,9 +147,9 @@
             <!-- Iframe for Training Results -->
             <iframe
               id="trainingIframe"
-              src="https://www.google.co.in/webhp?igu=1"
+              src="http://localhost:6006/?igu=1"
               width="100%"
-              height="400"
+              height="100%"
               frameborder="0"
             ></iframe>
           </div>
@@ -160,7 +166,7 @@
       aria-labelledby="logsModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="logsModalLabel">Logs</h5>
@@ -178,6 +184,7 @@
             <p>Log Entry 1</p>
             <p>Log Entry 2</p>
             <p>Log Entry 3</p>
+            <!-- You can add more log entries or customize the content as needed -->
           </div>
         </div>
       </div>
