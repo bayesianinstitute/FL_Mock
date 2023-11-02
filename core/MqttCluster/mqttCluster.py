@@ -22,7 +22,6 @@ class MQTTCluster:
     def create_clients(self):
         self.client = mqtt.Client(self.id)
         self.client.on_message = self.on_message
-            # Configure Last Will and Testament
         will_set_msg=json.dumps({"Client-disconnected": self.id})
         self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1,)
         self.client.connect(self.broker_address, 1883)
@@ -36,85 +35,76 @@ class MQTTCluster:
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
-        print(f"cluster name: {self.cluster_name} and topic: {message.topic}")
         cluster_id = self.cluster_name
 
-
         if message.topic == self.internal_cluster_topic:
-            data = message.payload.decode('utf-8')
-    
-            try:
-                    json_data = json.loads(data)  # Parse the JSON data
+            self.handle_internal_message(message, client_id, cluster_id,client)
+        elif message.topic == self.global_cluster_topic and self.is_worker_head(client):
+            self.handle_global_message(message, client_id, cluster_id)
 
+    def handle_internal_message(self, message, client_id, cluster_id,client):
+        data = message.payload.decode('utf-8')
+        try:
+            json_data = json.loads(data)
 
+            if 'global_model' in json_data:
+                self.handle_global_model(json_data, client_id, cluster_id)
 
-                    if 'global_model' in json_data:
-                        extract = json_data['global_model']
-
-                        if not self.worker_head_node:
-                            print(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
-                            self.global_model_hash = extract
-
-                    if self.is_worker_head(client):
-                        print(f"Received Internal message in {cluster_id} from {client_id} as:\n{data}")
-                        get_data = json_data
-
-                        if 'Client-disconnected' in json_data:
-                            get_client_id = json_data['Client-disconnected']
-                            print("Disconnected node id", get_client_id)
-
-                            if get_client_id in self.client_hash_mapping:
-                                self.client_hash_mapping.pop(get_client_id)
-                                self.num_clients -= 1
-                                print("Remove client from dictionary, length", len(self.client_hash_mapping))
-                                print("Number of clients:", self.num_clients)
-                            else:
-                                print(f"Client {get_client_id} not found in the dictionary")
-
-                            time.sleep(5)
-
-
-                        if 'client_id' in get_data:
-                            client_id = get_data['client_id']
-                            model_hash = get_data['model_hash']
-                            print("Received client_id:", client_id)
-                            print("Received model_hash:", model_hash)
-
-                            time.sleep(2)
-                            self.client_hash_mapping[client_id] = model_hash
-                            print("Model hash received from", client_id, "Round", self.round)
-                            self.round += 1
-                            print("client_hash_mapping", self.client_hash_mapping)
-
-                            print("num_clients is", self.num_clients)
-                            print("length", len(self.client_hash_mapping))
-                            print("hash_mapping", self.client_hash_mapping)
-
-                                
-
-                            if len(self.client_hash_mapping) == self.num_clients:
-                                    # has_none_values = any(value is None for value in self.client_hash_mapping.values())
-                                    # if has_none_values==False: 
-                                        print("Received model hashes from all clients in the cluster.")
-                                        self.send_model_hash()
-                                        time.sleep(5)
-                                
-
-            except json.JSONDecodeError as e:
-                    # Handle JSON decoding errors
-                    print(f"Error decoding JSON: {e}")
-
-        elif message.topic == self.global_cluster_topic:
-            data = message.payload.decode('utf-8')
             if self.is_worker_head(client):
-                try:
-                    message_data = json.loads(data)
-                    if "data" in message_data:
-                        message_content = message_data["data"]
-                        print(f"Inter-cluster message in {cluster_id} from {client_id}:\n{message_content}")
-                except json.JSONDecodeError:
-                    print("Error decoding JSON message")
-                time.sleep(5)
+                self.handle_internal_data(json_data, client_id, cluster_id)
+
+        except json.JSONDecodeError as e:
+            pass  # Handle JSON decoding errors
+
+    def handle_global_message(self, message, client_id, cluster_id):
+        data = message.payload.decode('utf-8')
+        try:
+            message_data = json.loads(data)
+            if "data" in message_data:
+                message_content = message_data["data"]
+                print(f"Inter-cluster message in {cluster_id} from {client_id}:\n{message_content}")
+            else:
+                print("No 'data' field in the global message.")
+            time.sleep(5)
+
+        except json.JSONDecodeError:
+            print("Error decoding JSON message")
+
+    def handle_global_model(self, json_data, client_id, cluster_id):
+        extract = json_data['global_model']
+
+        if not self.worker_head_node:
+            print(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
+            self.global_model_hash = extract
+
+    def handle_internal_data(self, json_data, client_id, cluster_id):
+        if 'Client-disconnected' in json_data:
+            self.handle_client_disconnected(json_data)
+
+        if 'client_id' in json_data:
+            self.handle_client_data(json_data, cluster_id)
+
+    def handle_client_disconnected(self, json_data):
+        get_client_id = json_data['Client-disconnected']
+        print("Disconnected node id", get_client_id)
+        self.num_clients -= 1
+        print("Remove client from dictionary, length", len(self.client_hash_mapping))
+        print("Number of clients:", self.num_clients)
+        time.sleep(5)
+
+    def handle_client_data(self, json_data, cluster_id):
+        client_id = json_data['client_id']
+        model_hash = json_data['model_hash']
+        self.client_hash_mapping[client_id] = model_hash
+        print(f"Model hash {model_hash} received from {client_id} Round : {self.round}")
+        time.sleep(2)
+
+        self.round += 1
+
+        if len(self.client_hash_mapping) == self.num_clients:
+            print("Received model hashes from all clients in the cluster.")
+            self.send_model_hash()
+            time.sleep(5)
 
 
     def is_worker_head(self, client):
@@ -123,6 +113,7 @@ class MQTTCluster:
 
     def subscribe_to_internal_messages(self):
         # Subscribe to the internal_cluster_topic for message reception
+
         self.client.subscribe(self.internal_cluster_topic, qos=0)
 
     def receive_internal_messages(self):
@@ -170,6 +161,7 @@ class MQTTCluster:
         print("Successfully sent_inter_cluster_message")
 
     def send_internal_messages(self):
+        # message_json = json.dumps({"data": message})
         self.client.publish(self.internal_cluster_topic, f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
         print(self.internal_cluster_topic, f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
 
