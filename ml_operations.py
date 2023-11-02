@@ -2,18 +2,18 @@ import tensorflow as tf
 from tensorflow import keras
 import joblib
 from core.MqttCluster.mqttCluster import MQTTCluster
-
 from core.Ipfs.ipfs import IPFS
 
 
 class MLOperations:
-    def __init__(self):
+    def __init__(self,training_type):
         # You can add any necessary initialization code here
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
         self.path_global_model="global_model.h5"
         self.global_model_hash=None
         self.current_model=None
+        self.training_type=training_type
         pass
 
     def is_global_model_hash(self,model_hash):    
@@ -29,18 +29,17 @@ class MLOperations:
     
     def build_model(self,):
                 # Build a simple neural network model
-        model = keras.models.Sequential([
-            keras.layers.Flatten(input_shape=(28, 28)),
-            keras.layers.Dense(128, activation='relu'),
-            keras.layers.Dropout(0.2),
-            keras.layers.Dense(10)
-        ])
 
-        # Compile the model
-        model.compile(optimizer='adam',
-                      loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                      metrics=['accuracy'])
-        
+        if training_type=='CCN':
+            model=get_model_CNN()
+
+
+        elif training_type=='Regression':
+            model=get_model_Reg()
+
+        elif training_type=='Classification':  
+            model=get_model_nlp()
+
 
         
         return model
@@ -99,39 +98,6 @@ class MLOperations:
     def send_model_to_ipfs(self,path):
         return self.ipfs.push_model(path)
         
-
-    def send_model_to_aggregator(self):
-        """
-        This method represents the action taken when a participant sends their trained model to the aggregator.
-
-        Algorithm:
-        1. Prepare the trained model for transmission.
-        2. Send the model to the aggregator.
-
-        Returns:
-        A message indicating that the model has been sent to the aggregator.
-        """
-        return "Model sent to the aggregator"
-
-    def aggregator_receives_models(self,):
-
-        """
-        This method represents the action taken when the aggregator node receives models from participants.
-
-        Algorithm:
-        1. Wait for models to be sent by participants.
-        2. Receive and store the models.
-
-        Returns:
-        A message indicating that the aggregator has received the models.
-        """
-        
-
-
-
-
-        return "Aggregator received models"
-
     def aggregate_models(self,get_model_list):
         """
         This method represents the action taken when the aggregator aggregates received models.
@@ -196,6 +162,53 @@ class MLOperations:
 
         return global_model
 
+    def send_global_model_to_others(self,mqtt_obj,global_model_hash):
+        """
+        This method represents the action taken when the global model is sent to other participants.
+
+        Algorithm:
+        1. Prepare the global model for transmission.
+        2. Send the global model to other participants.
+
+        Returns:
+        A message indicating that the global model has been sent to others.
+        """
+        mqtt_obj.send_internal_messages_global_model(global_model_hash)
+        return "Global model sent to others"
+
+
+    def send_model_to_aggregator(self):
+        """
+        This method represents the action taken when a participant sends their trained model to the aggregator.
+
+        Algorithm:
+        1. Prepare the trained model for transmission.
+        2. Send the model to the aggregator.
+
+        Returns:
+        A message indicating that the model has been sent to the aggregator.
+        """
+        return "Model sent to the aggregator"
+
+    def aggregator_receives_models(self,):
+
+        """
+        This method represents the action taken when the aggregator node receives models from participants.
+
+        Algorithm:
+        1. Wait for models to be sent by participants.
+        2. Receive and store the models.
+
+        Returns:
+        A message indicating that the aggregator has received the models.
+        """
+        
+
+
+
+
+        return "Aggregator received models"
+
     def is_model_better(self):
         """
         This method checks if the current model is better than the previous one.
@@ -221,19 +234,7 @@ class MLOperations:
         """
         return "Post-training steps completed"
 
-    def send_global_model_to_others(self,mqtt_obj,global_model_hash):
-        """
-        This method represents the action taken when the global model is sent to other participants.
 
-        Algorithm:
-        1. Prepare the global model for transmission.
-        2. Send the global model to other participants.
-
-        Returns:
-        A message indicating that the global model has been sent to others.
-        """
-        mqtt_obj.send_internal_messages_global_model(global_model_hash)
-        return "Global model sent to others"
 
     def aggregator_saves_global_model_in_ipfs(self):
         """

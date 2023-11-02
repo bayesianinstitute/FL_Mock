@@ -6,3 +6,4 @@ global_model.h5
 myenv/
 visualization/tensorboard/logs
 __pycache__
+custom_*/
