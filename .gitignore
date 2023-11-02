@@ -6,3 +6,7 @@ global_model.h5
 myenv/
 visualization/tensorboard/logs
 __pycache__
+logs
+visualization/tensorboard/log
+ml_operations1
+data.txt
