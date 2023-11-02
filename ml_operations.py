@@ -24,22 +24,31 @@ class MLOperations:
     def get_model(self,):
                 # Build a simple neural network model
 
-        if self.training_type=='CNN':
+        if self.training_type=='CNN-Mnist':
             from Model.deepLearningModel.CNN import CNNMnist
 
             self.current_model=CNNMnist(self.optimizer)
 
 
-        elif self.training_type=='RegressionANN':
+        elif self.training_type=='ANN-Regression':
             from Model.deepLearningModel.ANN import ANNTabularLinearRegression
             self.current_model=ANNTabularLinearRegression()
 
-        elif self.training_type=='ClassificationANN':  
+        elif self.training_type=='ANN-Classification':  
             from Model.deepLearningModel.ANN import ANNTabularClassification
 
             self.current_model=ANNTabularClassification
         
-        # elif self.training_type==
+        elif self.training_type=='LSTM-(TimeSeries)':
+            from Model.timeSeriesModel.LSTM import TimeSeriesLSTM
+            self.current_model=TimeSeriesLSTM
+
+        elif self.training_type=='RNN-(TimeSeries)':
+            from Model.timeSeriesModel.RNN import TimeSeriesRNN
+            self.current_model=TimeSeriesRNN
+        
+       
+
 
 
         
