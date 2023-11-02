@@ -15,6 +15,7 @@ def train():
     company_name = request.form['companyName']
     model_name = request.form['modelName']
     dataset_name = request.form['datasetName']
+    optimizer_name = request.form['optimizerName']
     num_clusters = request.form['numClusters']
     num_computers = request.form['numComputers']
 
@@ -22,6 +23,7 @@ def train():
         "company_name": company_name,
         "model_name": model_name,
         "dataset_name": dataset_name,
+        "optimizer_name": optimizer_name,
         "no_of_cluster": num_clusters,
         "no_of_computers": num_computers
     }
@@ -44,7 +46,7 @@ def train():
     voting_topic = f'Voting topic on Cluster {cluster_name}'
     declare_winner_topic = f'Winner Topic on Cluster {cluster_name}'
 
-    workflow = DFLWorkflow(broker_service, cluster_name, internal_cluster_topic, client_id, voting_topic, declare_winner_topic, min_node, updated_broker,data["model_name"])
+    workflow = DFLWorkflow(broker_service, cluster_name, internal_cluster_topic, client_id, voting_topic, declare_winner_topic, min_node, updated_broker,data["model_name"],optimizer_name)
     workflow.run()
 
     # After saving the data, redirect back to the home page
