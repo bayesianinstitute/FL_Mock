@@ -77,8 +77,9 @@ class CNNMnist:
 
     def run_tensorboard(self):
         try:
-            dir = f"custom_CNNMnist_logs/fit"  # Specify the log directory
-            subprocess.run(["tensorboard", "--logdir", dir])
+            log_dir = f"custom_CNNMnist_logs/fit"  # Specify the log directory
+            tensorboard_callback = TensorBoard(log_dir=log_dir, write_graph=True)
+            subprocess.Popen(["cmd.exe", "/k", "tensorboard", "--logdir", log_dir])
         except Exception as e:
             print(f"Error running TensorBoard: {e}")
 
@@ -90,3 +91,5 @@ if __name__ == '__main__':
 
     # Run TensorBoard in the background
     mnist_model.run_tensorboard()  # Use the same log directory specified in the TensorBoard callback
+
+    print("Completed training")

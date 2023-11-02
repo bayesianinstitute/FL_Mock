@@ -39,13 +39,17 @@ class MLOperations:
 
             self.current_model=ANNTabularClassification(self.optimizer)
         
+        elif self.training_type=='LSTM-(NLP)':
+            from Model.deepLearningModel.NLPLSTMMovieReviews import NLPLSTMMovieReviews
+            self.current_model=NLPLSTMMovieReviews(optimizer=self.optimizer,)
+        
         elif self.training_type=='LSTM-(TimeSeries)':
             from Model.timeSeriesModel.LSTM import TimeSeriesLSTM
             self.current_model=TimeSeriesLSTM(optimizer=self.optimizer,)
 
         elif self.training_type=='RNN-(TimeSeries)':
             from Model.timeSeriesModel.RNN import TimeSeriesRNN
-            self.current_model=TimeSeriesRNN()
+            self.current_model=TimeSeriesRNN(optimizer=self.optimizer)
         
        
 
@@ -105,7 +109,7 @@ class MLOperations:
         self.current_model.train_model(epochs=1,batch_size=32)
 
         # Show Ui
-        self.current_model.run_tensorboard()
+        # self.current_model.run_tensorboard()
 
         # Evaluate the model on the test data
         test_loss, test_acc = self.current_model.evaluate_model()

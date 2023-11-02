@@ -61,7 +61,8 @@ class NLPLSTMMovieReviews:
 
     def run_tensorboard(self):
         try:
-            subprocess.run(["tensorboard", "--logdir", self.log_dir])
+            logdir = f"custom_NLPLSTMMovieReviews_logs/fit"  # Specify the log directory
+            subprocess.run(["tensorboard", "--logdir", logdir])
         except Exception as e:
             print(f"Error running TensorBoard: {e}")
 

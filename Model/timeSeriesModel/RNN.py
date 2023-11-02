@@ -2,15 +2,22 @@ import tensorflow as tf
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import SimpleRNN, Dense
+from keras.models import Sequential
+from keras.layers import SimpleRNN, Dense
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import yfinance as yf
-from tensorflow.keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard
 
 class TimeSeriesRNN:
-    def __init__(self, ticker, start_date, end_date, sequence_length, num_units, optimizer='adam', log_dir='custom_RNN_logs'):
+    def __init__(self, ticker="AAPL",
+                 start_date="2022-01-01",
+                 end_date= "2023-01-01",
+                 sequence_length=10, 
+                 num_units=64, 
+                 optimizer='adam',
+                 log_dir='custom_RNN_logs'):
+        
         self.ticker = ticker
         self.start_date = start_date
         self.end_date = end_date

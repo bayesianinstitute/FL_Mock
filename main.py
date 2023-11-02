@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     updated_broker= 'broker.hivemq.com'
 
-    model_type='CNN'
+    model_type='LSTM-(NLP)'
 
     optimizer ='adam'
 

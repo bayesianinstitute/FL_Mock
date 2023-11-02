@@ -122,9 +122,19 @@ class ANNTabularLinearRegression:
         test_loss, test_mae = self.model.evaluate(self.x_test, self.y_test)
         return test_loss, test_mae
 
+    
+    def save_model(self, model_filename):
+        # Save the model to a file
+        self.model.save(model_filename)
+        print(f"Model saved to {model_filename}")
+    
+    def set_weights(self, weights):
+        self.model.set_weights(weights)
+        return self.model
+
     def run_tensorboard(self):
         try:
-            logdir = f"custom_ANN_Linear_log/fit"  # Append a trailing slash to the log directory
+            logdir = f"custom_ANN_Classification_log/fit"  # Specify the log directory
             subprocess.run(["tensorboard", "--logdir", logdir])
         except Exception as e:
             print(f"Error running TensorBoard: {e}")

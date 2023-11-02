@@ -36,7 +36,7 @@ class IdentifyParticipant:
         # Get  Connect to Broker
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            print(f"Connected to Broker")
+            # print(f"Connected to Broker")
             client.subscribe(self.ram_topic)
             client.subscribe(self.aggregator_topic)
         else:

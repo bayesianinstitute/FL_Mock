@@ -5,8 +5,16 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import TensorBoard
 
 
+
 class TimeSeriesLSTM:
-    def __init__(self, ticker, start_date, end_date, sequence_length, num_units, optimizer='adam',log_dir='custom_LSTM_logs'):
+    def __init__(self, ticker="AAPL",
+                 start_date="2022-01-01",
+                 end_date= "2023-01-01",
+                 sequence_length=10, 
+                 num_units=64, 
+                 optimizer='adam',
+                 log_dir='custom_LSTM_logs'):
+        
         self.ticker = ticker
         self.start_date = start_date
         self.end_date = end_date

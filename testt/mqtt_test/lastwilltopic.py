@@ -42,7 +42,7 @@ def main():
     # Start the client loop
     client.loop_start()
 
-    # Keep the program running
+    # Keep the program runningANN-Classification
     try:
         while True:
             pass
