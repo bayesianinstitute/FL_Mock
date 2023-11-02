@@ -25,7 +25,7 @@ class MLOperations:
                 # Build a simple neural network model
 
         if self.training_type=='CCN':
-            from Model.deepLearningModel.CCN import CNNMnist
+            from Model.deepLearningModel.CNN import CNNMnist
 
             self.current_model=CNNMnist(self.optimizer)
 
