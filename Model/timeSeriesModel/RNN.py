@@ -25,10 +25,10 @@ class TimeSeriesRNN:
         self.num_units = num_units
         self.optimizer = optimizer
         self.log_dir = log_dir
-        self.model = self.build_rnn_model()
+        self.model = self.build_model()
         self.data = self.load_and_preprocess_data()
 
-    def build_rnn_model(self):
+    def build_model(self):
         model = Sequential()
         model.add(SimpleRNN(self.num_units, input_shape=(self.sequence_length, 1)))
         model.add(Dense(1))  # Single output for time series forecasting

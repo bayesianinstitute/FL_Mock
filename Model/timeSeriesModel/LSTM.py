@@ -21,15 +21,18 @@ class TimeSeriesLSTM:
         self.sequence_length = sequence_length
         self.num_units = num_units
         self.optimizer = optimizer
-        self.model = self.build_lstm_model()
+        self.model = self.build_model()
         self.x_train, self.y_train, self.x_test, self.y_test = self.load_and_preprocess_data()
         self.log_dir=log_dir
 
-    def build_lstm_model(self):
+    def build_model(self):
         model = tf.keras.Sequential()
         model.add(tf.keras.layers.LSTM(self.num_units, input_shape=(self.sequence_length, 1)))
-        model.add(tf.keras.layers.Dense(1))  # Single output for time series forecasting
-        model.compile(optimizer=self.optimizer, loss='mean_squared_error')
+        model.add(tf.keras.layers.Dense(1))
+        
+        # Add accuracy as a metric
+        model.compile(optimizer=self.optimizer, loss='mean_squared_error', metrics=['accuracy'])
+        
         return model
 
     def load_and_preprocess_data(self):
@@ -62,18 +65,18 @@ class TimeSeriesLSTM:
 
         return x_train, y_train, x_test, y_test
 
-    def train_lstm_model(self, epochs=100, batch_size=32):
+    def train_model(self, epochs=100, batch_size=32):
         # Train the LSTM model
         tensorboard_callback = TensorBoard(log_dir=self.log_dir, histogram_freq=1)
 
         self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size,callbacks=[tensorboard_callback])
 
-    def evaluate_lstm_model(self):
+    def evaluate_model(self):
         # Evaluate the LSTM model on the test data
-        test_loss = self.model.evaluate(self.x_test, self.y_test)
-        return test_loss
+        test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
+        return test_loss, test_accuracy
 
-    def forecast_lstm(self, input_data):
+    def forecast(self, input_data):
         # Make predictions using the trained LSTM model
         predictions = self.model.predict(input_data)
         return predictions
@@ -110,13 +113,15 @@ if __name__ == '__main__':
     lstm_forecast = TimeSeriesLSTM(ticker, start_date, end_date, sequence_length, num_units, optimizer='adam',log_dir='custom_LSTM_logs')
 
     # Train the LSTM model
-    lstm_forecast.train_lstm_model(epochs=100, batch_size=32)
+    lstm_forecast.train_model(epochs=100, batch_size=32)
 
     # Evaluate the model
-    test_loss = lstm_forecast.evaluate_lstm_model()
+    test_loss, test_accuracy = lstm_forecast.evaluate_model()
     print(f'Test Loss: {test_loss:.4f}')
+    print(f'Test Accuracy: {test_accuracy:.4f}')
+
 
     # Make forecasts
     input_data = lstm_forecast.x_test  # Use the test data for forecasting
-    forecasts = lstm_forecast.forecast_lstm(input_data)
+    forecasts = lstm_forecast.forecast(input_data)
     print("Forecasts:", forecasts)
