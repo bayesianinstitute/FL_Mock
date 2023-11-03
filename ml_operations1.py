@@ -11,8 +11,8 @@ class MLOperations:
     def __init__(self):
         # You can add any necessary initialization code here
         self.ipfs=IPFS()
-        self.path_model="saved_model.h5"
-        self.path_global_model="global_model.h5"
+        self.path_model="saved_model.keras"
+        self.path_global_model="global_model.keras"
         self.global_model_hash=None
         self.current_model=None
         pass

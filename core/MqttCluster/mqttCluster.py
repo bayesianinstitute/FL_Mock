@@ -176,6 +176,10 @@ class MQTTCluster:
             data = json.dumps({"global_model": modelhash})
             self.client.publish(self.internal_cluster_topic, data)
             print("Successfully send Global model to internal_messages_model")
+    
+    def switch_head(self, ):
+        
+        pass
 
 
     def switch_broker(self, new_broker_address):

@@ -141,7 +141,7 @@ class ANNTabularLinearRegression:
 
 
             
-# Usage example:
+Usage example:
 if __name__ == '__main__':
     tabular_model = ANNTabularClassification('adam')
     tabular_model.train_model(epochs=10, batch_size=32)
@@ -151,10 +151,9 @@ if __name__ == '__main__':
     tabular_model.run_tensorboard()
 
 
-# if __name__ == '__main__':
-#     tabular_regression_model = ANNTabularLinearRegression('adam')
-#     tabular_regression_model.train_model(epochs=10, batch_size=32)
-#     test_loss, test_mae = tabular_regression_model.evaluate_model()
-#     print(f'Test loss: {test_loss:.4f}, Test Mean Absolute Error: {test_mae:.4f}')
+    tabular_regression_model = ANNTabularLinearRegression('adam')
+    tabular_regression_model.train_model(epochs=10, batch_size=32)
+    test_loss, test_mae = tabular_regression_model.evaluate_model()
+    print(f'Test loss: {test_loss:.4f}, Test Mean Absolute Error: {test_mae:.4f}')
 
-#     tabular_regression_model.run_tensorboard()
+    tabular_regression_model.run_tensorboard()

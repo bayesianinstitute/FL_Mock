@@ -46,7 +46,7 @@ destination_folder = 'downloaded_models'
 os.makedirs(destination_folder, exist_ok=True)
 
 # Push the trained model to IPFS and get the hash
-model_hash = ipfs_communicator.push_model('saved_model.h5')
+model_hash = ipfs_communicator.push_model('saved_model.keras')
 
 # Access the model hash
 print("Model Hash:", model_hash)
@@ -59,9 +59,9 @@ In this example:
 
 We initialize the IPFS communicator by creating an instance of the IPFS class.
 Define the destination folder to save the downloaded model (destination_folder).
-Push a pre-trained TensorFlow model (assumed to be saved as 'saved_model.h5') to IPFS, and obtain the model's IPFS hash.
+Push a pre-trained TensorFlow model (assumed to be saved as 'saved_model.keras') to IPFS, and obtain the model's IPFS hash.
 Download the model from IPFS using its hash and save it to the 'downloaded_models' directory.
 The downloaded model is then loaded into TensorFlow and can be used for further tasks.
-Ensure you have a TensorFlow model file (saved_model.h5) available in your working directory before running the code.
+Ensure you have a TensorFlow model file (saved_model.keras) available in your working directory before running the code.
 
 This code makes it easy to leverage IPFS for TensorFlow model storage and retrieval, enabling decentralized and efficient model sharing

@@ -60,7 +60,7 @@ class MachineLearningModelTrainer:
         self.train_model(train_images, train_labels)
         test_accuracy = self.evaluate_model(test_images, test_labels)
         # Optional: Save the trained model
-        # self.save_model("trained_model.h5")
+        # self.save_model("trained_model.keras")
         return f"Machine learning model trained with test accuracy: {test_accuracy:.2f}."
 
 if __name__ == "__main__":

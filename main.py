@@ -6,7 +6,7 @@ import argparse
 
 from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
 import time
-
+import uuid
 
 
 class DFLWorkflow:
@@ -35,7 +35,7 @@ class DFLWorkflow:
         self.voting_topic=voting_topic
         self.winner_declare=declare_winner_topic
 
-        self.id = id
+        self.id =  f'{id}-{uuid.uuid4()}'
         self.is_status=None
         self.min_node=min_node
         self.updated_broker=updated_broker
@@ -129,26 +129,7 @@ class DFLWorkflow:
 
         print(f"Training Completed with round {Round_Counter} !! ")
 
-        # if self.ml_operations.is_model_better():
-        #     continue
-        # else:
-        #     break
-        
 
-        # print(self.ml_operations.post_training_steps())
-        # if self.ml_operations.aggregator_saves_global_model_in_ipfs():
-        #     print(self.ml_operations.saves_final_global_model_in_ipfs())
-        # self.pause_execution()
-
-        # print(self.mqtt_operations.disconnect())
-        # self.pause_execution()
-
-        # print(self.ml_operations.cleanup())
-        # self.pause_execution()
-
-        # if self.ml_operations.aggregator_stops_mqtt_broker_service():
-        #     print(self.ml_operations.aggregator_stops_mqtt_broker_service())
-        # self.pause_execution()
 
 if __name__ == "__main__":
 
@@ -163,13 +144,13 @@ if __name__ == "__main__":
 
     updated_broker= 'broker.hivemq.com'
 
-    model_type='LSTM-(NLP)'
+    model_type='CNN'
 
     optimizer ='adam'
 
     # dataset='Mnist'
     
-
+   
 
     args = parser.parse_args()
 

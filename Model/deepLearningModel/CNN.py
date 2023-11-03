@@ -5,6 +5,9 @@ from keras.datasets import mnist
 from keras.callbacks import TensorBoard
 import subprocess
 import datetime
+import warnings
+
+
 
 class CNNMnist:
     def __init__(self, optimizer='adam',log='custom_CNNMnist_logs'):
