@@ -48,6 +48,12 @@ class MQTTCluster:
         try:
             json_data = json.loads(data)
 
+            
+
+            print("Received data: ",json_data)
+
+
+
             if 'global_model' in json_data:
                 self.handle_global_model(json_data, client_id, cluster_id)
 
@@ -55,7 +61,7 @@ class MQTTCluster:
                 self.handle_internal_data(json_data, client_id, cluster_id)
             
             # Check for the terminate message
-            if 'terminate_msg' in json_data:
+            if 'terimate_msg' in json_data:
                 self.handle_terminate_message(client_id, cluster_id)
 
         except json.JSONDecodeError as e:
@@ -70,7 +76,7 @@ class MQTTCluster:
 
         self.terimate_status= True
         
-
+        time.sleep(4)
 
         print(f"ALL Should Disconnected message from client : {client_id}")
 
@@ -144,6 +150,9 @@ class MQTTCluster:
             # Wait for all hashes to be available
             print("Waiting for all hashes to be available")
             time.sleep(4)
+            if self.terimate_status:
+                print("Force to disconnect")
+                break
             pass
 
         # Once all hashes are available, extract and return them
@@ -162,7 +171,11 @@ class MQTTCluster:
         while not self.global_model_hash:
             # You can add a sleep here to reduce CPU usage
             print("Waiting for global model")
+
             time.sleep(5)  
+            if self.terimate_status:
+                print("Force to disconnect")
+                break
             pass
         return self.global_model_hash
 
@@ -177,7 +190,7 @@ class MQTTCluster:
         self.client.publish(self.internal_cluster_topic, data)
         print("Successfully sent send_terimate_message")
 
-        pass        
+        return True        
 
     def send_internal_messages_model(self, modelhash):
         message = {

@@ -124,12 +124,19 @@ class DFLWorkflow:
 
                 self.ml_operations.is_global_model_hash(global_model_hash)
 
+                if Round_Counter==2:
+                    print("terimating by user")
+                    mqtt_obj.send_terimate_message("Terminate")
+
+                    time.sleep(5)
+
+
+                    self.terminate_program()
 
 
 
-                # time.sleep(10)
 
-                # self.pause_execution()            
+        
             else :
                 global_model_hash=mqtt_obj.global_model()
                 print("i am not aggregator got global model hash: {}".format(global_model_hash))
@@ -139,11 +146,7 @@ class DFLWorkflow:
             if Round_Counter==6:
                 break
 
-            if Round_Counter==2:
-                print("terimating by user")
-                mqtt_obj.send_terimate_message("Terminate")
 
-                self.terminate_program()
 
 
         print(f"Training Completed with round {Round_Counter} !! ")
