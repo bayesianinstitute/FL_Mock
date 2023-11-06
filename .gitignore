@@ -14,3 +14,4 @@ appcopy.py
 custom_*/
 data.json
 .pytest_cache
+report/

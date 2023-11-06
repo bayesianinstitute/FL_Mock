@@ -1,46 +1,55 @@
 import os
-import shutil
 import tempfile
 import pytest
-from core.IPFS.ipfs import IPFS  # Import your IPFS class from the appropriate location
+from tensorflow import keras
+from core.IPFS.ipfs import IPFS
 
-@pytest.fixture
-def ipfs_communicator():
+# Sample model for testing
+def create_sample_model():
+    model = keras.Sequential([
+        keras.layers.Dense(64, activation='relu', input_shape=(10,)),
+        keras.layers.Dense(32, activation='relu'),
+        keras.layers.Dense(1, activation='linear')
+    ])
+    model.compile(optimizer='adam', loss='mse')
+    return model
+
+@pytest.fixture(scope="module")
+def test_model():
+    return create_sample_model()
+
+@pytest.fixture(scope="module")
+def test_saved_model_path(test_model):
+    # Create a temporary directory and save the model to it
+    with tempfile.TemporaryDirectory() as temp_dir:
+        model_path = os.path.join(temp_dir, 'model.h5')
+        test_model.save(model_path)
+        yield model_path
+
+@pytest.fixture(scope="module")
+def test_ipfs():
     return IPFS()
 
-@pytest.fixture
-def temp_dir():
-    temp_dir = tempfile.mkdtemp()
-    yield temp_dir
-    shutil.rmtree(temp_dir)
+def test_fetch_model(test_ipfs, test_model, test_saved_model_path):
+    model_hash = test_ipfs.push_model(test_saved_model_path)
+    fetched_model = test_ipfs.fetch_model(model_hash)
+    
+    # Compare the fetched model with the original model
+    assert isinstance(fetched_model, keras.models.Sequential)
+    assert test_model.input_shape == fetched_model.input_shape
+    assert test_model.output_shape == fetched_model.output_shape
 
-def test_push_model(ipfs_communicator, temp_dir):
-    # Create a temporary model file for testing
-    with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
-        temp_model_file.write(b'Test Model Data')
+def test_push_model(test_ipfs, test_saved_model_path):
+    model_hash = test_ipfs.push_model(test_saved_model_path)
+    assert isinstance(model_hash, str)
 
-    model_hash = ipfs_communicator.push_model(temp_model_file.name)
-    assert model_hash is not None
-
-def test_download_model(ipfs_communicator, temp_dir):
-    # Create a temporary model file for testing
-    with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
-        temp_model_file.write(b'Test Model Data')
-
-    model_hash = ipfs_communicator.push_model(temp_model_file.name)
-
-    downloaded_model = ipfs_communicator.download_model(model_hash, temp_dir)
-    assert downloaded_model is not None
-
-    # Check if the downloaded model file exists
-    assert os.path.exists(os.path.join(temp_dir, 'saved_model.keras'))
-
-def test_fetch_model(ipfs_communicator, temp_dir):
-    # Create a temporary model file for testing
-    with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
-        temp_model_file.write(b'Test Model Data')
-
-    model_hash = ipfs_communicator.push_model(temp_model_file.name)
-
-    model = ipfs_communicator.fetch_model(model_hash)
-    assert model is not None
+def test_download_model(test_ipfs, test_model, test_saved_model_path):
+    model_hash = test_ipfs.push_model(test_saved_model_path)
+    
+    with tempfile.TemporaryDirectory() as temp_dir:
+        fetched_model = test_ipfs.download_model(model_hash, temp_dir)
+        
+        # Compare the fetched model with the original model
+        assert isinstance(fetched_model, keras.models.Sequential)
+        assert test_model.input_shape == fetched_model.input_shape
+        assert test_model.output_shape == fetched_model.output_shape

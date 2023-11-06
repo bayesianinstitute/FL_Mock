@@ -18,6 +18,7 @@ class MQTTCluster:
         self.client_hash_mapping = {}
         self.round = 0
         self.id = f"{self.cluster_name}_Client_{id}"
+        self.terimate_status = False
 
     def create_clients(self):
         self.client = mqtt.Client(self.id)
@@ -52,9 +53,26 @@ class MQTTCluster:
 
             if self.is_worker_head(client):
                 self.handle_internal_data(json_data, client_id, cluster_id)
+            
+            # Check for the terminate message
+            if 'terminate_msg' in json_data:
+                self.handle_terminate_message(client_id, cluster_id)
 
         except json.JSONDecodeError as e:
             pass  # Handle JSON decoding errors
+
+    def terimate_status(self):
+        return self.terimate_status
+
+    def handle_terminate_message(self, client_id, cluster_id):
+    # Handle the termination message here
+        print(f"Received terminate message from {client_id} in cluster {cluster_id}")
+
+        self.terimate_status= True
+        
+
+
+        print(f"ALL Should Disconnected message from client : {client_id}")
 
     def handle_global_message(self, message, client_id, cluster_id):
         data = message.payload.decode('utf-8')
@@ -147,7 +165,19 @@ class MQTTCluster:
             time.sleep(5)  
             pass
         return self.global_model_hash
-            
+
+
+    def send_terimate_message(self, t_msg):
+        message = {
+            "client_id": self.id,
+            "terimate_msg": t_msg
+        }
+        data = json.dumps(message)
+
+        self.client.publish(self.internal_cluster_topic, data)
+        print("Successfully sent send_terimate_message")
+
+        pass        
 
     def send_internal_messages_model(self, modelhash):
         message = {

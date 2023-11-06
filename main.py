@@ -42,10 +42,9 @@ class DFLWorkflow:
 
     
     def terminate_program(self):
-        while True:
-            user_input = input("Press 'q' and Enter to quit: ").strip().lower()
-            if user_input == 'q':
-                sys.exit()
+        print("Terminated program Successfully ")
+        sys.exit()
+
 
 
     def pause_execution(self,):
@@ -73,6 +72,13 @@ class DFLWorkflow:
         Round_Counter=0
 
         while True:
+
+            if mqtt_obj.terimate_status:
+                self.terminate_program()
+
+
+
+
             Round_Counter=Round_Counter+1
 
             print("Round_Counter : ",Round_Counter )
@@ -133,6 +139,12 @@ class DFLWorkflow:
             if Round_Counter==6:
                 break
 
+            if Round_Counter==2:
+                print("terimating by user")
+                mqtt_obj.send_terimate_message("Terminate")
+
+                self.terminate_program()
+
 
         print(f"Training Completed with round {Round_Counter} !! ")
 
@@ -168,5 +180,6 @@ if __name__ == "__main__":
 
     workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,args.min_node,updated_broker,model_type,optimizer)
 
+   # run using python main.py test.mosquitto.org USA internal_USA_topic --id 1 --min_node 3
 
     workflow.run()

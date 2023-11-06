@@ -35,7 +35,7 @@ class IPFS:
         model_bytes = self.client.cat(model_hash)
 
         # Specify the path for saving the model file locally
-        local_model_path = os.path.join(destination_folder, 'model.keras')
+        local_model_path = os.path.join(destination_folder, 'model.h5')
 
         with open(local_model_path, 'wb') as f:
             f.write(model_bytes)
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
 
     # Push the trained model to IPFS and get the hash
-    model_hash = ipfs_communicator.push_model('saved_model.keras')
+    model_hash = ipfs_communicator.push_model('saved_model.h5')
 
     # Access the model hash
     print("Model Hash:", model_hash)
