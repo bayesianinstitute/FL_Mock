@@ -112,7 +112,7 @@ class ANNTabularLinearRegression:
 
     def train_model(self, epochs=10, batch_size=32):
         # Create a TensorBoard callback to log the training process
-        tensorboard_callback = tf.kcleareras.callbacks.TensorBoard(log_dir=self.dir_log, histogram_freq=1)  # Set up TensorBoard callback
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.dir_log, histogram_freq=1)  # Set up TensorBoard callback
 
         # Train the model and use the TensorBoard callback
         self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size, callbacks=[tensorboard_callback])
