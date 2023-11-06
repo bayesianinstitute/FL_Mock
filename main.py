@@ -40,6 +40,13 @@ class DFLWorkflow:
         self.min_node=min_node
         self.updated_broker=updated_broker
 
+    
+    def terminate_program(self):
+        while True:
+            user_input = input("Press 'q' and Enter to quit: ").strip().lower()
+            if user_input == 'q':
+                sys.exit()
+
 
     def pause_execution(self,):
         if input("Press Enter to continue (or type 'q' and press Enter to quit): ").strip().lower() == 'q':
@@ -144,7 +151,7 @@ if __name__ == "__main__":
 
     updated_broker= 'broker.hivemq.com'
 
-    model_type='LSTM-(TimeSeries)'
+    model_type='CNN'
 
     optimizer ='adam'
 
@@ -160,5 +167,6 @@ if __name__ == "__main__":
 
 
     workflow = DFLWorkflow(args.broker_service,args.cluster_name,args.internal_cluster_topic,args.id,voting_topic,declare_winner_topic,args.min_node,updated_broker,model_type,optimizer)
+
 
     workflow.run()
