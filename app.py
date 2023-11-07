@@ -52,5 +52,12 @@ def train():
     # After saving the data, redirect back to the home page
     return redirect(url_for('home'))
 
+@app.route('/stop', methods=['POST'])
+def stop_training():
+    
+    
+    return "Training stop request sent"
+
+
 if __name__ == '__main__':
     app.run(debug=True)

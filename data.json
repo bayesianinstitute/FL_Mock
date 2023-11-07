@@ -1,8 +1,8 @@
 {
-    "company_name": "Amam",
+    "company_name": "B",
     "model_name": "CNN",
     "dataset_name": "mnist",
-    "optimizer_name": "adam",
+    "optimizer_name": "sgd",
     "no_of_cluster": "1",
     "no_of_computers": "1"
 }

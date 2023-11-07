@@ -15,3 +15,4 @@ custom_*/
 data.json
 .pytest_cache
 report/
+mlruns/
