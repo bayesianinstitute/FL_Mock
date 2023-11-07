@@ -31,9 +31,6 @@ class MQTTCluster:
         self.client.loop_start()
 
 
-        
-
-
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
         cluster_id = self.cluster_name
@@ -47,12 +44,8 @@ class MQTTCluster:
         data = message.payload.decode('utf-8')
         try:
             json_data = json.loads(data)
-
-            
-
+         
             print("Received data: ",json_data)
-
-
 
             if 'global_model' in json_data:
                 self.handle_global_model(json_data, client_id, cluster_id)
@@ -145,7 +138,7 @@ class MQTTCluster:
     def stop_receiving_messages(self):
         self.client.unsubscribe(self.internal_cluster_topic)
 
-    def send_model_hash(self):
+    def get_all_model_hash(self):
         while len(self.client_hash_mapping) != self.num_clients:
             # Wait for all hashes to be available
             print("Waiting for all hashes to be available")

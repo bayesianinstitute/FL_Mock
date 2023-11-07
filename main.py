@@ -3,7 +3,6 @@ from mqtt_operations import MqttOperations
 from ml_operations import MLOperations
 from utils import Utils
 import argparse
-
 from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
 import time
 import uuid
@@ -39,6 +38,8 @@ class DFLWorkflow:
         self.is_status=None
         self.min_node=min_node
         self.updated_broker=updated_broker
+        self.get_list=None
+
 
     
     def terminate_program(self):
@@ -46,13 +47,7 @@ class DFLWorkflow:
         sys.exit()
 
 
-
-    def pause_execution(self,):
-        if input("Press Enter to continue (or type 'q' and press Enter to quit): ").strip().lower() == 'q':
-            sys.exit()
-
     def run(self,):
-        get_list=None
         self.participant = IdentifyParticipant(self.id,self.broker_service,self.voting_topic,self.winner_declare,self.min_node)
         self.is_status=self.participant.main()
         print("is worker head ",self.is_status)
@@ -65,93 +60,82 @@ class DFLWorkflow:
                                               self.is_status,
                                               self.id)
 
-
+        # start dfl and get mqtt communication
         mqtt_obj=self.mqtt_operations.start_dfl_using_mqtt()
+
+        # subscribe to internal messgae
         mqtt_obj.subscribe_to_internal_messages()
 
         Round_Counter=0
 
         while True:
 
+            # always reveive internal messages in mqtt Communication
+            mqtt_obj.receive_internal_messages()
+
             if mqtt_obj.terimate_status:
                 self.terminate_program()
 
-
-
-
+            # temporarily added to check the round_counter
             Round_Counter=Round_Counter+1
 
             print("Round_Counter : ",Round_Counter )
 
-            time.sleep(5)
-
-            # if Round_Counter==2:
-            #     print("Changing Broker")
-            #     time.sleep(10)
-            #     mqtt_obj.switch_broker(self.updated_broker)
-
-
-
+            # train and get model hash
             hash=self.ml_operations.train_machine_learning_model()
             print("hash: {}".format(hash))
-            # self.pause_execution()
+
+            # send model hash to internal cluster
             mqtt_obj.send_internal_messages_model(hash)
-
-
-            # self.pause_execution()
-            mqtt_obj.receive_internal_messages()
-            # self.pause_execution()
 
 
             # if head status is True send,aggreagte and send global model to all workers
             if self.is_status==True:
-                get_list=mqtt_obj.send_model_hash()
-                print("Send global model",get_list)
-                # self.pause_execution()
 
-                self.global_model=self.ml_operations.aggregate_models(get_list)
+                # Get all Model from all workers
+                self.get_list=mqtt_obj.get_all_model_hash()
+                print("got all  model hash list",self.get_list)
+
+                # send all model to aggregator it and get global model
+                self.global_model=self.ml_operations.aggregate_models(self.get_list)
                 print(" got Global model hash: {}".format(self.global_model))
 
-                # self.pause_execution()
+                # send global model to all workers
                 print(self.ml_operations.send_global_model_to_others(mqtt_obj,self.global_model))
-                # for key in mqtt_obj.client_hash_mapping:
-                #     mqtt_obj.client_hash_mapping[key] = None
-                mqtt_obj.client_hash_mapping.clear()
-                print("clear all hash operations")
 
+                # clear all previous model hash
+                mqtt_obj.client_hash_mapping.clear()
+                print("clear all hash operations done")
+
+                # Check latest global model and get it
                 global_model_hash=mqtt_obj.global_model()
                 print("i am  aggregator here is the  global model hash: {}".format(global_model_hash))
 
+                # set global model in Ml operations
                 self.ml_operations.is_global_model_hash(global_model_hash)
 
+                # Temporarily to terimate program and inform other user
                 if Round_Counter==2:
                     print("terimating by user")
                     mqtt_obj.send_terimate_message("Terminate")
 
-                    time.sleep(5)
-
+                    time.sleep(7)
 
                     self.terminate_program()
 
-
-
-
-        
             else :
+                # Check latest global model and get it
                 global_model_hash=mqtt_obj.global_model()
                 print("i am not aggregator got global model hash: {}".format(global_model_hash))
 
+                # set global model in Ml operations
                 self.ml_operations.is_global_model_hash(global_model_hash)
             
+            # temporary to force to stop the program
             if Round_Counter==6:
                 break
 
-
-
-
         print(f"Training Completed with round {Round_Counter} !! ")
-
-
 
 if __name__ == "__main__":
 
@@ -170,9 +154,6 @@ if __name__ == "__main__":
 
     optimizer ='adam'
 
-    # dataset='Mnist'
-    
-   
 
     args = parser.parse_args()
 

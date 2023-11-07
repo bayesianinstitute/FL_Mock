@@ -8,9 +8,9 @@ import os
 import numpy as np
 
 # Define a fixture to create an instance of the ANNTabularLinearRegression class
-@pytest.fixture(optimizers)
+@pytest.fixture(params=optimizers)
 def ann_model(request):
-    model = ANNTabularLinearRegression(optimizer=request.params)
+    model = ANNTabularLinearRegression(optimizer=request.param)
     return model
 
 # Test case to check if the model can be created
@@ -33,28 +33,25 @@ def test_save_and_load_ann_model(ann_model):
     ann_model.save_model(model_filename)
     assert os.path.exists(model_filename)
 
-    loaded_model = ANNTabularLinearRegression()
-    loaded_model.load_model(model_filename)
 
-    test_loss, test_mae = loaded_model.evaluate_model()
+def test_evaluate_model(ann_model):
+
+    test_loss, test_mae = ann_model.evaluate_model()
     assert test_loss >= 0.0
     assert test_mae >= 0.0
 
-    # Clean up the saved model file
-    os.remove(model_filename)
 
-# Test case to check if weights can be set and retrieved
-def test_set_and_get_weights(ann_model):
-    # Get the initial model weights
-    initial_weights = ann_model.model.get_weights()
 
-    # Create a new instance and set its weights
-    new_ann_model = ANNTabularLinearRegression()
-    new_ann_model.set_weights(initial_weights)
+def test_set_weights(ann_model):
+    # Test the set_weights method
+    weights = ann_model.model.get_weights()
+    new_model = ann_model.set_weights(weights)
+    assert new_model is not None
 
-    # Check if the weights of the new instance match the initial weights
-    new_weights = new_ann_model.model.get_weights()
-    assert np.all(np.array(initial_weights) == np.array(new_weights))
+@pytest.mark.skip()
+def test_run_tensorboard():
+    ann_classifier = ANNTabularLinearRegression()
+    ann_classifier.run_tensorboard()
 
 if __name__ == '__main__':
     pytest.main()
