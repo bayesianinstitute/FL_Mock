@@ -28,7 +28,7 @@ def test_evaluate_model(ann_classifier):
 
 def test_save_model(ann_classifier):
     # Test the save_model method
-    model_filename = "test_model.keras"
+    model_filename = "test_model.h5"
     ann_classifier.save_model(model_filename)
     # You can add additional assertions to check if the model file was created.
 

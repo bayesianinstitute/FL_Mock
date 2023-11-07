@@ -58,27 +58,10 @@ class MLOperations:
         
 
     def train_machine_learning_model(self):
-        """
-        This method trains a machine learning model on the MNIST dataset.
 
-        Algorithm:
-        1. Load the MNIST dataset.
-        2. Preprocess the data.
-        3. Build a simple neural network model.
-        4. Compile the model with suitable parameters.
-        5. Train the model on the training data.
-        6. Evaluate the model on the test data.
-        7. Save the trained model.
-
-        Returns:
-        A message indicating that the machine learning model has been trained with test accuracy and saved.
-        """
-        # Load the MNIST dataset
-
-
+        # Check if the global model hash is available
         if self.global_model_hash:
 
-            
 
             # get model from ipfs
             ipfs_model=self.ipfs.fetch_model(self.global_model_hash)
@@ -168,7 +151,6 @@ class MLOperations:
 
         return global_model_hash
 
-        # return "Models aggregated"
     
     def aggregate_weights(self, models):
         # Initialize global model with the architecture of the first model
@@ -281,3 +263,51 @@ class MLOperations:
         # Placeholder code (replace with the actual implementation)
         print("Aggregator saves the global model to IPFS.")
         return True
+
+
+if __name__ == "__main__":
+        # Create an instance of MLOperations
+    training_type = 'CNN'  # Choose the appropriate training type
+    optimizer = 'adam'  # Choose the optimizer
+    ml_operations = MLOperations(training_type, optimizer)
+
+    # Set the global model hash if available
+    global_model_hash = None
+
+    i=0
+    while True:
+        print("Round : " + str(i))
+        print("*"*50)
+        i=i+1
+
+        # Check global model hash
+        ml_operations.is_global_model_hash(global_model_hash)
+
+        # Train a machine learning model
+        hash1 = ml_operations.train_machine_learning_model()
+        hash2 = ml_operations.train_machine_learning_model()
+        hash3 = ml_operations.train_machine_learning_model()
+
+
+
+
+
+        # Aggregate models 
+        model_list = [hash1, hash2, hash3]
+        global_model_hash = ml_operations.aggregate_models(model_list)
+
+        if i==3:
+            break
+
+        '''
+        # Require Mqtt Object 
+
+        # Send the global model to others (replace mqtt_obj with your MQTT implementation)
+        mqtt_obj = YourMQTTClass()
+        result = ml_operations.send_global_model_to_others(mqtt_obj, global_model_hash)
+
+        # Print the result
+        print(result)
+        
+        '''
+
