@@ -69,7 +69,15 @@ bash run run_ipfs.sh
 To run the script, use the following command:
 
 ```
-python app.py
+bash run.sh "your_id"
+```
+Your id replace with id 
+
+#### Example
+
+
+```
+bash run.sh 1
 ```
 
 ## Workflow
