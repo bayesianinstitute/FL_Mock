@@ -4,6 +4,7 @@ import time
 import json
 import logging
 # clients = []
+
 class MQTTCluster:
     def __init__(self, broker_address, num_clients, cluster_name, global_cluster_topic, internal_cluster_topic, head_status, id):
         self.broker_address = broker_address
@@ -19,6 +20,7 @@ class MQTTCluster:
         self.round = 0
         self.id = f"{self.cluster_name}_Client_{id}"
         self.terimate_status = False
+        self.head_id=None
 
     def create_clients(self):
         self.client = mqtt.Client(self.id)
@@ -30,6 +32,15 @@ class MQTTCluster:
         self.client.subscribe(self.internal_cluster_topic, qos=1)
         self.client.loop_start()
 
+    def get_head_node_id(self):
+        if self.worker_head_node:
+            return self.id
+
+    def set_head_node_id(self,data):
+        self.head_id=data['head_id']
+        print("set successful head id: {}".format(self.head_id))
+
+        pass
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
@@ -44,8 +55,11 @@ class MQTTCluster:
         data = message.payload.decode('utf-8')
         try:
             json_data = json.loads(data)
-         
+
             print("Received data: ",json_data)
+
+            if "head_id" in json_data:
+                self.set_head_node_id(json_data)
 
             if 'global_model' in json_data:
                 self.handle_global_model(json_data, client_id, cluster_id)
@@ -69,9 +83,20 @@ class MQTTCluster:
 
         self.terimate_status= True
         
-        time.sleep(4)
 
         print(f"ALL Should Disconnected message from client : {client_id}")
+    
+    def send_terminate_message(self, t_msg):
+        message = {
+            "client_id": self.id,
+            "terimate_msg": t_msg
+        }
+        data = json.dumps(message)
+
+        self.client.publish(self.internal_cluster_topic, data,)
+        print("Successfully sent send_terminate_message")
+
+        return True    
 
     def handle_global_message(self, message, client_id, cluster_id):
         data = message.payload.decode('utf-8')
@@ -82,7 +107,6 @@ class MQTTCluster:
                 print(f"Inter-cluster message in {cluster_id} from {client_id}:\n{message_content}")
             else:
                 print("No 'data' field in the global message.")
-            time.sleep(5)
 
         except json.JSONDecodeError:
             print("Error decoding JSON message")
@@ -100,27 +124,25 @@ class MQTTCluster:
         if 'client_id' in json_data:
             self.handle_client_data(json_data, cluster_id)
 
+
     def handle_client_disconnected(self, json_data):
         get_client_id = json_data['Client-disconnected']
         print("Disconnected node id", get_client_id)
         self.num_clients -= 1
         print("Remove client from dictionary, length", len(self.client_hash_mapping))
         print("Number of clients:", self.num_clients)
-        time.sleep(5)
 
     def handle_client_data(self, json_data, cluster_id):
         client_id = json_data['client_id']
         model_hash = json_data['model_hash']
         self.client_hash_mapping[client_id] = model_hash
         print(f"Model hash {model_hash} received from {client_id} ")
-        time.sleep(2)
 
         self.round += 1
 
         if len(self.client_hash_mapping) == self.num_clients:
             print("Received model hashes from all clients in the cluster.")
-            self.send_model_hash()
-            time.sleep(5)
+            self.get_all_hash()
 
 
     def is_worker_head(self, client):
@@ -138,7 +160,7 @@ class MQTTCluster:
     def stop_receiving_messages(self):
         self.client.unsubscribe(self.internal_cluster_topic)
 
-    def get_all_model_hash(self):
+    def get_all_hash(self):
         while len(self.client_hash_mapping) != self.num_clients:
             # Wait for all hashes to be available
             print("Waiting for all hashes to be available")
@@ -172,18 +194,17 @@ class MQTTCluster:
             pass
         return self.global_model_hash
 
-
-    def send_terimate_message(self, t_msg):
-        message = {
-            "client_id": self.id,
-            "terimate_msg": t_msg
+    
+    def send_head_id(self,id):
+        message={
+            "head_id":id,
         }
-        data = json.dumps(message)
+        data=json.dumps(message)
+        print(data)
+        self.client.publish(self.internal_cluster_topic,data)
+        print("Successfully Head id: " + str(id))
 
-        self.client.publish(self.internal_cluster_topic, data)
-        print("Successfully sent send_terimate_message")
 
-        return True        
 
     def send_internal_messages_model(self, modelhash):
         message = {
