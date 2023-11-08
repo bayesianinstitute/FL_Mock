@@ -68,7 +68,6 @@ class DFLWorkflow:
             mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
 
             # Subscribe to all internal messages
-            mqtt_obj.subscribe_to_internal_messages()
 
             Round_Counter = 0
 
@@ -87,21 +86,19 @@ class DFLWorkflow:
 
 
 
-                if head_id:
-                    mqtt_obj.send_head_id(head_id)
-                    time.sleep(9)
+                # if head_id:
+                #     mqtt_obj.send_head_id(head_id)
+                #     time.sleep(9)
 
 
-                mqtt_obj.receive_internal_messages()
 
-
-                while not mqtt_obj.head_id :
-                    print("Waiting for to set head_id: ")
-                    time.sleep(3)
-                    pass
-                print("Head_Id: ", mqtt_obj.head_id)
+                # while not mqtt_obj.head_id :
+                #     print("Waiting for to set head_id: ")
+                #     time.sleep(3)
+                #     pass
+                # print("Head_Id: ", mqtt_obj.head_id)
                 
-                self.terminate_program()
+                # self.terminate_program()
 
                 ## Temporary to check if changing broker works or not program
                 # if Round_Counter == 2:
@@ -116,22 +113,20 @@ class DFLWorkflow:
                 # Send the model to the internal cluster
                 mqtt_obj.send_internal_messages_model(hash)
 
-                mqtt_obj.receive_internal_messages()
-
                 # If head status is True, send, aggregate, and send the global model to all workers
                 if self.is_status == True:
 
                     # Temporarily add send terminate message to all workers to close the program
-                    if Round_Counter == 2:
-                        print("Terminating by user")
-                        # Send termination message
-                        mqtt_obj.send_terminate_message("Terminate")
+                    # if Round_Counter == 2:
+                    #     print("Terminating by user")
+                    #     # Send termination message
+                    #     mqtt_obj.send_terminate_message("Terminate")
 
-                        # Sleep for a fixed time
-                        time.sleep(11)
+                    #     # Sleep for a fixed time
+                    #     time.sleep(5)
 
-                        # Terminate the program
-                        self.terminate_program()
+                    #     # Terminate the program
+                    #     self.terminate_program()
 
                     # Get a list of hashes from all workers in MQTT
                     get_list = mqtt_obj.get_all_hash()
@@ -157,11 +152,14 @@ class DFLWorkflow:
 
                 else:
                     # Get the latest global model hash
+
+                    
                     latest_global_model_hash = mqtt_obj.global_model()
                     print("I am not aggregator, got global model hash:", latest_global_model_hash)
 
                     # Set the latest global model hash and set weights in MLOperation
                     self.ml_operations.is_global_model_hash(latest_global_model_hash)
+                    mqtt_obj.global_model_hash=None
 
                 # Temporary to close the program
                 if Round_Counter == 6:
