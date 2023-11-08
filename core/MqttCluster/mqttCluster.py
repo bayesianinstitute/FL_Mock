@@ -118,31 +118,40 @@ class MQTTCluster:
         self.global_model_hash = extract
 
     def handle_internal_data(self, json_data, client_id, cluster_id):
-        if 'Client-disconnected' in json_data:
-            self.handle_client_disconnected(json_data)
+        try : 
+            if 'Client-disconnected' in json_data:
+                self.handle_client_disconnected(json_data)
 
-        if 'client_id' in json_data:
-            self.handle_client_data(json_data, cluster_id)
+            if 'client_id' in json_data:
+                self.handle_client_data(json_data, cluster_id)
+        except :
+            print("exception in handle_internal_data ")
 
 
     def handle_client_disconnected(self, json_data):
-        get_client_id = json_data['Client-disconnected']
-        print("Disconnected node id", get_client_id)
-        self.num_clients -= 1
-        print("Remove client from dictionary, length", len(self.client_hash_mapping))
-        print("Number of clients:", self.num_clients)
+        try :
+            get_client_id = json_data['Client-disconnected']
+            print("Disconnected node id", get_client_id)
+            self.num_clients -= 1
+            print("Remove client from dictionary, length", len(self.client_hash_mapping))
+            print("Number of clients:", self.num_clients)
+        except :
+            print("exception in handle_client_disconnected ")
 
     def handle_client_data(self, json_data, cluster_id):
-        client_id = json_data['client_id']
-        model_hash = json_data['model_hash']
-        self.client_hash_mapping[client_id] = model_hash
-        print(f"Model hash {model_hash} received from {client_id} ")
+        try:
+            client_id = json_data['client_id']
+            model_hash = json_data['model_hash']
+            self.client_hash_mapping[client_id] = model_hash
+            print(f"Model hash {model_hash} received from {client_id} ")
 
-        self.round += 1
+            self.round += 1
 
-        if len(self.client_hash_mapping) == self.num_clients:
-            print("Received model hashes from all clients in the cluster.")
-            self.get_all_hash()
+            if len(self.client_hash_mapping) == self.num_clients:
+                print("Received model hashes from all clients in the cluster.")
+                self.get_all_hash()
+        except :
+            print("exception in handle_client_data ")
 
 
     def is_worker_head(self, client):
