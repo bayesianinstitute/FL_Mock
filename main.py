@@ -77,6 +77,10 @@ class DFLWorkflow:
 
 
             while True:
+
+                if mqtt_obj.switch_head==True:
+                    self.is_status = self.participant.main()     
+                                  
                 # Check the termination status, and if True, close the program
                 if mqtt_obj.terimate_status:
                     self.terminate_program()
@@ -86,19 +90,19 @@ class DFLWorkflow:
 
 
 
-                # if head_id:
-                #     mqtt_obj.send_head_id(head_id)
-                #     time.sleep(9)
+                if head_id:
+                    mqtt_obj.send_head_id(head_id)
+                    # time.sleep(9)
 
 
 
-                # while not mqtt_obj.head_id :
-                #     print("Waiting for to set head_id: ")
-                #     time.sleep(3)
-                #     pass
-                # print("Head_Id: ", mqtt_obj.head_id)
+                while not mqtt_obj.head_id :
+                    print("Waiting for to set head_id: ")
+                    time.sleep(3)
+                    pass
+                print("Head_Id: ", mqtt_obj.head_id)
                 
-                # self.terminate_program()
+                self.terminate_program()
 
                 ## Temporary to check if changing broker works or not program
                 # if Round_Counter == 2:
@@ -117,16 +121,16 @@ class DFLWorkflow:
                 if self.is_status == True:
 
                     # Temporarily add send terminate message to all workers to close the program
-                    # if Round_Counter == 2:
-                    #     print("Terminating by user")
-                    #     # Send termination message
-                    #     mqtt_obj.send_terminate_message("Terminate")
+                    if Round_Counter == 2:
+                        print("Terminating by user")
+                        # Send termination message
+                        mqtt_obj.send_terminate_message("Terminate")
 
-                    #     # Sleep for a fixed time
-                    #     time.sleep(5)
+                        # # Sleep for a fixed time
+                        # time.sleep(5)
 
-                    #     # Terminate the program
-                    #     self.terminate_program()
+                        # Terminate the program
+                        self.terminate_program()
 
                     # Get a list of hashes from all workers in MQTT
                     get_list = mqtt_obj.get_all_hash()

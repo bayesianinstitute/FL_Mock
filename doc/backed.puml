@@ -1,0 +1,114 @@
+@startuml DFLWorkflow Sequence Diagram
+
+participant "DFLWorkflow" as DFL
+participant "IdentifyParticipant" as Participant
+participant "MqttOperations" as MqttOps
+participant "MLOperations" as MLOps
+participant "IPFS" as Ipfs
+participant "MQTTCluster" as MqttCluster
+
+participant "Bayes Network" as BayesNetwork
+participant "Super Node" as SuperNode
+participant "Node" as Node
+participant "Admins" as Admins
+participant "backupAdmins" as BackupAdmins
+participant "Voting" as Voting
+
+
+
+activate MqttCluster
+
+activate SuperNode
+
+SuperNode -> MqttCluster : Join_Admin/BayesNetwork
+deactivate SuperNode
+activate BayesNetwork
+MqttCluster -> BayesNetwork : SuperNode_request_join/BayesNetwork
+BayesNetwork -> MqttCluster : Grant/Reject_request/BayesNetwork
+deactivate BayesNetwork
+activate SuperNode
+MqttCluster-> SuperNode : Grant/Reject_join/BayesNetwork
+
+alt is_first_node
+    SuperNode->SuperNode: Create_log&Save_log
+    SuperNode->MqttCluster: Logs/save_log
+else
+    SuperNode->MqttCluster: Logs/get_log
+    MqttCluster->SuperNode: send Logs
+    SuperNode->SuperNode: Update Logs adding his info
+    SuperNode->MqttCluster: Logs/save_log
+end
+
+alt Wait for minimum nodes
+    BayesNetwork -> MqttCluster: Wait for 3 minimum nodes
+else
+    BayesNetwork -> SuperNode: get available super node
+    BayesNetwork -> Voting: do voting on the super node
+
+    deactivate BayesNetwork
+
+    activate Voting
+    activate Admins
+     
+    alt Voting -> Admins: winner become  Administrator
+        Admins -> MqttCluster : Update logs and Logs/sent_log
+        deactivate Admins
+    else
+        activate BackupAdmins
+        Voting -> BackupAdmins: other become BackupAdmins
+        BackupAdmins -> MqttCluster : Logs/get_log
+
+        deactivate BackupAdmins
+
+        deactivate Voting
+    end
+end
+
+activate DFL
+
+DFL -> DFL: Initialize
+DFL -> Participant: Create IdentifyParticipant
+activate Participant
+Participant -> MqttOps: Initialize MqttOperations
+activate MqttOps
+Participant -> MqttOps: Start DFL using MQTT
+Participant -> Participant: Check aggregator status
+alt Aggregator
+    Participant -> MqttOps: Winner becomes aggregator
+else Not Aggregator
+    MqttOps -> MqttCluster: Create clients for clusters
+    MqttCluster -> MqttCluster: Create client 1
+    MqttCluster -> MqttCluster: Create client 2
+    MqttCluster -> MqttCluster: ...
+    MqttCluster -> MqttCluster: Create client N
+    DFL -> MLOps: Train machine learning model
+    activate MLOps
+    MLOps -> Ipfs: Fetch global model hash
+    activate Ipfs
+    Ipfs --> MLOps: Global model hash
+    MLOps -> MLOps: Check global model hash
+    alt Global Model Exists
+        MLOps -> Ipfs: Fetch global model
+        Ipfs --> MLOps: Global model
+        MLOps -> MLOps: Set global model weights
+    else Global Model Not Exists
+        MLOps -> MLOps: Create and build a new model
+    end
+    MLOps -> MLOps: Train the model
+    MLOps -> MLOps: Save the trained model
+    MLOps -> Ipfs: Push the model to IPFS
+    activate Ipfs
+    Ipfs --> MLOps: Model hash
+    MLOps --> DFL: Model hash
+    deactivate MLOps
+    DFL -> MqttOps: Send model hash to internal cluster
+end
+DFL -> DFL: Training Completed
+
+deactivate Participant
+deactivate MqttOps
+deactivate Ipfs
+deactivate MqttCluster
+deactivate DFL
+
+@enduml

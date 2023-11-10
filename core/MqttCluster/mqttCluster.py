@@ -21,6 +21,7 @@ class MQTTCluster:
         self.id = f"{self.cluster_name}_Client_{id}"
         self.terimate_status = False
         self.head_id=None
+        self.switch_Status=False
 
     def create_clients(self):
         self.client = mqtt.Client(self.id)
@@ -135,6 +136,9 @@ class MQTTCluster:
             self.num_clients -= 1
             print("Remove client from dictionary, length", len(self.client_hash_mapping))
             print("Number of clients:", self.num_clients)
+            if self.head_id==get_client_id:
+                self.switch_Status=True
+
         except :
             print("exception in handle_client_disconnected ")
 
@@ -244,6 +248,11 @@ class MQTTCluster:
             print("Successfully send Global model to internal_messages_model")
     
     def switch_head(self, ):
+
+        if self.switch_Status:
+            return True
+        else : 
+            return False
         
         pass
 

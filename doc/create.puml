@@ -1,0 +1,28 @@
+@startuml
+actor Node
+actor Administrator
+actor Backup_Administrator
+
+participant Network
+participant Logger
+
+note right of Network: Initialization\nand\nVoting Process
+
+Node -> Network: publishJoinRequest()
+Network -> Administrator: handleJoinRequest()
+Administrator -> Node: grantPermissionToNode()
+Node -> Administrator: publishAliveMessage()
+Administrator -> Network: handleAliveMessage()
+Network -> Logger: backupLogs()
+Network -> Administrator: monitorLogs()
+
+note right of Network: Training Process\nand\nMain Admin Disconnection
+
+Node -> Network: publishAliveMessage()
+Network -> Administrator: handleAliveMessage()
+Administrator -> Network: monitorLogs()
+Network -> Administrator: promoteAdministrator()
+Administrator -> Node: promoteToAdministrator()
+Network -> Logger: backupLogs()
+
+@enduml

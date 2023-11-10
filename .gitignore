@@ -16,3 +16,4 @@ data.json
 .pytest_cache
 report/
 mlruns/
+out/

@@ -1,0 +1,37 @@
+@startuml
+actor Node
+actor Administrator
+actor BackupAdministrator
+participant Network
+participant Logger
+
+note right of Network: Initialization\nand\nVoting Process
+
+Administrator -> Network : subscribeToStatusUpdates()
+
+Administrator -> Logger : Create Logs
+Administrator -> Network : publish_Logs
+Administrator -> Network: subscribe_AliveMessage()
+Administrator -> Network: subscribe_TrainingStatus(isTraining: boolean)
+Administrator -> Network: subscribe_DepartureMessage()
+BackupAdministrator -> Network : subscribe_Log
+
+Network -> BackupAdministrator : send_logs
+
+
+Node -> Network: publishJoinRequest()
+Network -> Administrator: handleJoinRequest()
+Administrator -> Node: grantPermissionToNode()
+Node -> Network: publish_AliveMessage()
+Node -> Network: publish_TrainingStatus(isTraining: boolean)
+Node -> Network: publish_DepartureMessage()
+
+Network -> Administrator: handleTrainingStatus(isTraining: boolean)
+Administrator -> Logger: monitorLogs()
+Administrator -> Network: promoteAdministrator()
+Administrator -> BackupAdministrator: promoteToAdministrator()
+Administrator -> Logger: updateLogs()
+Logger -> BackupAdministrator: backupLogs()
+Network -> Logger: backupLogs()
+
+@enduml

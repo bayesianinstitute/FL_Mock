@@ -1,0 +1,66 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE Super_Node{
+  highavaiablity-bool
+  highPerformance-bool
+
+}
+
+
+RECTANGLE Mqtt_Network {
+  + defineBroker(port: int)
+  + connectCallback()
+  + disconnectCallback()
+  + receiveMessageCallback()
+  + handleVotingMessage()
+  + handleAdminPrompted()
+  + handleLogsMessage()
+  + handleAliveMessage()
+  + handleDepartureMessage()
+  + handleJoinRequest()
+  + handleNodeHardwareInfo()
+  + promoteAdministrator(): bool-true
+  + backupAdministrator(): bool-false
+}
+
+RECTANGLE Vote {
+  - voter: Super_Node
+  - candidate: Administrator
+  - timestamp: DateTime
+  + selectAdminNode(): Super_Node
+  + getVoter(): Super_Node
+  + getCandidate(): Administrator
+  + getTimestamp(): DateTime
+  + publishAdministrator():bool
+}
+
+
+
+RECTANGLE Node {
+  + publishAliveMessage()
+  + publishDepartureMessage()
+  + publishJoinRequest()
+  + isTraining: bool
+  + publishHardwareInfo()
+}
+
+RECTANGLE Administrator {
+  + Updated_backupLog()
+  + save_backupLog()
+  + send_logs_to_BackupAdministrator()
+  + voteForAdministrator(): Vote
+  + monitorLogs()
+  + promoteToAdministrator(): bool
+  + grantPermissionToNode(): bool
+}
+
+RECTANGLE BackupAdministrator {
+  + GetLogFile()
+  + makeBackupCopylogfile()
+  + CheckpromoteToAdministrator(): bool
+}
+
+
+@enduml
+wrte description and do not specify plant UML
