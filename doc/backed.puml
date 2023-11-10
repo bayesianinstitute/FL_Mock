@@ -20,7 +20,7 @@ activate MqttCluster
 
 activate SuperNode
 
-SuperNode -> MqttCluster : Join_Admin/BayesNetwork
+SuperNode->MqttCluster: Join_Admin_Request/BayesNetwork
 deactivate SuperNode
 activate BayesNetwork
 MqttCluster -> BayesNetwork : SuperNode_request_join/BayesNetwork
@@ -52,6 +52,7 @@ else
      
     alt Voting -> Admins: winner become  Administrator
         Admins -> MqttCluster : Update logs and Logs/sent_log
+
         deactivate Admins
     else
         activate BackupAdmins
@@ -63,6 +64,22 @@ else
         deactivate Voting
     end
 end
+
+
+activate Node 
+Node -> MqttCluster: Join the Bayes_Network
+activate Admins
+MqttCluster -> Admins : Node_join/_request_join
+Admins -> MqttCluster : grant permission
+deactivate Admins
+MqttCluster -> Node : SuperNode_repose/_request_join
+Node -> MqttCluster: give infor
+activate Admins
+MqttCluster -> Admins:get_node_info
+Admins -> MqttCluster : Update logs and Logs/sent_log
+deactivate Node
+activate Admins
+
 
 activate DFL
 
