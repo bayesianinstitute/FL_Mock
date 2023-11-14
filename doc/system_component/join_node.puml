@@ -1,0 +1,22 @@
+@startuml
+participant "Node" as Node
+participant "MqttCluster" as MqttCluster
+participant "Master" as Master
+
+activate Node
+activate MqttCluster
+
+Node -> MqttCluster: Join Bayes Network
+MqttCluster -> Master: Request to Join (Node)
+activate Master
+Master -> MqttCluster: Grant Permission
+MqttCluster -> Node: Acknowledge Join Request
+deactivate Master
+
+
+Node -> MqttCluster: Send Node Info
+MqttCluster -> Master: Get Node Info
+Master -> MqttCluster: Update Logs and Logs/sent_log
+note right: Node joining, sending information, and updating logs
+
+@enduml

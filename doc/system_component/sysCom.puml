@@ -1,0 +1,12 @@
+@startuml
+
+
+package "BayesNetwork Components" {
+  [BayesNetwork Components] --> [MQTTCluster]
+  [BayesNetwork Components] --> [SeedNode]
+  [BayesNetwork Components] --> [Node]
+  [BayesNetwork Components] --> [Master]
+  [BayesNetwork Components] --> [BackupMaster]
+
+}
+@enduml

@@ -1,0 +1,112 @@
+@startuml DFLWorkflow Sequence Diagram
+
+participant "MQTTCluster" as MqttCluster
+participant "Bayes Network" as BayesNetwork
+participant "SeedNode" as SeedNode
+participant "Node" as Node
+participant "Master" as Master
+participant "BackupMaster" as BackupMaster
+participant "Voting" as Voting
+
+activate MqttCluster
+
+MqttCluster -> SeedNode: Grant/Reject_request_join/BayesNetwork
+deactivate BayesNetwork
+activate SeedNode
+MqttCluster -> SeedNode: Grant/Reject_join/BayesNetwork
+note right: Join SeedNode to Bayes Network
+
+alt is_first_node
+    SeedNode -> SeedNode: Create_log&Save_log
+    SeedNode -> MqttCluster: Logs/save_log
+else
+    SeedNode -> MqttCluster: Logs/get_log
+    MqttCluster -> SeedNode: Send Logs
+    SeedNode -> SeedNode: Update Logs adding his info
+    SeedNode -> MqttCluster: Logs/save_log
+    note right: Retrieve and update logs
+end
+
+activate SeedNode
+SeedNode -> SeedNode: Send alive message to other SeedNodes through MQTT
+SeedNode -> MqttCluster: Alive message
+MqttCluster -> SeedNode: Update SeedNode's status
+note right: Continuous alive messages between SeedNodes
+
+alt Wait for minimum nodes
+    SeedNode -> MqttCluster: Wait for 3 minimum nodes
+else
+    SeedNode -> SeedNode: Get available super node
+    SeedNode -> Voting: Do voting on the super node
+    note left: Perform voting to Prompt One SeedNode to Master
+
+    deactivate BayesNetwork
+
+    activate Voting
+    activate Master
+    deactivate SeedNode
+
+    alt Voting -> Master: Winner becomes Masteristrator
+        Master -> MqttCluster: Update logs and Logs/sent_log
+        deactivate Master
+    else
+        activate BackupMaster
+        Voting -> BackupMaster: Other become BackupMaster
+        BackupMaster -> MqttCluster: Logs/get_log
+        deactivate BackupMaster
+        deactivate Voting
+        note right: Promote BackupMaster if needed
+    end
+end
+
+activate Node
+Node -> MqttCluster: Join the Bayes_Network
+activate Master
+MqttCluster -> Master: Node_join/_request_join
+Master -> MqttCluster: Grant permission
+deactivate Master
+MqttCluster -> Node: MasterNode_repose/_request_join
+Node -> MqttCluster: Give info
+activate Master
+MqttCluster -> Master: Get_node_info
+Master -> MqttCluster: Update logs and Logs/sent_log
+note right: Node joining and information exchange
+
+MqttCluster -> Master: Keep-alive message
+Master -> MqttCluster: Update node information
+note right: Nodes send periodic keep-alive messages
+
+Master->Master: Update logs 
+Master->MqttCluster: Update logs
+activate BackupMaster
+MqttCluster -> BackupMaster: Update Logs
+deactivate BackupMaster
+
+Node -> MqttCluster: Leave the Bayes_Network
+MqttCluster -> Master: Node_leave_request
+Master -> MqttCluster: Grant leave permission
+MqttCluster -> Node: Acknowledge leave request
+
+Master -> MqttCluster: Update log 
+note right: Node leaving process
+deactivate Node
+deactivate SeedNode
+alt Promote BackupMaster to Masteristrator if needed
+    Master -> MqttCluster: Promote_other_SuperMaster_to_Masteristrator()
+    MqttCluster -> BackupMaster: Check_promoteToMasteristrator()
+    activate BackupMaster
+    BackupMaster -> BackupMaster: ConductVoting()
+    deactivate BackupMaster
+
+    activate Voting
+    Voting -> BackupMaster: Do voting among BackupMaster
+    deactivate Voting
+
+    Voting -> Master: Winner becomes Masteristrator
+    Master -> MqttCluster: Update logs and Logs/sent_log
+    deactivate Master
+end
+note left: Promote BackupMaster to Master
+deactivate Node
+
+@enduml

@@ -1,7 +1,7 @@
 @startuml
 !define RECTANGLE class
 
-RECTANGLE Super_Node{
+RECTANGLE SeedNode {
   highavaiablity-bool
   highPerformance-bool
 
@@ -20,19 +20,19 @@ RECTANGLE Mqtt_Network {
   + handleDepartureMessage()
   + handleJoinRequest()
   + handleNodeHardwareInfo()
-  + promoteAdministrator(): bool-true
-  + backupAdministrator(): bool-false
+  + promoteMaster(): bool-true
+  + backupMaster(): bool-false
 }
 
 RECTANGLE Vote {
-  - voter: Super_Node
-  - candidate: Administrator
+  - voter: SeedNode 
+  - candidate: Master
   - timestamp: DateTime
-  + selectAdminNode(): Super_Node
-  + getVoter(): Super_Node
-  + getCandidate(): Administrator
+  + selectAdminNode(): SeedNode 
+  + getVoter(): SeedNode 
+  + getCandidate(): Master
   + getTimestamp(): DateTime
-  + publishAdministrator():bool
+  + publishMaster():bool
 }
 
 
@@ -45,20 +45,20 @@ RECTANGLE Node {
   + publishHardwareInfo()
 }
 
-RECTANGLE Administrator {
+RECTANGLE Master {
   + Updated_backupLog()
   + save_backupLog()
-  + send_logs_to_BackupAdministrator()
-  + voteForAdministrator(): Vote
+  + send_logs_to_BackupMaster()
+  + voteForMaster(): Vote
   + monitorLogs()
-  + promoteToAdministrator(): bool
+  + promoteToMaster(): bool
   + grantPermissionToNode(): bool
 }
 
-RECTANGLE BackupAdministrator {
+RECTANGLE BackupMaster {
   + GetLogFile()
   + makeBackupCopylogfile()
-  + CheckpromoteToAdministrator(): bool
+  + CheckpromoteToMaster(): bool
 }
 
 

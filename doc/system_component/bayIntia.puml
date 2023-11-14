@@ -1,0 +1,64 @@
+@startuml InitialNetworkAssignmentWithVoting
+
+participant "MQTTCluster" as MqttCluster
+participant "Bayes Network" as BayesNetwork
+participant "SuperNode" as SuperNode
+participant "Node" as Node
+participant "Admin" as Admin
+participant "BackupAdmin" as BackupAdmin
+participant "Voting" as Voting
+
+activate MqttCluster
+activate SuperNode
+
+SuperNode -> MqttCluster: Join_Admin_Request/BayesNetwork
+
+deactivate SuperNode
+MqttCluster -> BayesNetwork: SuperNode_request_join/BayesNetwork
+BayesNetwork -> MqttCluster: Grant/Reject_request/BayesNetwork
+deactivate BayesNetwork
+activate SuperNode
+MqttCluster -> SuperNode: Grant/Reject_join/BayesNetwork
+note right: Join SuperNode to Bayes Network
+
+SuperNode -> SuperNode: Create_log&Save_log
+SuperNode -> MqttCluster: Logs/save_log
+
+
+MqttCluster -> BayesNetwork: Wait for 3 minimum nodes
+BayesNetwork -> SuperNode: Get available super node
+BayesNetwork -> Voting: Do voting on the super node
+deactivate BayesNetwork
+
+activate Voting
+activate Admin
+
+Voting -> Admin: Winner Super Node becomes Administrator
+Admin -> MqttCluster: Update logs and Logs/sent_log
+deactivate Admin
+note right: Assign one super node to Admin
+activate BackupAdmin
+Voting -> BackupAdmin: Other become BackupAdmin
+note left: Assign other super node as BackupAdmin
+
+BackupAdmin -> MqttCluster: Get_node_info
+BackupAdmin -> MqttCluster: Update logs and Logs/sent_log
+deactivate BackupAdmin
+
+deactivate Admin
+deactivate BackupAdmin
+deactivate Voting
+
+MqttCluster -> Node: Assign_Node
+Node -> MqttCluster: Node_join_request
+MqttCluster -> Admin: Node_join_request
+Admin -> MqttCluster: Grant permission
+deactivate Admin
+MqttCluster -> Node: AdminNode_response/Assign_Node
+Node -> MqttCluster: Give info
+activate Admin
+MqttCluster -> Admin: Get_node_info
+Admin -> MqttCluster: Update logs and Logs/sent_log
+deactivate Admin
+
+@enduml

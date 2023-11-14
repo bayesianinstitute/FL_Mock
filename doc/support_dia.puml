@@ -1,0 +1,12 @@
+@startuml
+
+package "DFL System" {
+  [Cluster Network]
+  [Nodes]
+  [Bayes Network]
+}
+
+[Cluster Network] --> [Nodes]
+[Nodes] --> [Bayes Network]
+
+@enduml
