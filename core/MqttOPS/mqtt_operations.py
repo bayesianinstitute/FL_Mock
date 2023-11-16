@@ -1,4 +1,4 @@
-from core.MqttCluster.mqttCluster import MQTTCluster
+from core.MqttOPS.mqttCluster import MQTTCluster
 
 class MqttOperations:
     def __init__(self,internal_cluster_topic,global_cluster_topic,initial_broker,num_workers,status,id):

@@ -93,7 +93,7 @@ The DFL workflow implemented in this script consists of the following steps:
 
 ### Core Functions
 
-The project's core contains the main MqttCluster class that handles the MQTT cluster communication. The core functionalities include:
+The project's core contains the main MqttOPS class that handles the MQTT cluster communication. The core functionalities include:
 
 Creating and managing MQTT clients.
 Running the logic for the cluster.

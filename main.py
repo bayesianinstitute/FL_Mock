@@ -1,5 +1,5 @@
 import sys
-from core.MqttCluster.mqtt_operations import MqttOperations
+from core.MqttOPS.mqtt_operations import MqttOperations
 from core.MLOPS.ml_operations import MLOperations
 import argparse
 
