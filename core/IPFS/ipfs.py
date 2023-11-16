@@ -8,8 +8,15 @@ import tempfile
 
 # IPFS communication class (for to the Tensorflow version)
 class IPFS:
-    def __init__(self,):
-        self.client = ipfshttpclient.connect('/ip4/127.0.0.1/tcp/5001/http')
+    def __init__(self,connection_link='/ip4/127.0.0.1/tcp/5001/http'):
+        self.client = self._connect_to_ipfs(connection_link)
+    
+    def _connect_to_ipfs(self,connect_link):
+        try:
+            return ipfshttpclient.connect(connect_link)
+        except Exception as e:
+            print(f"Error during IPFS connection: {e}")
+            return None 
 
     def fetch_model(self, model_hash):
         model_bytes = self.client.cat(model_hash)
