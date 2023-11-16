@@ -33,30 +33,12 @@ class Logger:
 
     def get_logger(self):
         return self.logger
-    
-    def dump_logs(self, filename):
-        # Dump logs to a specified file
-        file_handler = logging.FileHandler(filename)
-        file_formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-        file_handler.setFormatter(file_formatter)
-        file_handler.setLevel(logging.DEBUG)
-
-        # Add the file handler to the logger temporarily for dumping logs
-        self.logger.addHandler(file_handler)
-
-        # Dump logs to the file
-        self.logger.debug("Dumping logs to file: {}".format(filename))
-
-        # Remove the file handler to avoid duplication in future logs
-        self.logger.removeHandler(file_handler)
 
 # Example usage:
-loggs = Logger(name='my_custom_logger').get_logger()
+logger = Logger(name='my_logger').get_logger()
 
-loggs.debug("This is a debug message")
-loggs.info("This is an info message")
-loggs.warning("This is a warning message")
-loggs.error("This is an error message")
-loggs.critical("This is a critical message")
-# Dump logs to a file
-loggs.dump_logs('dumped_logs.log')
+logger.debug("This is a debug message")
+logger.info("This is an info message")
+logger.warning("This is a warning message")
+logger.error("This is an error message")
+logger.critical("This is a critical message")

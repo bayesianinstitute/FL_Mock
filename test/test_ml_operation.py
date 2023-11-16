@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock
-from ml_operations import MLOperations
+from core.MLOPS.ml_operations import MLOperations
 @pytest.fixture
 def ml_operations():
     training_type = 'CNN'
