@@ -8,17 +8,16 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
-        python-version: 3.x
+        python-version: '3.11.4'
 
-#     - name: Install dependencies
-#       run: pip install -r requirements.txt
+    - name: Install dependencies
+      run: pip install -r requirements.txt
 
-#     - name: Run tests
-#       run: |
-#         # Recursively find and run tests from subfolders
-#         find . -type f -name "test_*.py" -exec pytest {} \;
+    - name: Run tests
+      run: python -m pytest .\test\Model\deepLearningModel\test_DL_ANN_classification.py
+
