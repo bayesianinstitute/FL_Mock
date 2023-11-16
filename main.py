@@ -1,7 +1,6 @@
 import sys
-from mqtt_operations import MqttOperations
-from ml_operations import MLOperations
-from utils import Utils
+from core.MqttCluster.mqtt_operations import MqttOperations
+from core.MLOPS.ml_operations import MLOperations
 import argparse
 
 from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
@@ -30,7 +29,6 @@ class DFLWorkflow:
         self.global_cluster_topic = global_cluster_topic
         self.mqtt_operations = None
         self.ml_operations = MLOperations(training_type, optimizer)
-        self.utils = Utils()
         self.global_model = None
 
         self.voting_topic = voting_topic
@@ -82,8 +80,8 @@ class DFLWorkflow:
                     self.is_status = self.participant.main()     
                                   
                 # Check the termination status, and if True, close the program
-                if mqtt_obj.terimate_status:
-                    self.terminate_program()
+                # if mqtt_obj.terimate_status:
+                #     self.terminate_program()
 
                 Round_Counter = Round_Counter + 1
                 print("Round_Counter:", Round_Counter)
@@ -96,13 +94,12 @@ class DFLWorkflow:
 
 
 
-                while not mqtt_obj.head_id :
-                    print("Waiting for to set head_id: ")
-                    time.sleep(3)
-                    pass
+                # while not mqtt_obj.head_id :
+                #     print("Waiting for to set head_id: ")
+                #     time.sleep(3)
+                #     pass
                 print("Head_Id: ", mqtt_obj.head_id)
                 
-                self.terminate_program()
 
                 ## Temporary to check if changing broker works or not program
                 # if Round_Counter == 2:

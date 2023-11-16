@@ -1,0 +1,20 @@
+
+@startuml
+
+package "DFL Workflow" {
+  [DFLWorkflow]
+  [IdentifyParticipant]
+  [MqttOperations]
+  [MLOperations]
+  [IPFS]
+  [MQTTCluster]
+}
+
+[DFLWorkflow] --> [IdentifyParticipant]
+[DFLWorkflow] --> [MqttOperations]
+[DFLWorkflow] --> [MLOperations]
+[DFLWorkflow] --> [IPFS]
+[DFLWorkflow] --> [MQTTCluster]
+
+
+@enduml

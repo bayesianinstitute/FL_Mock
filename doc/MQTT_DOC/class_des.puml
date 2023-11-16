@@ -1,0 +1,42 @@
+@startuml
+!define MQTT class diagram
+!define Node class <<Node>>
+
+class MQTTBroker {
+    - clients: List<MQTTClient>
+    - topics: List<Topic>
+    + subscribe(client: MQTTClient, topic: Topic): void
+    + unsubscribe(client: MQTTClient, topic: Topic): void
+    + publish(topic: Topic, message: Message): void
+}
+
+class MQTTClient {
+    - clientID: String
+    - subscriptions: List<Subscription>
+    + connect(broker: MQTTBroker): void
+    + disconnect(): void
+    + subscribe(topic: Topic): void
+    + unsubscribe(topic: Topic): void
+    + publish(topic: Topic, message: Message): void
+}
+
+class Topic {
+    - name: String
+}
+
+class Message {
+    - content: String
+    - senderID: String
+}
+
+class Subscription {
+    - client: MQTTClient
+    - topic: Topic
+}
+
+MQTTBroker "1" -- "*" MQTTClient : Manages
+MQTTClient "0..*" -- "*" Subscription : Has
+MQTTClient "1" -- "*" Topic : Subscribes/Unsubscribes
+MQTTClient "0..*" -- "*" Message : Publishes
+
+@enduml

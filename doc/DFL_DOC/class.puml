@@ -1,0 +1,88 @@
+@startuml
+
+class User {
+    +requestTrainingNode()
+    +checkNodeAvailability()
+}
+
+class MqttCluster {
+    +initializeMqttOperations()
+}
+
+class Log {
+    +logEvent(message: String)
+}
+
+class Aggregator {
+    +startTraining()
+    +waitModelHashes()
+    +aggregateModels()
+    +getStoreGlobalModel()
+    +monitorConvergence()
+    +stopTraining()
+    +identifyAggregator()
+    +updateModelProgress()
+    +modelSharing()
+}
+
+class ClusterNode {
+    +joinCluster()
+    +trainingProcess()
+    +identifyAggregator()
+    +sendModelToIPFS(model: Model)
+    +sendModelHashToAggregator(modelHash: String)
+    +waitForGlobalModel()
+    +updateWeightsWithGlobalModel(model: Model)
+}
+
+class IPFS {
+    +storeModel(model: Model)
+    +getModelHash(): String
+    +getAllModels(): List<Model>
+    +storeGlobalModel(model: Model)
+    +getGlobalModel(): Model
+    +getGlobalModelHash(): String
+}
+
+class Model {
+    // attributes and methods related to the model
+}
+
+class LearningProcess {
+    -User user
+    -MqttCluster mqttCluster
+    -Aggregator aggregator
+    -ClusterNode clusterNode
+    -Log log
+
+    +startLearning()
+}
+
+class DFLProcess {
+    -Aggregator aggregator
+    -Nodes nodes
+    -IPFS ipfs
+
+    +startDFLProcess()
+}
+
+LearningProcess --> User
+LearningProcess --> MqttCluster
+LearningProcess --> Aggregator
+LearningProcess --> ClusterNode
+LearningProcess --> Log
+
+DFLProcess --> Aggregator
+DFLProcess --> Nodes
+DFLProcess --> IPFS
+
+Aggregator --> Log
+Aggregator --> IPFS
+Aggregator --> ClusterNode
+
+ClusterNode --> MqttCluster
+ClusterNode --> Aggregator
+
+IPFS --> Model
+
+@enduml
