@@ -1,7 +1,7 @@
 import pytest
 import os
 
-from Model.deepLearningModel.CNN import CNNMnist
+from core.MLOPS.Model.deepLearningModel.CNN import CNNMnist
 
 from config.optimizer_settings import optimizers
 
