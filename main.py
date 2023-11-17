@@ -6,6 +6,8 @@ import argparse
 from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
 import time
 import uuid
+from core.Logs_System.logger import Logger
+
 
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
@@ -21,6 +23,8 @@ class DFLWorkflow:
                  training_type,
                  optimizer,
                  ):
+        # Setup Logger
+        self.logger=Logger(name='DFL_logger').get_logger()
         # Initialize various attributes and parameters
         self.global_ipfs_link = None
         self.participant_identification = None
@@ -41,7 +45,7 @@ class DFLWorkflow:
 
     # Function to terminate the program
     def terminate_program(self):
-        print("Terminated program successfully ")
+        self.logger.warning("Terminated program successfully ")
         sys.exit()
 
     # Main function to run the federated learning workflow
@@ -52,7 +56,7 @@ class DFLWorkflow:
             self.participant = IdentifyParticipant(
                 self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
             self.is_status = self.participant.main()
-            print("Is worker head:", self.is_status)
+            self.logger.info(f"Is worker head: {self.is_status}" )
 
             # Initialize  MQTT operations for communication
             self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
@@ -70,7 +74,7 @@ class DFLWorkflow:
             Round_Counter = 0
 
             head_id=mqtt_obj.get_head_node_id()
-            print("head_id : {}".format(head_id))
+            self.logger.info(f"head_id : {head_id}")
             # self.terminate_program()
 
 
@@ -84,7 +88,7 @@ class DFLWorkflow:
                 #     self.terminate_program()
 
                 Round_Counter = Round_Counter + 1
-                print("Round_Counter:", Round_Counter)
+                self.logger.info(f"Round_Counter: {Round_Counter}")
 
 
 
@@ -95,21 +99,21 @@ class DFLWorkflow:
 
 
                 # while not mqtt_obj.head_id :
-                #     print("Waiting for to set head_id: ")
+                #     self.logger.info("Waiting for to set head_id: ")
                 #     time.sleep(3)
                 #     pass
-                print("Head_Id: ", mqtt_obj.head_id)
+                self.logger.info(f"Head_Id: {mqtt_obj.head_id}" )
                 
 
                 ## Temporary to check if changing broker works or not program
                 # if Round_Counter == 2:
-                #     print("Changing Broker")
+                #     self.logger.info("Changing Broker")
                 #     time.sleep(10)
                 #     mqtt_obj.switch_broker(self.updated_broker)
 
                 # Train the model and get the model hash from IPFS
                 hash = self.ml_operations.train_machine_learning_model()
-                print("Model hash:", hash)
+                self.logger.info(f"Model hash: {hash}" )
 
                 # Send the model to the internal cluster
                 mqtt_obj.send_internal_messages_model(hash)
@@ -118,35 +122,35 @@ class DFLWorkflow:
                 if self.is_status == True:
 
                     # Temporarily add send terminate message to all workers to close the program
-                    if Round_Counter == 2:
-                        print("Terminating by user")
-                        # Send termination message
-                        mqtt_obj.send_terminate_message("Terminate")
+                    # if Round_Counter == 2:
+                    #     self.logger.info("Terminating by user")
+                    #     # Send termination message
+                    #     mqtt_obj.send_terminate_message("Terminate")
 
-                        # # Sleep for a fixed time
-                        # time.sleep(5)
+                    #     # # Sleep for a fixed time
+                    #     # time.sleep(5)
 
-                        # Terminate the program
-                        self.terminate_program()
+                    #     # Terminate the program
+                    #     self.terminate_program()
 
                     # Get a list of hashes from all workers in MQTT
                     get_list = mqtt_obj.get_all_hash()
-                    print("Send global model:", get_list)
+                    self.logger.info(f"Send global model:{ get_list}")
 
                     # Send all the list of hashes to aggregate and get the global model hash
                     self.global_model = self.ml_operations.aggregate_models(get_list)
-                    print("Got Global model hash:", self.global_model)
+                    self.logger.info(f"Got Global model hash: {self.global_model}" )
 
                     # Sending global model hash to all workers
-                    print(self.ml_operations.send_global_model_to_others(mqtt_obj, self.global_model))
+                    self.logger.info(self.ml_operations.send_global_model_to_others(mqtt_obj, self.global_model))
 
                     # Clearing all previous model hashes from all workers
                     mqtt_obj.client_hash_mapping.clear()
-                    print("Clear all hash operations")
+                    self.logger.info("Clear all hash operations")
 
                     # Get the latest global model hash
                     latest_global_model_hash = mqtt_obj.global_model()
-                    print("I am aggregator, here is the global model hash:", latest_global_model_hash)
+                    self.logger.info(f"I am aggregator, here is the global model hash:{ latest_global_model_hash}")
 
                     # Set the latest global model hash and set weights in MLOperation
                     self.ml_operations.is_global_model_hash(latest_global_model_hash)
@@ -156,7 +160,7 @@ class DFLWorkflow:
 
                     
                     latest_global_model_hash = mqtt_obj.global_model()
-                    print("I am not aggregator, got global model hash:", latest_global_model_hash)
+                    self.logger.info(f"I am not aggregator, got global model hash: { latest_global_model_hash}")
 
                     # Set the latest global model hash and set weights in MLOperation
                     self.ml_operations.is_global_model_hash(latest_global_model_hash)
@@ -166,10 +170,10 @@ class DFLWorkflow:
                 if Round_Counter == 6:
                     break
 
-            print(f"Training completed with round {Round_Counter} !! ")
+            self.logger.info(f"Training completed with round {Round_Counter} !! ")
             
         except Exception as e:
-            print(f"An error occurred: {e}")
+            self.logger.error(f"An error occurred: {e}")
 
 
 

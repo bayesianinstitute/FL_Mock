@@ -4,19 +4,24 @@ import io
 import tensorflow as tf
 from tensorflow import keras
 import tempfile
-
+from core.Logs_System.logger import Logger
 
 # IPFS communication class (for to the Tensorflow version)
 class IPFS:
     def __init__(self,connection_link='/ip4/127.0.0.1/tcp/5001/http'):
+        self.logger=Logger(name='ipfs_logger').get_logger()
         self.client = self._connect_to_ipfs(connection_link)
     
     def _connect_to_ipfs(self,connect_link):
         try:
-            return ipfshttpclient.connect(connect_link)
+            ipfs_conn_obj=ipfshttpclient.connect(connect_link)
+            self.logger.info("Connected to IPFS")
+            return ipfs_conn_obj
         except Exception as e:
-            print(f"Error during IPFS connection: {e}")
-            return None 
+            self.logger.error(f"Error during IPFS connection: {e}")
+            self.logger.critical("unable to connect to IPFS")
+            import sys
+            sys.exit(1)
 
     def fetch_model(self, model_hash):
         model_bytes = self.client.cat(model_hash)
@@ -33,6 +38,7 @@ class IPFS:
     def push_model(self, saved_model_path):
         
         model_hash = self.client.add(saved_model_path)['Hash']
+        
         return model_hash
 
     def download_model(self, model_hash, destination_folder):

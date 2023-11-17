@@ -2,9 +2,11 @@ import paho.mqtt.client as mqtt
 import time
 import json
 import psutil
+from core.Logs_System.logger import Logger
 
 class IdentifyParticipant:
     def __init__(self, id,broker,ram_topic,aggregator_topic,minimum_participate):
+        self.logger=Logger(name='identify-Participant').get_logger()
         self.broker = broker
         self.id=id
         self.computer_info = self.get_computer_info()
@@ -18,6 +20,7 @@ class IdentifyParticipant:
         self.ram_topic=ram_topic
         self.aggregator_topic=aggregator_topic
         self.minimum_participate=minimum_participate
+        
 
     # Get  performance infor
     def get_computer_info(self):
@@ -28,9 +31,9 @@ class IdentifyParticipant:
         # Get available RAM
         available_ram = ram.available
 
-        print(f"Used RAM: {used_ram / (1024 ** 3):.2f} GB")
-        print(f"Total RAM: {total_ram / (1024 ** 3):.2f} GB")
-        print(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
+        self.logger.info(f"Used RAM: {used_ram / (1024 ** 3):.2f} GB")
+        self.logger.info(f"Total RAM: {total_ram / (1024 ** 3):.2f} GB")
+        self.logger.info(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
         return {"ram": available_ram}
 
         # Get  Connect to Broker
@@ -40,7 +43,7 @@ class IdentifyParticipant:
             client.subscribe(self.ram_topic)
             client.subscribe(self.aggregator_topic)
         else:
-            print("Unable to connect to Broker result code: {}".format(rc))
+            self.logger.error("Unable to connect to Broker result code: {}".format(rc))
 
     def on_message(self, client, userdata, message):
         try:
@@ -50,17 +53,17 @@ class IdentifyParticipant:
 
             if node_id not in userdata["ram_usages"]:
                 # Node is not in the dictionary, so we treat it as a new node
-                print(f"Received RAM usage from {node_id}: {ram_usage} MB")
+                self.logger.info(f"Received RAM usage from {node_id}: {ram_usage} MB")
                 userdata["ram_usages"][node_id] = ram_usage
                 userdata["shared_count"] += 1
             else:
                 if userdata["ram_usages"][node_id] != ram_usage:
                     # Node is in the dictionary, but the RAM usage is different
-                    print(f"Received RAM usage from {node_id}: {ram_usage} MB")
+                    self.logger.info(f"Received RAM usage from {node_id}: {ram_usage} MB")
                     userdata["ram_usages"][node_id] = ram_usage
 
         except json.decoder.JSONDecodeError:
-            print(f"Received an invalid JSON message from {message.topic}: {message.payload}")
+            self.logger.error(f"Received an invalid JSON message from {message.topic}: {message.payload}")
 
     # Pushing computer info to Mqtt
     def announce_ram_usage(self):
@@ -81,11 +84,11 @@ class IdentifyParticipant:
     def is_highest_ram_usage(self, current_ram_usage):
         # Check if current_ram_usage is higher than any other participant's RAM usage
         other_ram_usages = self.client._userdata["ram_usages"]
-        print("other_ram_usages :  ",other_ram_usages)
+        self.logger.info("other_ram_usages :  ",other_ram_usages)
         return all(current_ram_usage >= ram_usage for ram_usage in other_ram_usages.values())
 
     def main(self):
-        print("My ID:", self.participant_id)
+        self.logger.info(f"My ID: {self.participant_id}")
 
 
         while True:
@@ -96,16 +99,16 @@ class IdentifyParticipant:
             shared_count = self.client._userdata.get("shared_count")
 
             if shared_count < self.minimum_participate :  
-                print(f"Waiting for {self.minimum_participate  - shared_count} more machine(s) to start the process...")
+                self.logger.debug(f"Waiting for {self.minimum_participate  - shared_count} more machine(s) to start the process...")
             else:
                 ram_usage = self.computer_info["ram"]
                 if self.is_highest_ram_usage(ram_usage):
                     self.declare_aggregator()
-                    print(f"I am the aggregator! RAM usage: {ram_usage} GB")
+                    self.logger.info(f"I am the aggregator! RAM usage: {ram_usage} GB")
                     self.aggregator = True
                     return self.aggregator
                 else:
-                    print("I am not the aggregator")
+                    self.logger.info("I am not the aggregator")
                     return self.aggregator
 
 
@@ -123,5 +126,3 @@ if __name__ == '__main__':
 
     participant = IdentifyParticipant(args.id,broker,ram_topic,declare_winner_topic,Minimum_participate)
     status=participant.main()
-
-    print("Status : " , status)

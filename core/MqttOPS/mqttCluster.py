@@ -2,11 +2,13 @@ import paho.mqtt.client as mqtt
 import random
 import time
 import json
-import logging
 # clients = []
+from core.Logs_System.logger import Logger
+
 
 class MQTTCluster:
     def __init__(self, broker_address, num_clients, cluster_name, global_cluster_topic, internal_cluster_topic, head_status, id):
+        self.logger=Logger(name='MqttComm_logger').get_logger()
         self.broker_address = broker_address
         self.num_clients = num_clients
         self.cluster_name = cluster_name
@@ -39,7 +41,7 @@ class MQTTCluster:
 
     def set_head_node_id(self,data):
         self.head_id=data['head_id']
-        print("set successful head id: {}".format(self.head_id))
+        self.logger.info(f"set successful head id: {self.head_id}")
 
         pass
 
@@ -57,7 +59,7 @@ class MQTTCluster:
         try:
             json_data = json.loads(data)
 
-            print("Received data: ",json_data)
+            self.logger.info(f"Received data: {json_data}")
 
             if "head_id" in json_data:
                 self.set_head_node_id(json_data)
@@ -80,12 +82,12 @@ class MQTTCluster:
 
     def handle_terminate_message(self, client_id, cluster_id):
     # Handle the termination message here
-        print(f"Received terminate message from {client_id} in cluster {cluster_id}")
+        self.logger.info(f"Received terminate message from {client_id} in cluster {cluster_id}")
 
         self.terimate_status= True
         
 
-        print(f"ALL Should Disconnected message from client : {client_id}")
+        self.logger.info(f"ALL Should Disconnected message from client : {client_id}")
     
     def send_terminate_message(self, t_msg):
         message = {
@@ -95,7 +97,7 @@ class MQTTCluster:
         data = json.dumps(message)
 
         self.client.publish(self.internal_cluster_topic, data,)
-        print("Successfully sent send_terminate_message")
+        self.logger.info("Successfully sent send_terminate_message")
 
         return True    
 
@@ -105,17 +107,17 @@ class MQTTCluster:
             message_data = json.loads(data)
             if "data" in message_data:
                 message_content = message_data["data"]
-                print(f"Inter-cluster message in {cluster_id} from {client_id}:\n{message_content}")
+                self.logger.info(f"Inter-cluster message in {cluster_id} from {client_id}:\n{message_content}")
             else:
-                print("No 'data' field in the global message.")
+                self.logger.info("No 'data' field in the global message.")
 
         except json.JSONDecodeError:
-            print("Error decoding JSON message")
+            self.logger.error("Error decoding JSON message")
 
     def handle_global_model(self, json_data, client_id, cluster_id):
         extract = json_data['global_model']
 
-        print(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
+        self.logger.info(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
         self.global_model_hash = extract
 
     def handle_internal_data(self, json_data, client_id, cluster_id):
@@ -126,36 +128,36 @@ class MQTTCluster:
             if 'client_id' in json_data:
                 self.handle_client_data(json_data, cluster_id)
         except :
-            print("exception in handle_internal_data ")
+            self.logger.error("exception in handle_internal_data ")
 
 
     def handle_client_disconnected(self, json_data):
         try :
             get_client_id = json_data['Client-disconnected']
-            print("Disconnected node id", get_client_id)
+            self.logger.warning(f"Disconnected node id : {get_client_id}" )
             self.num_clients -= 1
-            print("Remove client from dictionary, length", len(self.client_hash_mapping))
-            print("Number of clients:", self.num_clients)
+            self.logger.info(f"Remove client from dictionary, length {len(self.client_hash_mapping)}")
+            self.logger.info(f"Number of clients: {self.num_clients}" )
             if self.head_id==get_client_id:
                 self.switch_Status=True
 
         except :
-            print("exception in handle_client_disconnected ")
+            self.logger.error("exception in handle_client_disconnected ")
 
     def handle_client_data(self, json_data, cluster_id):
         try:
             client_id = json_data['client_id']
             model_hash = json_data['model_hash']
             self.client_hash_mapping[client_id] = model_hash
-            print(f"Model hash {model_hash} received from {client_id} ")
+            self.logger.info(f"Model hash {model_hash} received from {client_id} ")
 
             self.round += 1
 
             if len(self.client_hash_mapping) == self.num_clients:
-                print("Received model hashes from all clients in the cluster.")
+                self.logger.info("Received model hashes from all clients in the cluster.")
                 self.get_all_hash()
         except :
-            print("exception in handle_client_data ")
+            self.logger.error("exception in handle_client_data ")
 
 
     def is_worker_head(self, client):
@@ -176,15 +178,15 @@ class MQTTCluster:
     def get_all_hash(self):
         while len(self.client_hash_mapping) != self.num_clients:
             # Wait for all hashes to be available
-            print("Waiting for all hashes to be available")
+            self.logger.info("Waiting for all hashes to be available")
             time.sleep(4)
             if self.terimate_status:
-                print("Force to disconnect")
+                self.logger.info("Force to disconnect")
                 break
             pass
 
         # Once all hashes are available, extract and return them
-        print("Extracting all hashes")
+        self.logger.info("Extracting all hashes")
         hashes = list(self.client_hash_mapping.values())
         return hashes
 
@@ -198,11 +200,11 @@ class MQTTCluster:
         
         while not self.global_model_hash:
             # You can add a sleep here to reduce CPU usage
-            print("Waiting for global model")
+            self.logger.info("Waiting for global model")
 
             time.sleep(5)  
             if self.terimate_status:
-                print("Force to disconnect")
+                self.logger.warning("Force to disconnect")
                 break
             pass
         return self.global_model_hash
@@ -213,9 +215,9 @@ class MQTTCluster:
             "head_id":id,
         }
         data=json.dumps(message)
-        print(data)
+        self.logger.info(data)
         self.client.publish(self.internal_cluster_topic,data)
-        print("Successfully Head id: " + str(id))
+        self.logger.info(f"Successfully Head id:{str(id)} ")
 
 
 
@@ -225,27 +227,27 @@ class MQTTCluster:
             "model_hash": modelhash
         }
         data = json.dumps(message)
-        print("send_internal_messages_model:", data)
-        print("Internal topic", self.internal_cluster_topic)
+        self.logger.info(f"send_internal_messages_model:{data}" )
+        self.logger.info(f"Internal topic {self.internal_cluster_topic}")
         self.client.publish(self.internal_cluster_topic, data)
-        print("Successfully sent_internal_messages_model")
+        self.logger.info("Successfully sent_internal_messages_model")
 
     def send_inter_cluster_message(self, message):
         message_json = json.dumps({"data": message})
         self.worker_head_node.publish(self.global_cluster_topic, message_json)
-        print("Successfully sent_inter_cluster_message")
+        self.logger.info("Successfully sent_inter_cluster_message")
 
     def send_internal_messages(self):
         # message_json = json.dumps({"data": message})
         self.client.publish(self.internal_cluster_topic, f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
-        print(self.internal_cluster_topic, f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
+        self.logger.info(f" topic : {self.internal_cluster_topic} Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
 
     def send_internal_messages_global_model(self, modelhash):
-        print(" trying to Global model to internal_messages_model: ", modelhash)
+        self.logger.info(f" trying to Global model to internal_messages_model: {modelhash} " )
         if self.is_worker_head(self.client):
             data = json.dumps({"global_model": modelhash})
             self.client.publish(self.internal_cluster_topic, data)
-            print("Successfully send Global model to internal_messages_model")
+            self.logger.info("Successfully send Global model to internal_messages_model")
     
     def switch_head(self, ):
 
@@ -253,8 +255,7 @@ class MQTTCluster:
             return True
         else : 
             return False
-        
-        pass
+
 
 
     def switch_broker(self, new_broker_address):
@@ -266,11 +267,11 @@ class MQTTCluster:
         # Update the broker address
         self.broker_address = new_broker_address
 
-        print("New broker address : ",new_broker_address)
+        self.logger.info(f"New broker address : {new_broker_address}")
 
         # Re-create clients with the new broker address
         self.create_clients()
-        print("Successfully Switch : ",new_broker_address)
+        self.logger.info(f"Successfully Switch : {new_broker_address}")
     
 
 if __name__ == "__main__":

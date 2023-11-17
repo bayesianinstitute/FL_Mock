@@ -1,9 +1,11 @@
 
 from core.IPFS.ipfs import IPFS
+from core.Logs_System.logger import Logger
 
 class MLOperations:
     def __init__(self,training_type,optimizer):
         # You can add any necessary initialization code here
+        self.logger=Logger(name='MLOPS_Logger').get_logger()
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
         self.path_global_model="global_model.h5"
@@ -68,21 +70,21 @@ class MLOperations:
             ipfs_model=self.ipfs.fetch_model(self.global_model_hash)
 
 
-            # print(" model: ", self.current_model)
+            # self.logger.info(" model: ", self.current_model)
             self.get_weights=ipfs_model.get_weights()
 
-            # print("getti Weight: ", self.get_weights[0])
+            # self.logger.info("getti Weight: ", self.get_weights[0])
 
             self.current_model.set_weights(self.get_weights)
 
             
-            print("set Weight Successfully ")
+            self.logger.info("set Weight Successfully ")
 
         else :
             # For First time build model
             self.current_model=self.get_model()
             self.current_model.build_model()
-            print("builded model: Successfully built model: ",self.current_model) 
+            self.logger.info(f"builded model: Successfully built model: {self.current_model}",) 
             import time
             time.sleep(5)
         
@@ -99,11 +101,11 @@ class MLOperations:
         # Save the trained model
         self.current_model.save_model(self.path_model)
 
-        print(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
+        self.logger.info(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
 
         hash=self.send_model_to_ipfs(self.path_model)
 
-        print("Ipfs Hash: {}".format(hash))
+        self.logger.info(f"Ipfs Hash: {hash}")
 
         return hash 
     
@@ -125,30 +127,30 @@ class MLOperations:
 
         data=get_model_list
 
-        print("listing models",data)
+        self.logger.info(f"listing models {data}")
 
 
 
         models = []
         for value in data:
-            # print("vales in loop : ",value)
+            # self.logger.info("vales in loop : ",value)
             model = self.ipfs.fetch_model(value)
-            # print("after fetching model : ",model)
+            # self.logger.info("after fetching model : ",model)
             models.append(model)
 
         # Aggregate model weights
         global_model = self.aggregate_weights(models)
 
-        print("Global model Aggregate weights")
+        self.logger.info("Global model Aggregate weights")
 
-        print("global model ",global_model.summary())
+        self.logger.info(f"global model {global_model.summary()}")
 
         # Save the trained model
         model.save(self.path_global_model)
 
         global_model_hash=self.ipfs.push_model(self.path_global_model)
 
-        print("hash global model ",global_model_hash)
+        self.logger.info(f"hash global model {global_model_hash}")
 
         return global_model_hash
 
@@ -169,7 +171,7 @@ class MLOperations:
                 # Set the average weights to the global model
                 global_model.layers[i].set_weights(average_weights)
         
-        print("Aggregated weights")
+        self.logger.info("Aggregated weights")
 
         return global_model
 
@@ -262,7 +264,7 @@ class MLOperations:
         # Return True if the operation is successful, or False otherwise.
 
         # Placeholder code (replace with the actual implementation)
-        print("Aggregator saves the global model to IPFS.")
+        self.logger.info("Aggregator saves the global model to IPFS.")
         return True
 
 
@@ -307,8 +309,8 @@ if __name__ == "__main__":
         mqtt_obj = YourMQTTClass()
         result = ml_operations.send_global_model_to_others(mqtt_obj, global_model_hash)
 
-        # Print the result
-        print(result)
+        # self.logger.info the result
+        self.logger.info(result)
         
         '''
 
