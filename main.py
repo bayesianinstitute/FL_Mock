@@ -4,7 +4,6 @@ from core.MLOPS.ml_operations import MLOperations
 import argparse
 
 from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
-import time
 import uuid
 from core.Logs_System.logger import Logger
 
@@ -57,6 +56,8 @@ class DFLWorkflow:
                 self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
             self.is_status = self.participant.main()
             self.logger.info(f"Is worker head: {self.is_status}" )
+
+            # self.terminate_program()
 
             # Initialize  MQTT operations for communication
             self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
@@ -194,8 +195,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    voting_topic = f'Voting topic on Cluster {args.cluster_name}'
-    declare_winner_topic = f'Winner Topic on Cluster {args.cluster_name}'
+    voting_topic = f'Voting/{args.cluster_name}'
+    declare_winner_topic = f'Winner/{args.cluster_name}'
 
     workflow = DFLWorkflow(args.broker_service, args.cluster_name, args.internal_cluster_topic, args.id,
                            voting_topic, declare_winner_topic, args.min_node, updated_broker, model_type, optimizer)
