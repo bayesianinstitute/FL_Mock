@@ -28,19 +28,25 @@ class MqttOperations:
         Returns:
          MQTTCluster Object for communication.
         """
-        # Configuration and create 3 client
-
+        # Configuration and connect client
 
         self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name, self.global_cluster_topic, self.internal_cluster_topic,self.status,self.id)
 
-        # Create clients for  clusters
-        self.cluster.create_clients()
+        # Connect clients for  clusters
+        self.cluster.connect_clients()
 
         self.logger.info(f'check head node {self.status}')
 
         self.logger.info("Started DFL Process")
 
         return self.cluster
+
+    def head_node_id(self):
+        'Get the head node id'
+
+        return self.cluster.get_head_node_id
+
+
 
     def winner_becomes_aggregator(self):
         """

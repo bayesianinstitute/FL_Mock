@@ -25,9 +25,11 @@ class MQTTCluster:
         self.head_id=None
         self.switch_Status=False
 
-    def create_clients(self):
+    def connect_clients(self):
         self.client = mqtt.Client(self.id)
         self.client.on_message = self.on_message
+        self.client.on_publish=self.on_publish
+        self.client.on_subscribe=self.on_subscribe
         will_set_msg=json.dumps({"Client-disconnected": self.id})
         self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1,)
         self.client.connect(self.broker_address, 1883)
@@ -37,13 +39,19 @@ class MQTTCluster:
 
     def get_head_node_id(self):
         if self.worker_head_node:
-            return self.id
+            return self.head_id
 
     def set_head_node_id(self,data):
         self.head_id=data['head_id']
         self.logger.info(f"set successful head id: {self.head_id}")
 
-        pass
+
+    def on_publish(self,client, userdata, mid):
+        self.logger.debug(f"Message Ack Published for client id : {client._client_id.decode('utf-8')} and  (mid={mid})")
+
+    def on_subscribe(self,client, userdata, mid,granted_qos):
+        self.logger.debug(f"Message Ack Subscribe for client id : {client._client_id.decode('utf-8')} and (mid={mid})")
+
 
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
@@ -82,12 +90,12 @@ class MQTTCluster:
 
     def handle_terminate_message(self, client_id, cluster_id):
     # Handle the termination message here
-        self.logger.info(f"Received terminate message from {client_id} in cluster {cluster_id}")
+        self.logger.warning(f"Received terminate message from {client_id} in cluster {cluster_id}")
 
         self.terimate_status= True
         
 
-        self.logger.info(f"ALL Should Disconnected message from client : {client_id}")
+        self.logger.warning(f"ALL Should Disconnected message from client : {client_id}")
     
     def send_terminate_message(self, t_msg):
         message = {
@@ -140,7 +148,6 @@ class MQTTCluster:
             self.logger.info(f"Number of clients: {self.num_clients}" )
             if self.head_id==get_client_id:
                 self.switch_Status=True
-
         except :
             self.logger.error("exception in handle_client_disconnected ")
 
@@ -178,10 +185,10 @@ class MQTTCluster:
     def get_all_hash(self):
         while len(self.client_hash_mapping) != self.num_clients:
             # Wait for all hashes to be available
-            self.logger.info("Waiting for all hashes to be available")
+            self.logger.debug("Waiting for all hashes to be available")
             time.sleep(4)
             if self.terimate_status:
-                self.logger.info("Force to disconnect")
+                self.logger.warning("Force to disconnect")
                 break
             pass
 
@@ -200,7 +207,7 @@ class MQTTCluster:
         
         while not self.global_model_hash:
             # You can add a sleep here to reduce CPU usage
-            self.logger.info("Waiting for global model")
+            self.logger.debug("Waiting for global model")
 
             time.sleep(5)  
             if self.terimate_status:
@@ -270,7 +277,7 @@ class MQTTCluster:
         self.logger.info(f"New broker address : {new_broker_address}")
 
         # Re-create clients with the new broker address
-        self.create_clients()
+        self.connect_clients()
         self.logger.info(f"Successfully Switch : {new_broker_address}")
     
 
@@ -279,7 +286,7 @@ if __name__ == "__main__":
     cluster = MQTTCluster("mqtt.broker.com", 5, "MyCluster", "global_topic", "internal_topic", True, 1)
 
     # Create and connect MQTT clients
-    cluster.create_clients()
+    cluster.connect_clients()
 
     # Subscribe to internal messages
     cluster.subscribe_to_internal_messages()
