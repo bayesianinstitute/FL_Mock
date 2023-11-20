@@ -1,0 +1,31 @@
+@startuml
+
+class AdminInterface {
+  + displayNodeList()
+  + displayStatusForEachNode()
+  + displayDetailInfoForEachNode()
+  + displayNetworkStatusOverview()
+}
+
+class NetworkNodeInterface {
+  + displayStatusForSingleNode()
+  + displayNodeDetails()
+  + displayLogsAndEvents()
+  + controlActions()
+  + displayNetworkConnectivity()
+}
+
+class Node {
+  - id: String
+  - name: String
+  - ipAddress: String
+  - status: String
+  - cpuUsage: float
+  - memoryUsage: float
+  - networkTraffic: float
+}
+
+AdminInterface --|> Node
+NetworkNodeInterface --|> Node
+
+@enduml

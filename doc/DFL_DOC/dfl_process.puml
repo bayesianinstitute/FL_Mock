@@ -1,0 +1,50 @@
+@startuml DFL_Process_With_Log_Tracking
+
+participant "Aggregator" as Aggregator
+participant "Nodes" as Nodes
+participant "IPFS" as IPFS
+
+Aggregator -> Nodes: Start Training
+Nodes -> Nodes: Model Training
+
+loop Training Iterations
+    Nodes -> Nodes: Train Model
+end
+
+
+Nodes -> IPFS: Store Model
+IPFS -> Nodes: Get Model Hash
+Nodes -> Aggregator: Send Model Hash
+
+Aggregator -> Aggregator: Wait for all Model Hashes
+loop Collect Model Hashes
+    Nodes -> Aggregator: Model Hash Ready
+end
+
+Aggregator -> IPFS: Get All Models
+IPFS --> Aggregator: Models
+
+Aggregator -> Aggregator: Aggregate Models
+Aggregator -> IPFS: Store Global Model
+Aggregator -> Nodes: Send Global Model Hash to IPFS
+Nodes -> IPFS: Store Global Model Hash
+
+Nodes -> IPFS: Log Status (Missing Model to IPFS)
+
+Aggregator -> Aggregator: Monitor Convergence
+Aggregator -> Nodes: Update Model/Iteration Progress
+
+alt Stop Criteria
+    Aggregator -> Nodes: Stop Training
+    Nodes -> Aggregator: Model Sharing
+end
+
+Aggregator -> IPFS: Get Global Model
+IPFS --> Aggregator: Global Model
+
+Nodes -> IPFS: Get Global Model Hash
+IPFS --> Nodes: Global Model
+
+Nodes -> Nodes: Update Weights with Global Model
+
+@enduml

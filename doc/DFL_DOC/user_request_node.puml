@@ -1,0 +1,16 @@
+@startuml User_Request_And_Availability
+
+participant "User" as User
+participant "MqttCluster" as MqttCluster
+participant "Log" as Log
+
+User -> MqttCluster: Request Training Node
+MqttCluster -> Log: Log Event - Training Request Received
+MqttCluster -> User: User Granted
+Log -> MqttCluster: Log Event - User Granted Training
+
+User -> MqttCluster: Check Node Availability
+MqttCluster -> User: Node Available
+MqttCluster -> Log: Log Event - Node Available
+
+@enduml

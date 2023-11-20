@@ -1,0 +1,34 @@
+@startuml Learning_Process_With_Voting_And_Logs
+
+participant "User" as User
+participant "MqttCluster" as MqttCluster
+participant "Aggregator" as Aggregator
+participant "ClusterNode" as ClusterNode
+participant "Log" as Log
+
+User -> MqttCluster: Request Training Node
+MqttCluster -> Log: Log Event - Training Request Received
+MqttCluster -> User: User Granted
+Log -> MqttCluster: Log Event - User Granted Training
+
+User -> MqttCluster: Check Node Availability
+MqttCluster -> User: Node Available
+MqttCluster -> Log: Log Event - Node Available
+MqttCluster -> Aggregator: Initialize MqttOperations
+Aggregator -> MqttCluster: Number of nodes to perform operation
+Log -> MqttCluster: Log Event - Mqtt Operations Initialized
+
+alt Aggregator Selection
+    Aggregator -> ClusterNode: Aggregator Selection Process
+    Log -> Aggregator: Log Event - Aggregator Selected
+else
+    Aggregator -> ClusterNode: Default Selection
+    Log -> Aggregator: Log Event - Default Aggregator Selected
+end
+
+ClusterNode -> MqttCluster: Join Cluster
+Aggregator -> ClusterNode: Identify Aggregator
+ClusterNode -> ClusterNode: Training Process
+Log -> ClusterNode: Log Event - ClusterNode Joined and Training Started
+
+@enduml

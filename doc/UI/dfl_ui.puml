@@ -1,0 +1,29 @@
+@startuml
+
+class DFLApplication {
+  + run()
+}
+
+class UserInterface {
+  + displayHeader()
+  + displayInputFields()
+  + displayActionButtons()
+  + displayStatusAndProgress()
+  + displayFeedbackAndAlerts()
+  + displayInformationalPanels()
+  + displayHistoricalData()
+  + displaySettingsAndConfiguration()
+  + displayLogs()
+  + displayFooter()
+}
+
+class TrainingProcess {
+  + startTraining()
+  + stopTraining()
+  + showLogs()
+}
+
+DFLApplication --|> UserInterface
+UserInterface --|> TrainingProcess
+
+@enduml
