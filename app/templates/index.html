@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Federated Learning Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Add your custom styles here -->
+    <style>
+      /* Add your custom styles here */
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+          <!-- Your Title/Logo Image or Text -->
+          DFL Application
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <!-- Navigation Links -->
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">About</a>
+            </li>
+            <!-- Add more navigation links as needed -->
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <div class="container mt-4">
+      <!-- Input Fields -->
+      <div class="card">
+        <div class="card-header">
+          <h1 class="card-title">Federated Learning Configuration</h1>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="model-name">Model Name:</label>
+            <input
+              type="text"
+              id="model-name"
+              class="form-control"
+              placeholder="Enter model name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="dataset-name">Dataset Name:</label>
+            <input
+              type="text"
+              id="dataset-name"
+              class="form-control"
+              placeholder="Enter dataset name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="optimizer">Optimizer:</label>
+            <select id="optimizer" class="form-control">
+              <option value="adam">Adam</option>
+              <option value="sgd">SGD</option>
+              <!-- Add more optimizer options as needed -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="min-computers">Minimum Number of Computers:</label>
+            <input
+              type="number"
+              id="min-computers"
+              class="form-control"
+              placeholder="Enter minimum number"
+            />
+          </div>
+
+          <!-- Action Buttons -->
+          <button onclick="startTraining()" class="btn btn-primary">
+            Start Training
+          </button>
+          <button onclick="stopTraining()" class="btn btn-danger">
+            Stop Training
+          </button>
+          <button onclick="showLogs()" class="btn btn-info">Show Logs</button>
+        </div>
+      </div>
+
+      <!-- Status and Progress -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h1 class="card-title">Training Status and Progress</h1>
+        </div>
+        <div class="card-body">
+          <p>
+            <strong>Training Status:</strong>
+            <span id="training-status">Idle</span>
+          </p>
+          <div class="progress">
+            <div
+              id="progress-bar"
+              class="progress-bar"
+              role="progressbar"
+              style="width: 0%"
+              aria-valuenow="0"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback and Alerts -->
+      <div
+        class="alert alert-success mt-4"
+        role="alert"
+        id="success-message"
+        style="display: none"
+      >
+        Training initiated successfully.
+      </div>
+      <div
+        class="alert alert-danger mt-4"
+        role="alert"
+        id="error-message"
+        style="display: none"
+      >
+        Error: Failed to initiate training.
+      </div>
+
+      <!-- Historical Data -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h1 class="card-title">Training History</h1>
+        </div>
+        <div class="card-body">
+          <!-- Display historical data here -->
+        </div>
+      </div>
+
+      <!-- Logs Display -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h1 class="card-title">Logs Display</h1>
+        </div>
+        <div class="card-body">
+          <!-- Log Window -->
+          <pre id="log-window"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-4">
+      <div class="text-center">
+        <p>Contact Information: Your Contact Details</p>
+        <p>Version: 1.0</p>
+      </div>
+    </footer>
+
+    <!-- Include Bootstrap and other JavaScript libraries -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      // Function to load demo data
+      function loadDemoData() {
+        // Populate input fields with demo data
+        document.getElementById('model-name').value = 'DemoModel'
+        document.getElementById('dataset-name').value = 'DemoDataset'
+        document.getElementById('optimizer').value = 'adam'
+        document.getElementById('min-computers').value = 5
+
+        // Set training status to "Idle"
+        document.getElementById('training-status').innerText = 'Idle'
+
+        // Generate fake training history for demonstration
+        const trainingHistory = [
+          {
+            status: 'completed',
+            start_time: '2023-11-20 10:00',
+            end_time: '2023-11-20 11:30',
+            metrics: { accuracy: 0.85, loss: 0.12 },
+          },
+          {
+            status: 'stopped',
+            start_time: '2023-11-19 14:00',
+            end_time: '2023-11-19 15:30',
+            metrics: { accuracy: 0.78, loss: 0.18 },
+          },
+        ]
+
+        // Display training history
+        const historyContainer = document.querySelector(
+          '.card-body:contains("Training History")'
+        )
+        if (historyContainer) {
+          const historyList = document.createElement('ul')
+          trainingHistory.forEach((entry) => {
+            const listItem = document.createElement('li')
+            listItem.innerHTML = `<strong>Status:</strong> ${entry.status}, <strong>Start Time:</strong> ${entry.start_time}, <strong>End Time:</strong> ${entry.end_time}, <strong>Metrics:</strong> Accuracy: ${entry.metrics.accuracy}, Loss: ${entry.metrics.loss}`
+            historyList.appendChild(listItem)
+          })
+          historyContainer.appendChild(historyList)
+        }
+
+        // Display logs for demonstration
+        const logWindow = document.getElementById('log-window')
+        if (logWindow) {
+          logWindow.innerText =
+            'Demo log entry 1\nDemo log entry 2\nDemo log entry 3'
+        }
+      }
+
+      // Functions for action buttons and other interactions
+      function startTraining() {
+        // Implement the logic for starting training
+        // ...
+        // For demo purposes, display success message
+        document.getElementById('success-message').style.display = 'block'
+        // Set training status to "Training"
+        document.getElementById('training-status').innerText = 'Training'
+      }
+
+      function stopTraining() {
+        // Implement the logic for stopping training
+        // ...
+        // For demo purposes, display error message
+        document.getElementById('error-message').style.display = 'block'
+        // Set training status to "Idle"
+        document.getElementById('training-status').innerText = 'Idle'
+      }
+
+      function showLogs() {
+        // Implement the logic for displaying logs
+        // ...
+        // For demo purposes, display logs
+        const logWindow = document.getElementById('log-window')
+        if (logWindow) {
+          logWindow.innerText = 'Log entry 1\nLog entry 2\nLog entry 3'
+        }
+      }
+
+      // Custom jQuery contains function
+      jQuery.expr[':'].contains = function (a, i, m) {
+        return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0
+      }
+    </script>
+  </body>
+</html>
