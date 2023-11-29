@@ -18,16 +18,17 @@ def fetch_results(url):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+
 if __name__ == "__main__":
     api_url = "http://127.0.0.1:8000/api/v1/get-training-results/"
-    data = fetch_results(api_url)
-
+    fetch_data = fetch_results(api_url)
+    # Extract the first (and only) element from the array
+    data = fetch_data[0]
     main_data = json.dumps({
         "data": data
     })
-    print("Fetched data:", data)
+    print("Fetched data:", main_data)
 
-    # MQTT settings
     # MQTT callback for when a message is received
     def on_message(client, userdata, msg):
         payload = msg.payload.decode('utf-8')
@@ -35,7 +36,7 @@ if __name__ == "__main__":
 
 
     mqtt_broker_address = 'test.mosquitto.org'
-    mqtt_topic_publish = 'your_topic_publish'
+    mqtt_topic_publish = 'your_topic_subscribe'
 
         # MQTT client setup
     client = mqtt.Client()
@@ -44,8 +45,21 @@ if __name__ == "__main__":
     # Connect to the MQTT broker
     client.connect(mqtt_broker_address, 1883, 60)
 
+    client.subscribe(mqtt_topic_publish,qos=1)
+
     # Publish data to MQTT topic
     client.publish(mqtt_topic_publish, payload=main_data, qos=1, retain=False)
+
+    try:
+        # Keep the script running
+        while True:
+            pass
+    except KeyboardInterrupt:
+        # Disconnect from the MQTT broker on keyboard interrupt
+        client.loop_stop()
+        client.disconnect()
+
+    print("Script terminated.")
 
     # Disconnect from the MQTT broker
     client.disconnect()
