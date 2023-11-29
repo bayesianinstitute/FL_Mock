@@ -17,3 +17,4 @@ data.json
 report/
 mlruns/
 out/
+env/
