@@ -10,7 +10,7 @@ def fetch_results(url):
             data = response.json()
             
             # Process the data as needed
-            print("Fetched data:", data)
+            return data
         else:
             print(f"Failed to fetch data. Status code: {response.status_code}")
     except Exception as e:
@@ -18,4 +18,6 @@ def fetch_results(url):
 
 if __name__ == "__main__":
     api_url = "http://127.0.0.1:8000/api/v1/get-training-results/"
-    fetch_results(api_url)
+    data=fetch_results(api_url)
+    print("Fetched data:", data)
+

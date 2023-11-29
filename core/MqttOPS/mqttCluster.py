@@ -46,13 +46,6 @@ class MQTTCluster:
         self.logger.info(f"set successful head id: {self.head_id}")
 
 
-    def on_publish(self,client, userdata, mid):
-        self.logger.debug(f"Message Ack Published for client id : {client._client_id.decode('utf-8')} and  (mid={mid})")
-
-    def on_subscribe(self,client, userdata, mid,granted_qos):
-        self.logger.debug(f"Message Ack Subscribe for client id : {client._client_id.decode('utf-8')} and (mid={mid})")
-
-
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
         cluster_id = self.cluster_name
@@ -135,9 +128,13 @@ class MQTTCluster:
 
             if 'client_id' in json_data:
                 self.handle_client_data(json_data, cluster_id)
+            if 'msg' in json_data:
+                self.handle_client_msg(json_data)
         except :
             self.logger.error("exception in handle_internal_data ")
 
+    def handle_client_msg(self,json_data):
+        self.logger.info(json_data['msg'])
 
     def handle_client_disconnected(self, json_data):
         try :
@@ -173,8 +170,7 @@ class MQTTCluster:
 
     def subscribe_to_internal_messages(self):
         # Subscribe to the internal_cluster_topic for message reception
-
-        self.client.subscribe(self.internal_cluster_topic, qos=0)
+        self.client.subscribe(self.internal_cluster_topic, qos=1)
 
     def receive_internal_messages(self):
         self.client.on_message = self.on_message
@@ -245,8 +241,9 @@ class MQTTCluster:
         self.logger.info("Successfully sent_inter_cluster_message")
 
     def send_internal_messages(self):
-        # message_json = json.dumps({"data": message})
-        self.client.publish(self.internal_cluster_topic, f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
+        message= f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training"
+        message_json = json.dumps({"msg": message})
+        self.client.publish(self.internal_cluster_topic,message_json)
         self.logger.info(f" topic : {self.internal_cluster_topic} Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
 
     def send_internal_messages_global_model(self, modelhash):
@@ -262,6 +259,12 @@ class MQTTCluster:
             return True
         else : 
             return False
+
+    def on_publish(self,client, userdata, mid):
+        self.logger.debug(f"Message Ack Published for client id : {client._client_id.decode('utf-8')} and  (mid={mid})")
+
+    def on_subscribe(self,client, userdata, mid,granted_qos):
+        self.logger.debug(f"Message Ack Subscribe for client id : {client._client_id.decode('utf-8')} and (mid={mid})")
 
 
 

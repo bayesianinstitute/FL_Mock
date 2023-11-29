@@ -79,7 +79,7 @@ class IdentifyParticipant:
     def declare_aggregator(self):
         aggregator_message = f"Machine {self.participant_id} is the aggregator!"
 
-        self.client.publish(self.aggregator_topic, aggregator_message,qos=1)
+        # self.client.publish(self.aggregator_topic, aggregator_message,qos=1)
 
     def is_highest_ram_usage(self, current_ram_usage):
         # Check if current_ram_usage is higher than any other participant's RAM usage
