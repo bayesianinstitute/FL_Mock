@@ -18,3 +18,13 @@ report/
 mlruns/
 out/
 env/
+
+#Db ignore
+db/bayes_app/__pycache__
+db/user_app/__pycache__
+db/bayes/__pycache__
+db/bayes_app/migrations/
+__pycache__
+db.sqlite3
+
+

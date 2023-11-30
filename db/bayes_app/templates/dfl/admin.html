@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Federated Learning Admin Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+      </nav>
+    </header>
+
+    <div class="container mt-4">
+      <!-- User Table -->
+      <div class="card">
+        <div class="card-header">
+          <h1 class="card-title">Normal Users</h1>
+        </div>
+        <div class="card-body">
+          <!-- Display user information in a table -->
+          <table class="table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>User Role</th>
+                <th>Last Activity</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="user-table-body">
+              <!-- User data will be dynamically added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Chart Section -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h1 class="card-title">Training Progress</h1>
+        </div>
+        <div class="card-body">
+          <!-- Chart Canvas -->
+          <canvas id="training-chart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include Bootstrap and other JavaScript libraries -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      // Simulated user data
+      const userData = [
+        {
+          id: 1,
+          username: 'User1',
+          role: 'Normal',
+          lastActivity: '2023-11-20 14:30',
+          status: 'Active',
+        },
+        {
+          id: 2,
+          username: 'User2',
+          role: 'Normal',
+          lastActivity: '2023-11-20 12:45',
+          status: 'Active',
+        },
+        // Add more user data as needed
+      ]
+
+      // Dummy training data for the chart
+      const trainingData = {
+        labels: ['User1', 'User2'],
+        datasets: [
+          {
+            label: 'Accuracy',
+            data: [0.85, 0.78],
+            backgroundColor: [
+              'rgba(75, 192, 192, 0.2)',
+              'rgba(255, 99, 132, 0.2)',
+            ],
+            borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+            borderWidth: 1,
+          },
+        ],
+      }
+
+      // Function to render user table
+      function renderUserTable() {
+        const userTableBody = document.getElementById('user-table-body')
+        userTableBody.innerHTML = ''
+
+        userData.forEach((user) => {
+          const row = document.createElement('tr')
+          row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.role}</td>
+                    <td>${user.lastActivity}</td>
+                    <td>${user.status}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="banUser(${user.id})">Ban</button>
+                        <button class="btn btn-success btn-sm" onclick="promoteUser(${user.id})">Promote</button>
+                    </td>
+                `
+          userTableBody.appendChild(row)
+        })
+      }
+
+      // Function to ban a user
+      function banUser(userId) {
+        // Simulate server-side logic for banning a user
+        const user = userData.find((u) => u.id === userId)
+        if (user) {
+          user.status = 'Banned'
+          renderUserTable()
+        }
+      }
+
+      // Function to promote a user
+      function promoteUser(userId) {
+        // Simulate server-side logic for promoting a user
+        const user = userData.find((u) => u.id === userId)
+        if (user) {
+          user.role = 'Admin'
+          renderUserTable()
+        }
+      }
+
+      // Function to render training chart
+      function renderTrainingChart() {
+        const ctx = document.getElementById('training-chart').getContext('2d')
+        const trainingChart = new Chart(ctx, {
+          type: 'bar',
+          data: trainingData,
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
+            },
+          },
+        })
+      }
+
+      // Call the renderUserTable and renderTrainingChart functions when the page loads
+      renderUserTable()
+      renderTrainingChart()
+    </script>
+  </body>
+</html>
