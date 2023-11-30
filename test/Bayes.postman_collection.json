@@ -1,0 +1,288 @@
+{
+	"info": {
+		"_postman_id": "46bdac5b-9401-4416-b9a0-ad2f38ef5f9c",
+		"name": "Bayes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8123731",
+		"_collection_link": "https://martian-astronaut-694342.postman.co/workspace/New-Team-Workspace~f6226fae-6fa5-4054-b778-197730b9419e/collection/8123731-46bdac5b-9401-4416-b9a0-ad2f38ef5f9c?action=share&source=collection_link&creator=8123731"
+	},
+	"item": [
+		{
+			"name": "create_training_information",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"model_name\": \"ANN\",\r\n    \"dataset_name\": \"Mnist\",\r\n    \"optimizer\": \"Adam\",\r\n    \"minimum_number_of_computers\": 5\r\n}    ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/create-training-information/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"create-training-information",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-training-results",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/get-training-results/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"get-training-results",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-logs",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/get-logs/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"get-logs",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create_training_result",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/create_training_result/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"create_training_result",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update admin role",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/update-admin/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"update-admin",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update-backup-admin",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/update-backup-admin/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"update-backup-admin",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update user",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/update-user/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"update-user",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "toggle-network-status",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/toggle-network-status/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"toggle-network-status",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "toggle-training-status",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/toggle-training-status/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"toggle-training-status",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create-or-update-admin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\r\n  \"training_status\": \"in_progress\",\r\n  \"model_hash\": \"FA\",\r\n  \"network_status\": \"disconnected\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/create-or-update-admin/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"create-or-update-admin",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
