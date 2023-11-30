@@ -201,12 +201,12 @@
 			"response": []
 		},
 		{
-			"name": "toggle-network-status",
+			"name": "update-network-status",
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/toggle-network-status/",
+					"raw": "http://127.0.0.1:8000/api/v1/update-network-status/disconnected/",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -218,7 +218,8 @@
 					"path": [
 						"api",
 						"v1",
-						"toggle-network-status",
+						"update-network-status",
+						"disconnected",
 						""
 					]
 				}
@@ -278,6 +279,139 @@
 						"api",
 						"v1",
 						"create-or-update-admin",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-admin-data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/get-admin-data/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"get-admin-data",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post-global-model-hash",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"global_model_hash\": \"ABCC\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/post-global-model-hash/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"post-global-model-hash",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get latest model hash",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"global_model_hash\": \"ABCC\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/get-global-model-hash/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"get-global-model-hash",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-track-role",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"global_model_hash\": \"ABCC\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/get-track-role/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"get-track-role",
 						""
 					]
 				}
