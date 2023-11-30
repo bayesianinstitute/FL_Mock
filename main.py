@@ -59,6 +59,12 @@ class DFLWorkflow:
             
             # TODO: need  post api  to make admin in database by setting up flag
             
+
+            # TODO: need  post api  to add status in database as doing configuration
+
+            # Each client send to its status to admin 
+
+
             # self.terminate_program()
 
             # Initialize  MQTT operations for communication
@@ -76,7 +82,7 @@ class DFLWorkflow:
 
             Round_Counter = 0
 
-            # TODO:  Need api to add amdin id in database
+            # TODO:  Need api to add admin id in database
             head_id=mqtt_obj.get_head_node_id()
             self.logger.info(f"head_id : {head_id}")
             # self.terminate_program()
@@ -119,6 +125,10 @@ class DFLWorkflow:
                 #     mqtt_obj.switch_broker(self.updated_broker)
 
                 # Train the model and get the model hash from IPFS
+
+                # TODO: need  api  to update status in database as doing training 
+
+                # TODO : send status to admin using mqtt
                 hash = self.ml_operations.train_machine_learning_model()
                 self.logger.info(f"Model hash: {hash}" )
 
@@ -131,6 +141,13 @@ class DFLWorkflow:
 
                 # If head status is True, send, aggregate, and send the global model to all workers
                 if self.is_status == True:
+
+                    # TODO : get status of client using mqtt
+
+                    # TODO: need  api  to add client status in database 
+                    
+
+
 
                     # Temporarily add send terminate message to all workers to close the program
                     # if Round_Counter == 2:
