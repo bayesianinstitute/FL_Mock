@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin
+from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash
 
 class TrainingInformationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,14 +19,19 @@ class LogsSerializer(serializers.ModelSerializer):
 class TrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Track
-        fields = ['role']
+        fields = '__all__'
         
 class NodeStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = NodeStatus
-        fields = ['network_status','training_status']
+        fields = '__all__'
         
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
+        fields = '__all__'
+        
+class GlobalModelHashSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalModelHash
         fields = '__all__'

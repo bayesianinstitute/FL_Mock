@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin
-from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer
+from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash
+from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer
 from django.shortcuts import render
 import random
 
@@ -129,3 +129,41 @@ def create_or_update_admin(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_admin_data(request):
+    try:
+        # Assuming you want the latest admin data (based on timestamp)
+        admin_instance = Admin.objects.latest('timestamp')
+        serializer = AdminSerializer(admin_instance)
+        return Response(serializer.data)
+    except Admin.DoesNotExist:
+        return Response({'error': 'Admin data not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+def post_global_model_hash(request):
+    serializer = GlobalModelHashSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
+    
+@api_view(['GET'])
+def get_global_model_hash(request):
+    try:
+        global_model_hash_instance = GlobalModelHash.objects.latest('timestamp')
+        serializer = GlobalModelHashSerializer(global_model_hash_instance)
+        return Response(serializer.data)
+    except GlobalModelHash.DoesNotExist:
+        return Response({'error': 'Global Model Hash data not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def get_track_role(request):
+    try:
+        latest_track_instance = Track.objects.latest('id')
+        role = latest_track_instance.role
+        return Response({'role': role})
+    except Track.DoesNotExist:
+        return Response({'error': 'Track data not found'}, status=status.HTTP_404_NOT_FOUND)
