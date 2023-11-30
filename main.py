@@ -7,6 +7,10 @@ from core.FL_System.identifyparticipants.identify_participants import IdentifyPa
 import uuid
 from core.Logs_System.logger import Logger
 
+from core.API.ClientAPI import ApiClient
+from core.API.endpoint import *
+
+
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
     def __init__(self,
@@ -31,7 +35,9 @@ class DFLWorkflow:
         self.broker_service = broker_service
         self.internal_cluster_topic = internal_cluster_topic
         self.mqtt_operations = None
-        self.ml_operations = MLOperations(training_type, optimizer)
+        self.optimizer = optimizer
+        self.training_type=training_type
+        self.ml_operations = MLOperations(self.training_type, self.optimizer)
         self.global_model = None
 
         self.cluster_name=cluster_name
@@ -44,6 +50,8 @@ class DFLWorkflow:
         self.min_node = min_node
         self.updated_broker = updated_broker
 
+        self.apiClient=ApiClient()
+
     # Function to terminate the program
     def terminate_program(self):
         self.logger.warning("Terminated program successfully ")
@@ -52,10 +60,35 @@ class DFLWorkflow:
     # Main function to run the federated learning workflow
     def run(self):
 
+        data={
+        "model_name": self.training_type,
+        "dataset_name": "Mnist",
+        "optimizer": self.optimizer,
+        "training_name": self.cluster_name
+  
+    }    
+        
+        print(data)
+
+        post_response=self.apiClient.post_request(create_training_information_endpoint,data)
+
+        if post_response.status_code == 201:
+            self.logger.info(f"POST Request Successful: {post_response.text}" )
+        else:
+            self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
+
         self.logger.debug(self.internal_cluster_topic)
         self.logger.debug(self.id)
 
-        # self.terminate_program()
+
+        get_admin=self.apiClient.get_request(update_admin_endpoint)
+
+        if post_response.status_code == 200:
+            self.logger.info(f"Get Request Successful: {post_response.text}" )
+        else:
+            self.logger.error(f"GET Request Failed:{ post_response.status_code, post_response.text}")
+
+        self.terminate_program()
         try:
             get_list = None
 
@@ -217,6 +250,13 @@ class DFLWorkflow:
 
 if __name__ == "__main__":
     # Parse command-line arguments
+
+    
+
+    
+
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument("broker_service", help="Name of broker service", type=str)
     parser.add_argument("cluster_name", help="Name of the cluster", type=str)
@@ -225,11 +265,15 @@ if __name__ == "__main__":
 
     updated_broker = 'broker.hivemq.com'
 
+    
+
     model_type = 'CNN'
 
-    optimizer = 'adam'
+    optimizer = "Adam"
 
     args = parser.parse_args()
+
+
 
     voting_topic = f'Voting/{args.cluster_name}'
     declare_winner_topic = f'Winner/{args.cluster_name}'
