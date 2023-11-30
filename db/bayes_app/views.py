@@ -1,9 +1,10 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TrainingInformation,TrainingResult,Logs
-from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer
+from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin
+from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer
 from django.shortcuts import render
+import random
 
 def dfluser(request):
     return render(request, 'dfl/user.html')
@@ -45,3 +46,86 @@ def get_logs(request):
         logs = Logs.objects.all()
         serializer = LogsSerializer(logs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+def update_admin_role(request):
+    # Get or create the single instance
+    track = Track.objects.get_or_create_single_instance()
+
+    # Update the role to Admin
+    serializer = TrackSerializer(track, data={'role': 'Admin'}, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_backup_admin_role(request):
+    track = Track.objects.get_or_create_single_instance()
+    serializer = TrackSerializer(track, data={'role': 'BackupAdmin'}, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_user_role(request):
+    track = Track.objects.get_or_create_single_instance()
+    serializer = TrackSerializer(track, data={'role': 'User'}, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_network_status(request, new_status):
+    node_status = NodeStatus.objects.get_or_create_single_instance()
+
+    # Ensure the provided status is valid
+    if new_status not in ['connected', 'disconnected', 'idle']:
+        return Response({'error': 'Invalid network status'}, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = NodeStatusSerializer(node_status, data={'network_status': new_status}, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+def toggle_training_status(request):
+    node_status = NodeStatus.objects.get_or_create_single_instance()
+
+    # Toggle the training_status
+    new_training_status = 'in_progress' if node_status.training_status != 'in_progress' else 'not_in_progress'
+
+    serializer = NodeStatusSerializer(node_status, data={'training_status': new_training_status}, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def create_or_update_admin(request):
+    try:
+        # Attempt to get the existing Admin instance
+        admin_instance = Admin.objects.get()
+
+        # If the instance exists, update the data with the provided data
+        serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
+    except Admin.DoesNotExist:
+        # If no instance exists, create a new one with a random node_id
+        random_node_id = random.randint(1, 1000)  # Adjust the range as needed
+        request.data['node_id'] = random_node_id
+        serializer = AdminSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

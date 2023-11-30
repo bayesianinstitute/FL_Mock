@@ -20,7 +20,7 @@ class TrainingInformation(models.Model):
     model_name = models.CharField(max_length=50, choices=model_name_choices)
     dataset_name = models.CharField(max_length=50, choices=dataset_name_choices)
     optimizer = models.CharField(max_length=50, choices=optimizer_choices)
-    minimum_number_of_computers = models.IntegerField()
+    training_name= models.CharField(max_length=200)
 
 
     def __str__(self):
@@ -30,11 +30,12 @@ class TrainingInformation(models.Model):
     
 class TrainingResult(models.Model):
     training_info = models.ForeignKey(TrainingInformation, on_delete=models.CASCADE, related_name='training_results',null=True, blank=True)
-    training_accuracy = models.FloatField()
+    accuracy = models.FloatField()
     validation_accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
-
+    epoch= models.AutoField(primary_key=True)
+    
     def __str__(self):
         return f"{self.training_info.model_name} - {self.training_info.dataset_name} - {self.training_info.optimizer} - {self.timestamp}"
    
@@ -51,3 +52,97 @@ class Logs(models.Model):
     
     class Meta:
         verbose_name_plural="Logs"
+        
+class Admin(models.Model):
+    TRAINING_STATUS_CHOICES = [
+        ('in_progress', 'Training In Progress'),
+        ('not_in_progress', 'Training Not In Progress'),
+    ]
+
+    NETWORK_STATUS_CHOICES = [
+        ('connected', 'Connected'),
+        ('disconnected', 'Disconnected'),
+        ('idle', 'Idle'),
+    ]
+
+    training_status = models.CharField(
+        max_length=20,
+        choices=TRAINING_STATUS_CHOICES,
+        default='not_in_progress'
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+    node_id = models.IntegerField()
+    model_hash = models.CharField(max_length=255)
+    network_status = models.CharField(
+        max_length=15,
+        choices=NETWORK_STATUS_CHOICES,
+        default='idle'
+    )
+    def __str__(self):
+        return f"{self.node_id}"
+    
+    
+    class Meta:
+        verbose_name_plural="Admin"
+    
+class NodeStatusManager(models.Manager):
+    def get_or_create_single_instance(self):
+        # Attempt to get the single instance, create if not found
+        instance, created = self.get_or_create(pk=1)
+        return instance
+    
+class NodeStatus(models.Model):
+    TRAINING_STATUS_CHOICES = [
+        ('in_progress', 'Training In Progress'),
+        ('not_in_progress', 'Training Not In Progress'),
+    ]
+
+    NETWORK_STATUS_CHOICES = [
+        ('connected', 'Connected'),
+        ('disconnected', 'Disconnected'),
+        ('idle', 'Idle'),
+    ]
+
+    training_status = models.CharField(
+        max_length=20,
+        choices=TRAINING_STATUS_CHOICES,
+        default='not_in_progress'
+    )
+    network_status = models.CharField(
+        max_length=15,
+        choices=NETWORK_STATUS_CHOICES,
+        default='idle'
+    )    
+    
+    objects = NodeStatusManager()
+    class Meta:
+        verbose_name_plural="Node Status"
+    
+class GlobalModelHash(models.Model):
+    global_model_hash = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True) 
+    class Meta:
+        verbose_name_plural="GlobalModelHash"
+ 
+class TrackManager(models.Manager):
+    def get_or_create_single_instance(self):
+        # Attempt to get the single instance, create if not found
+        instance, created = self.get_or_create(pk=1)
+        return instance
+       
+class Track(models.Model):
+    ROLE_CHOICES = [
+        ('User', 'User'),
+        ('Admin', 'Admin'),
+        ('BackupAdmin', 'BackupAdmin'),
+    ]
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='User'
+    )
+    objects = TrackManager()
+    class Meta:
+        verbose_name_plural="Track"
+        
