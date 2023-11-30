@@ -56,7 +56,9 @@ class DFLWorkflow:
                 self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
             self.is_status = self.participant.main()
             self.logger.info(f"Is worker head: {self.is_status}" )
-
+            
+            # TODO: need  post api  to make admin in database by setting up flag
+            
             # self.terminate_program()
 
             # Initialize  MQTT operations for communication
@@ -74,19 +76,23 @@ class DFLWorkflow:
 
             Round_Counter = 0
 
+            # TODO:  Need api to add amdin id in database
             head_id=mqtt_obj.get_head_node_id()
             self.logger.info(f"head_id : {head_id}")
             # self.terminate_program()
 
 
             while True:
-
+                
+                # TODO:  Need api to get admin id and match with our id 
                 if mqtt_obj.switch_head==True:
                     self.is_status = self.participant.main()     
                                   
                 # Check the termination status, and if True, close the program
                 # if mqtt_obj.terimate_status:
                 #     self.terminate_program()
+
+                # TODO:  Need api to update training rounds 
 
                 Round_Counter = Round_Counter + 1
                 self.logger.info(f"Round_Counter: {Round_Counter}")
@@ -116,8 +122,12 @@ class DFLWorkflow:
                 hash = self.ml_operations.train_machine_learning_model()
                 self.logger.info(f"Model hash: {hash}" )
 
+                # TODO: Need post api to update latest training model hash
+
                 # Send the model to the internal cluster
                 mqtt_obj.send_internal_messages_model(hash)
+
+                #TODO: Need api to get admin id and match with our id 
 
                 # If head status is True, send, aggregate, and send the global model to all workers
                 if self.is_status == True:
@@ -135,11 +145,18 @@ class DFLWorkflow:
                     #     self.terminate_program()
 
                     # Get a list of hashes from all workers in MQTT
+
+                    # instead managing list of hashes need api to get all work hash
+
+                    # TODO:  Get api all client model hash and need logic to check if we get all hashes from all workers
                     get_list = mqtt_obj.get_all_hash()
                     self.logger.info(f"Send global model:{ get_list}")
 
                     # Send all the list of hashes to aggregate and get the global model hash
                     self.global_model = self.ml_operations.aggregate_models(get_list)
+
+                    # TODO:  post api to add latest global model hash
+
                     self.logger.info(f"Got Global model hash: {self.global_model}" )
 
                     # Sending global model hash to all workers
@@ -149,7 +166,7 @@ class DFLWorkflow:
                     mqtt_obj.client_hash_mapping.clear()
                     self.logger.info("Clear all hash operations")
 
-                    # Get the latest global model hash
+                    # TODO: Get api the latest global model hash
                     latest_global_model_hash = mqtt_obj.global_model()
                     self.logger.info(f"I am aggregator, here is the global model hash:{ latest_global_model_hash}")
 
@@ -159,8 +176,10 @@ class DFLWorkflow:
                 else:
                     # Get the latest global model hash
 
-                    
+
                     latest_global_model_hash = mqtt_obj.global_model()
+                    # TODO:  post api to add latest global model hash
+
                     self.logger.info(f"I am not aggregator, got global model hash: { latest_global_model_hash}")
 
                     # Set the latest global model hash and set weights in MLOperation

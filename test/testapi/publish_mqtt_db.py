@@ -9,8 +9,7 @@ def fetch_results(url):
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             # Assuming the response contains JSON data, you can access it using response.json()
-            data = response.json()
-            
+            data = response.json()            
             # Process the data as needed
             return data
         else:
@@ -24,9 +23,16 @@ if __name__ == "__main__":
     fetch_data = fetch_results(api_url)
     # Extract the first (and only) element from the array
     data = fetch_data[0]
+    print("data: {}".format(data))
+
+    # Remove 'timestamp' and 'training_info' fields
+
+    data.pop('timestamp', None)
+    data.pop('training_info', None)
     main_data = json.dumps({
         "data": data
     })
+
     print("Fetched data:", main_data)
 
     # MQTT callback for when a message is received

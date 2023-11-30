@@ -119,6 +119,8 @@ class MQTTCluster:
         extract = json_data['global_model']
 
         self.logger.info(f"Received Global message in {cluster_id} from {client_id} as:\n{extract}")
+
+        # Need api to add Global model hash in database
         self.global_model_hash = extract
 
     def handle_internal_data(self, json_data, client_id, cluster_id):
@@ -137,6 +139,7 @@ class MQTTCluster:
         self.logger.info(json_data['msg'])
 
     def handle_client_disconnected(self, json_data):
+        # TODO: need admin api put to update number of client in database and status
         try :
             get_client_id = json_data['Client-disconnected']
             self.logger.warning(f"Disconnected node id : {get_client_id}" )
@@ -178,6 +181,7 @@ class MQTTCluster:
     def stop_receiving_messages(self):
         self.client.unsubscribe(self.internal_cluster_topic)
 
+    # 
     def get_all_hash(self):
         while len(self.client_hash_mapping) != self.num_clients:
             # Wait for all hashes to be available
