@@ -2,15 +2,14 @@ from core.MqttOPS.mqttCluster import MQTTCluster
 from core.Logs_System.logger import Logger
 
 class MqttOperations:
-    def __init__(self,internal_cluster_topic,global_cluster_topic,initial_broker,num_workers,status,id):
+    def __init__(self,internal_cluster_topic,cluster_name,initial_broker,num_workers,status,id):
         # You can add any necessary initialization code here
         self.logger=Logger(name='MqttOPS_logger').get_logger()
         self.internal_cluster_topic=internal_cluster_topic
-        self.global_cluster_topic = global_cluster_topic
         self.num_workers =num_workers
         self.initial_broker=initial_broker
         self.cluster=None
-        self.cluster_name=global_cluster_topic
+        self.cluster_name=cluster_name
         self.status=status
         self.id=id
 
@@ -30,7 +29,7 @@ class MqttOperations:
         """
         # Configuration and connect client
 
-        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name, self.global_cluster_topic, self.internal_cluster_topic,self.status,self.id)
+        self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name,self.internal_cluster_topic,self.status,self.id)
 
         # Connect clients for  clusters
         self.cluster.connect_clients()

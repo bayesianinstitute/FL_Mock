@@ -7,14 +7,13 @@ from core.Logs_System.logger import Logger
 
 
 class MQTTCluster:
-    def __init__(self, broker_address, num_clients, cluster_name, global_cluster_topic, internal_cluster_topic, head_status, id):
+    def __init__(self, broker_address, num_clients, cluster_name,  internal_cluster_topic, head_status, id):
         self.logger=Logger(name='MqttComm_logger').get_logger()
         self.broker_address = broker_address
         self.num_clients = num_clients
         self.cluster_name = cluster_name
         self.worker_head_node = head_status
         self.round = 0
-        self.global_cluster_topic = global_cluster_topic
         self.internal_cluster_topic = internal_cluster_topic
         self.client = None
         self.global_model_hash = None
@@ -33,7 +32,6 @@ class MQTTCluster:
         will_set_msg=json.dumps({"Client-disconnected": self.id})
         self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1,)
         self.client.connect(self.broker_address, 1883)
-        self.client.subscribe(self.global_cluster_topic, qos=1)
         self.client.subscribe(self.internal_cluster_topic, qos=1)
         self.client.loop_start()
 
@@ -52,8 +50,7 @@ class MQTTCluster:
 
         if message.topic == self.internal_cluster_topic:
             self.handle_internal_message(message, client_id, cluster_id,client)
-        elif message.topic == self.global_cluster_topic and self.is_worker_head(client):
-            self.handle_global_message(message, client_id, cluster_id)
+
 
     def handle_internal_message(self, message, client_id, cluster_id,client):
         data = message.payload.decode('utf-8')
@@ -102,18 +99,6 @@ class MQTTCluster:
 
         return True    
 
-    def handle_global_message(self, message, client_id, cluster_id):
-        data = message.payload.decode('utf-8')
-        try:
-            message_data = json.loads(data)
-            if "data" in message_data:
-                message_content = message_data["data"]
-                self.logger.info(f"Inter-cluster message in {cluster_id} from {client_id}:\n{message_content}")
-            else:
-                self.logger.info("No 'data' field in the global message.")
-
-        except json.JSONDecodeError:
-            self.logger.error("Error decoding JSON message")
 
     def handle_global_model(self, json_data, client_id, cluster_id):
         extract = json_data['global_model']
@@ -183,7 +168,7 @@ class MQTTCluster:
 
     # 
     def get_all_hash(self):
-        while len(self.client_hash_mapping) != self.num_clients:
+        while len(self.client_hash_mapping) != self.num_clients-1:
             # Wait for all hashes to be available
             self.logger.debug("Waiting for all hashes to be available")
             time.sleep(4)
@@ -239,10 +224,6 @@ class MQTTCluster:
         self.client.publish(self.internal_cluster_topic, data)
         self.logger.info("Successfully sent_internal_messages_model")
 
-    def send_inter_cluster_message(self, message):
-        message_json = json.dumps({"data": message})
-        self.worker_head_node.publish(self.global_cluster_topic, message_json)
-        self.logger.info("Successfully sent_inter_cluster_message")
 
     def send_internal_messages(self):
         message= f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training"
@@ -297,6 +278,3 @@ if __name__ == "__main__":
 
     # Subscribe to internal messages
     cluster.subscribe_to_internal_messages()
-
-# Implement custom logic for handling messages
-# Override the on_message method
