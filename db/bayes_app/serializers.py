@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash
+from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
 
 class TrainingInformationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,3 +35,13 @@ class GlobalModelHashSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlobalModelHash
         fields = '__all__'
+
+class TrainingResultAdminSerializer(serializers.ModelSerializer):
+    data = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TrainingResultAdmin
+        fields = ['node_id', 'data']
+
+    def get_data(self, obj):
+        return [obj.accuracy, obj.validation_accuracy, obj.loss]  # Add more fields if needed

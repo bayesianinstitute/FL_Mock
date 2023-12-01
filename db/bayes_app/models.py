@@ -20,11 +20,10 @@ class TrainingInformation(models.Model):
     model_name = models.CharField(max_length=50, choices=model_name_choices)
     dataset_name = models.CharField(max_length=50, choices=dataset_name_choices)
     optimizer = models.CharField(max_length=50, choices=optimizer_choices)
-    training_name= models.CharField(max_length=200)
-
+    training_name = models.CharField(max_length=200, unique=True)
 
     def __str__(self):
-        return f"{self.model_name} - {self.dataset_name} - {self.optimizer}"
+        return f"{self.training_name}"
     class Meta:
         verbose_name_plural="Training Information"
     
@@ -34,7 +33,6 @@ class TrainingResult(models.Model):
     validation_accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    epoch= models.AutoField(primary_key=True)
     
     def __str__(self):
         return f"{self.training_info.model_name} - {self.training_info.dataset_name} - {self.training_info.optimizer} - {self.timestamp}"
@@ -42,6 +40,26 @@ class TrainingResult(models.Model):
     class Meta:
         verbose_name_plural="Training Result"
     
+class TrainingResultAdmin(models.Model):
+    training_info = models.ForeignKey(
+        TrainingInformation,
+        on_delete=models.CASCADE,
+        related_name='admin_training_results',  # Provide a unique related_name
+        null=True,
+        blank=True
+    )
+    node_id = models.IntegerField()
+    accuracy = models.FloatField()
+    validation_accuracy = models.FloatField()
+    loss = models.FloatField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.training_info.model_name} - {self.training_info.dataset_name} - {self.training_info.optimizer} - {self.timestamp}"
+   
+    class Meta:
+        verbose_name_plural = "Admin Training Result"
+
     
 class Logs(models.Model):
     message = models.TextField()
@@ -54,6 +72,7 @@ class Logs(models.Model):
         verbose_name_plural="Logs"
         
 class Admin(models.Model):
+    
     TRAINING_STATUS_CHOICES = [
         ('in_progress', 'Training In Progress'),
         ('not_in_progress', 'Training Not In Progress'),
@@ -64,11 +83,21 @@ class Admin(models.Model):
         ('disconnected', 'Disconnected'),
         ('idle', 'Idle'),
     ]
+    ROLE_CHOICES = [
+        ('User', 'User'),
+        ('Admin', 'Admin'),
+        ('BackupAdmin', 'BackupAdmin'),
+    ]
 
     training_status = models.CharField(
         max_length=20,
         choices=TRAINING_STATUS_CHOICES,
         default='not_in_progress'
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='User'
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     node_id = models.IntegerField()

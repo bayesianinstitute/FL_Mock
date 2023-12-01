@@ -24,19 +24,17 @@
       <!-- User Table -->
       <div class="card">
         <div class="card-header">
-          <h1 class="card-title">Normal Users</h1>
+          <h1 class="card-title">Users</h1>
         </div>
         <div class="card-body">
           <!-- Display user information in a table -->
           <table class="table">
             <thead>
               <tr>
-                <th>User ID</th>
-                <th>Username</th>
+                <th>Node Id</th>
                 <th>User Role</th>
-                <th>Last Activity</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Training Status</th>
+                <th>Network Status</th>
               </tr>
             </thead>
             <tbody id="user-table-body">
@@ -46,14 +44,136 @@
         </div>
       </div>
 
+      {% comment %}
       <!-- Chart Section -->
       <div class="card mt-4">
         <div class="card-header">
           <h1 class="card-title">Training Progress</h1>
         </div>
         <div class="card-body">
-          <!-- Chart Canvas -->
-          <canvas id="training-chart" width="400" height="200"></canvas>
+          <!-- Bar Chart Canvas -->
+          <canvas
+            id="training-chart"
+            style="width: 200px; height: 100px"
+          ></canvas>
+        </div>
+      </div>
+      {% endcomment %}
+
+      <!-- Dropdown for Chart Selection -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h1 class="card-title">Select Chart</h1>
+        </div>
+        <div class="card-body">
+          <label for="chartSelector">Choose a chart:</label>
+          <select
+            id="chartSelector"
+            class="form-control"
+            onchange="updateChart()"
+          >
+            <option value="training">Training Progress</option>
+            <option value="epochs">Epochs</option>
+            <option value="loss">Loss</option>
+            <option value="validationAccuracy">Validation Accuracy</option>
+            <option value="progressDistribution">Progress Distribution</option>
+            <option value="lossDistribution">Loss Distribution</option>
+            <option value="metricsRadar">Metrics Radar</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Line Chart Section for Epochs -->
+      <div class="card mt-4" id="epochsChartContainer" style="display: none">
+        <div class="card-header">
+          <h1 class="card-title">Epochs</h1>
+        </div>
+        <div class="card-body">
+          <!-- Line Chart Canvas for Epochs -->
+          <canvas id="epochs-chart" width="300" height="150"></canvas>
+        </div>
+      </div>
+
+      <!-- Line Chart Section for Loss -->
+      <div class="card mt-4" id="lossChartContainer" style="display: none">
+        <div class="card-header">
+          <h1 class="card-title">Loss</h1>
+        </div>
+        <div class="card-body">
+          <!-- Line Chart Canvas for Loss -->
+          <canvas id="loss-chart" width="400" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Line Chart Section for Validation Accuracy -->
+      <div
+        class="card mt-4"
+        id="validationAccuracyChartContainer"
+        style="display: none"
+      >
+        <div class="card-header">
+          <h1 class="card-title">Validation Accuracy</h1>
+        </div>
+        <div class="card-body">
+          <!-- Line Chart Canvas for Validation Accuracy -->
+          <canvas
+            id="validation-accuracy-chart"
+            width="400"
+            height="200"
+          ></canvas>
+        </div>
+      </div>
+
+      <!-- Pie Chart Section for Training Progress Distribution -->
+      <div
+        class="card mt-4"
+        id="progressDistributionChartContainer"
+        style="display: none"
+      >
+        <div class="card-header">
+          <h1 class="card-title">Training Progress Distribution</h1>
+        </div>
+        <div class="card-body">
+          <!-- Pie Chart Canvas for Training Progress Distribution -->
+          <canvas
+            id="progress-distribution-chart"
+            width="400"
+            height="200"
+          ></canvas>
+        </div>
+      </div>
+
+      <!-- Doughnut Chart Section for Loss Distribution -->
+      <div
+        class="card mt-4"
+        id="lossDistributionChartContainer"
+        style="display: none"
+      >
+        <div class="card-header">
+          <h1 class="card-title">Loss Distribution</h1>
+        </div>
+        <div class="card-body">
+          <!-- Doughnut Chart Canvas for Loss Distribution -->
+          <canvas
+            id="loss-distribution-chart"
+            width="400"
+            height="200"
+          ></canvas>
+        </div>
+      </div>
+
+      <!-- Radar Chart Section for Multi-dimensional Metrics -->
+      <div
+        class="card mt-4"
+        id="metricsRadarChartContainer"
+        style="display: none"
+      >
+        <div class="card-header">
+          <h1 class="card-title">Metrics Comparison</h1>
+        </div>
+        <div class="card-body">
+          <!-- Radar Chart Canvas for Multi-dimensional Metrics -->
+          <canvas id="metrics-radar-chart" width="400" height="200"></canvas>
         </div>
       </div>
     </div>
@@ -64,26 +184,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-      // Simulated user data
-      const userData = [
-        {
-          id: 1,
-          username: 'User1',
-          role: 'Normal',
-          lastActivity: '2023-11-20 14:30',
-          status: 'Active',
-        },
-        {
-          id: 2,
-          username: 'User2',
-          role: 'Normal',
-          lastActivity: '2023-11-20 12:45',
-          status: 'Active',
-        },
-        // Add more user data as needed
-      ]
-
-      // Dummy training data for the chart
+      // Dummy training data for the bar chart
       const trainingData = {
         labels: ['User1', 'User2'],
         datasets: [
@@ -100,54 +201,147 @@
         ],
       }
 
+      // Dummy data for line charts
+      const epochsData = {
+        labels: ['Epoch 1', 'Epoch 2', 'Epoch 3', 'Epoch 4', 'Epoch 5'],
+        datasets: [
+          {
+            label: 'User1',
+            data: [10, 20, 15, 25, 30],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            fill: false,
+          },
+          {
+            label: 'User2',
+            data: [15, 25, 18, 30, 35],
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            fill: false,
+          },
+        ],
+      }
+
+      const lossData = {
+        labels: ['Epoch 1', 'Epoch 2', 'Epoch 3', 'Epoch 4', 'Epoch 5'],
+        datasets: [
+          {
+            label: 'User1',
+            data: [0.5, 0.4, 0.3, 0.2, 0.1],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            fill: false,
+          },
+          {
+            label: 'User2',
+            data: [0.4, 0.3, 0.2, 0.1, 0.05],
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            fill: false,
+          },
+        ],
+      }
+
+      const validationAccuracyData = {
+        labels: ['Epoch 1', 'Epoch 2', 'Epoch 3', 'Epoch 4', 'Epoch 5'],
+        datasets: [
+          {
+            label: 'User1',
+            data: [0.8, 0.85, 0.88, 0.9, 0.92],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            fill: false,
+          },
+          {
+            label: 'User2',
+            data: [0.75, 0.82, 0.87, 0.91, 0.94],
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            fill: false,
+          },
+        ],
+      }
+
+      // Dummy data for pie chart
+      const progressDistributionData = {
+        labels: ['Completed', 'In Progress', 'Not Started'],
+        datasets: [
+          {
+            data: [30, 60, 10],
+            backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+          },
+        ],
+      }
+
+      // Dummy data for doughnut chart
+      const lossDistributionData = {
+        labels: ['User1', 'User2'],
+        datasets: [
+          {
+            data: [15, 25],
+            backgroundColor: ['#007bff', '#6610f2'],
+          },
+        ],
+      }
+
+      // Dummy data for radar chart
+      const metricsData = {
+        labels: ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'Loss'],
+        datasets: [
+          {
+            label: 'User1',
+            data: [0.85, 0.78, 0.82, 0.8, 0.2],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          },
+          {
+            label: 'User2',
+            data: [0.78, 0.75, 0.88, 0.85, 0.3],
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          },
+        ],
+      }
+
       // Function to render user table
-      function renderUserTable() {
+      function renderUserTable(adminData) {
         const userTableBody = document.getElementById('user-table-body')
         userTableBody.innerHTML = ''
 
-        userData.forEach((user) => {
-          const row = document.createElement('tr')
-          row.innerHTML = `
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.role}</td>
-                    <td>${user.lastActivity}</td>
-                    <td>${user.status}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" onclick="banUser(${user.id})">Ban</button>
-                        <button class="btn btn-success btn-sm" onclick="promoteUser(${user.id})">Promote</button>
-                    </td>
-                `
-          userTableBody.appendChild(row)
-        })
+        // Create a new row for the fetched admin data
+        const row = document.createElement('tr')
+        row.innerHTML = `
+          <td>${adminData.node_id}</td>
+          <td>Admin</td>
+          <td>${adminData.training_status}</td>
+          <td>${adminData.network_status}</td>
+        `
+
+        // Append the row to the table body
+        userTableBody.appendChild(row)
       }
 
-      // Function to ban a user
-      function banUser(userId) {
-        // Simulate server-side logic for banning a user
-        const user = userData.find((u) => u.id === userId)
-        if (user) {
-          user.status = 'Banned'
-          renderUserTable()
+      // Function to fetch admin data from the API
+      async function fetchAdminData() {
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:8000/api/v1/get-admin-data/'
+          )
+          const adminData = await response.json()
+
+          // Process the received data and update the table
+          renderUserTable(adminData)
+        } catch (error) {
+          console.error('Error fetching admin data:', error)
         }
       }
 
-      // Function to promote a user
-      function promoteUser(userId) {
-        // Simulate server-side logic for promoting a user
-        const user = userData.find((u) => u.id === userId)
-        if (user) {
-          user.role = 'Admin'
-          renderUserTable()
-        }
-      }
-
-      // Function to render training chart
-      function renderTrainingChart() {
-        const ctx = document.getElementById('training-chart').getContext('2d')
-        const trainingChart = new Chart(ctx, {
-          type: 'bar',
-          data: trainingData,
+      // Function to render line charts
+      function renderLineChart(chartId, chartData) {
+        const ctx = document.getElementById(chartId).getContext('2d')
+        const lineChart = new Chart(ctx, {
+          type: 'line',
+          data: chartData,
           options: {
             scales: {
               y: {
@@ -158,9 +352,106 @@
         })
       }
 
-      // Call the renderUserTable and renderTrainingChart functions when the page loads
-      renderUserTable()
+      // Function to render pie chart
+      function renderPieChart(chartId, chartData) {
+        const ctx = document.getElementById(chartId).getContext('2d')
+        const pieChart = new Chart(ctx, {
+          type: 'pie',
+          data: chartData,
+        })
+      }
+
+      // Function to render doughnut chart
+      function renderDoughnutChart(chartId, chartData) {
+        const ctx = document.getElementById(chartId).getContext('2d')
+        const doughnutChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: chartData,
+        })
+      }
+
+      // Function to render radar chart
+      function renderRadarChart(chartId, chartData) {
+        const ctx = document.getElementById(chartId).getContext('2d')
+        const radarChart = new Chart(ctx, {
+          type: 'radar',
+          data: chartData,
+        })
+      }
+
+      // Function to update the chart based on user selection
+      function updateChart() {
+        const chartSelector = document.getElementById('chartSelector')
+        const selectedChart = chartSelector.value
+
+        // Hide all chart containers
+        document.getElementById('epochsChartContainer').style.display = 'none'
+        document.getElementById('lossChartContainer').style.display = 'none'
+        document.getElementById(
+          'validationAccuracyChartContainer'
+        ).style.display = 'none'
+        document.getElementById(
+          'progressDistributionChartContainer'
+        ).style.display = 'none'
+        document.getElementById(
+          'lossDistributionChartContainer'
+        ).style.display = 'none'
+        document.getElementById('metricsRadarChartContainer').style.display =
+          'none'
+
+        // Show the selected chart container
+        document.getElementById(
+          `${selectedChart}ChartContainer`
+        ).style.display = 'block'
+
+        // Update the chart based on user selection
+        // Update the chart based on user selection
+        switch (selectedChart) {
+          case 'training':
+            // Show the training chart
+            document.getElementById('training-chart').style.display = 'block'
+            break
+          case 'epochs':
+            // Render the epochs line chart
+            renderLineChart('epochs-chart', epochsData)
+            break
+          case 'loss':
+            // Render the loss line chart
+            renderLineChart('loss-chart', lossData)
+            break
+          case 'validationAccuracy':
+            // Render the validation accuracy line chart
+            renderLineChart('validation-accuracy-chart', validationAccuracyData)
+            break
+          case 'progressDistribution':
+            // Render the progress distribution pie chart
+            renderPieChart(
+              'progress-distribution-chart',
+              progressDistributionData
+            )
+            break
+          case 'lossDistribution':
+            // Render the loss distribution doughnut chart
+            renderDoughnutChart('loss-distribution-chart', lossDistributionData)
+            break
+          case 'metricsRadar':
+            // Render the metrics radar chart
+            renderRadarChart('metrics-radar-chart', metricsData)
+            break
+          default:
+            break
+        }
+      }
+
+      // Call the render functions when the page loads
       renderTrainingChart()
+      renderLineChart('epochs-chart', epochsData)
+      renderLineChart('loss-chart', lossData)
+      renderLineChart('validation-accuracy-chart', validationAccuracyData)
+      renderPieChart('progress-distribution-chart', progressDistributionData)
+      renderDoughnutChart('loss-distribution-chart', lossDistributionData)
+      renderRadarChart('metrics-radar-chart', metricsData)
+      fetchAdminData()
     </script>
   </body>
 </html>
