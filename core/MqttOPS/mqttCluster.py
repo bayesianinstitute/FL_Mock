@@ -214,23 +214,17 @@ class MQTTCluster:
 
 
 
-    def send_internal_messages_model(self, modelhash):
-        message = {
-            "client_id": self.id,
-            "model_hash": modelhash
-        }
-        data = json.dumps(message)
-        self.logger.info(f"send_internal_messages_model:{data}" )
-        self.logger.info(f"Internal topic {self.internal_cluster_topic}")
-        self.client.publish(self.internal_cluster_topic, data)
+    def send_internal_messages_model(self, message):
+
+        self.logger.info(f"send_internal_messages_model:{message}" )
+        self.client.publish(self.internal_cluster_topic, message)
         self.logger.info("Successfully sent_internal_messages_model")
 
 
-    def send_internal_messages(self):
-        message= f" Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training"
-        message_json = json.dumps({"msg": message})
+    def send_internal_messages(self,message_json):
+
         self.client.publish(self.internal_cluster_topic,message_json)
-        self.logger.info(f" topic : {self.internal_cluster_topic} Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
+        # self.logger.info(f" topic : {self.internal_cluster_topic} Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
 
     def send_internal_messages_global_model(self, modelhash):
         self.logger.info(f" trying to Global model to internal_messages_model: {modelhash} " )

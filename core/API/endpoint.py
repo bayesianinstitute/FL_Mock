@@ -8,6 +8,12 @@ toggle_network_status_endpoint = "toggle-network-status/"
 toggle_training_status_endpoint = "toggle-training-status/"
 create_or_update_admin_endpoint = "create-or-update-admin/"
 
+
+# PUT
+network_connected_endpoint="update-network-status/connected/"
+network_disconnected_endpoint="update-network-status/disconnected/"
+
+
 # GET ENDPOINT
 get_training_results_endpoint = "get-training-results/"
 get_logs_endpoint = "get-logs/"

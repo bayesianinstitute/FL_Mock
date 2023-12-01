@@ -105,9 +105,7 @@ class MLOperations:
 
         hash=self.send_model_to_ipfs(self.path_model)
 
-        self.logger.info(f"Ipfs Hash: {hash}")
-
-        return hash 
+        return hash,test_acc,test_loss
     
     def send_model_to_ipfs(self,path):
         return self.ipfs.push_model(path)
