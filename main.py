@@ -9,7 +9,7 @@ from core.Logs_System.logger import Logger
 
 from core.API.ClientAPI import ApiClient
 from core.API.endpoint import *
-
+import json
 
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
@@ -64,9 +64,7 @@ class DFLWorkflow:
         "model_name": self.training_type,
         "dataset_name": "Mnist",
         "optimizer": self.optimizer,
-        "training_name": self.cluster_name
-  
-    }    
+        "training_name": self.cluster_name }    
         
         print(data)
 
@@ -80,30 +78,24 @@ class DFLWorkflow:
         self.logger.debug(self.internal_cluster_topic)
         self.logger.debug(self.id)
 
+        get_role=self.apiClient.get_request(get_track_role)
 
-        get_admin=self.apiClient.get_request(update_admin_endpoint)
-
-        if post_response.status_code == 200:
-            self.logger.info(f"Get Request Successful: {post_response.text}" )
+        if get_role.status_code == 200:
+            self.logger.info(f"Get Request Successful: {get_role.text}" )
+            role_data = json.loads(get_role.text)
+            print(role_data['role'])
         else:
-            self.logger.error(f"GET Request Failed:{ post_response.status_code, post_response.text}")
+            self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
 
-        self.terminate_program()
         try:
             get_list = None
+            Round_Counter = 0
 
             # Create an instance of IdentifyParticipant and  to do voting if the client is a worker or head
-            self.participant = IdentifyParticipant(
-                self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
+            # self.participant = IdentifyParticipant(
+            #     self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
         
-            self.is_status = self.participant.main()
-            self.logger.info(f"Is worker head: {self.is_status}" )
-            
-            # TODO: need  post api  to make admin in database by setting up flag
-            
-            # TODO: need  post api  to add status in database as doing configuration
-
-            # Each client send to its status to admin 
+            # self.is_status = self.participant.main()
 
             # Initialize  MQTT operations for communication
             self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
@@ -116,50 +108,30 @@ class DFLWorkflow:
             # Start, initialize, and get MQTT communication object
             mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
 
-            # Subscribe to all internal messages
+            if role_data['role']=="User":
+                self.is_status=False
+                self.logger.info(f"Is worker head: {self.is_status}" )
+            elif role_data['role']=="Admin":
+                self.is_status=True
+                self.logger.info(f"Is worker head: {self.is_status}" )
+                mqtt_obj.send_head_id(self.id)
 
-            Round_Counter = 0
+                   
+            
+            # TODO: need  post api  to add status in database as doing configuration
+
+            # Each client send to its status to admin 
 
             # TODO:  Need api to add admin id in database
             head_id=mqtt_obj.get_head_node_id()
             self.logger.info(f"head_id : {head_id}")
-            # self.terminate_program()
 
             while True:
-                
-                # TODO:  Need api to get admin id and match with our id 
-                if mqtt_obj.switch_head==True:
-                    self.is_status = self.participant.main()     
-                                  
-                # Check the termination status, and if True, close the program
-                # if mqtt_obj.terimate_status:
-                #     self.terminate_program()
 
                 # TODO:  Need api to update training rounds 
 
                 Round_Counter = Round_Counter + 1
                 self.logger.info(f"Round_Counter: {Round_Counter}")
-
-
-
-                if head_id:
-                    mqtt_obj.send_head_id(head_id)
-                    # time.sleep(9)
-
-
-
-                # while not mqtt_obj.head_id :
-                #     self.logger.info("Waiting for to set head_id: ")
-                #     time.sleep(3)
-                #     pass
-                self.logger.info(f"Head_Id: {mqtt_obj.head_id}" )
-                
-
-                ## Temporary to check if changing broker works or not program
-                # if Round_Counter == 2:
-                #     self.logger.info("Changing Broker")
-                #     time.sleep(10)
-                #     mqtt_obj.switch_broker(self.updated_broker)
 
                 # Train the model and get the model hash from IPFS
 
@@ -167,24 +139,9 @@ class DFLWorkflow:
 
                 # If head status is True, send, aggregate, and send the global model to all workers
                 if self.is_status == True:
-
                     # TODO : get status of client using mqtt
 
                     # TODO: need  api  to add client status in database 
-
-                    # Temporarily add send terminate message to all workers to close the program
-                    # if Round_Counter == 2:
-                    #     self.logger.info("Terminating by user")
-                    #     # Send termination message
-                    #     mqtt_obj.send_terminate_message("Terminate")
-
-                    #     # # Sleep for a fixed time
-                    #     # time.sleep(5)
-
-                    #     # Terminate the program
-                    #     self.terminate_program()
-
-                    # Get a list of hashes from all workers in MQTT
 
                     # instead managing list of hashes need api to get all work hash
 
@@ -246,17 +203,8 @@ class DFLWorkflow:
         except Exception as e:
             self.logger.error(f"An error occurred: {e}")
 
-
-
 if __name__ == "__main__":
     # Parse command-line arguments
-
-    
-
-    
-
-
-
     parser = argparse.ArgumentParser()
     parser.add_argument("broker_service", help="Name of broker service", type=str)
     parser.add_argument("cluster_name", help="Name of the cluster", type=str)
@@ -265,15 +213,11 @@ if __name__ == "__main__":
 
     updated_broker = 'broker.hivemq.com'
 
-    
-
     model_type = 'CNN'
 
     optimizer = "Adam"
 
     args = parser.parse_args()
-
-
 
     voting_topic = f'Voting/{args.cluster_name}'
     declare_winner_topic = f'Winner/{args.cluster_name}'

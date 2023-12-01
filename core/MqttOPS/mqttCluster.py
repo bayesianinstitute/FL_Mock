@@ -87,6 +87,7 @@ class MQTTCluster:
 
         self.logger.warning(f"ALL Should Disconnected message from client : {client_id}")
     
+    # Send the termination message
     def send_terminate_message(self, t_msg):
         message = {
             "client_id": self.id,

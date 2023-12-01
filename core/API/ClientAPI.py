@@ -30,29 +30,29 @@ if __name__ == '__main__':
     api_client = ApiClient(base_url)
 
     # Example GET request
-    # get_response = api_client.get_request(endpoint="some-endpoint", params={"param1": "value1"})
-    # if get_response.status_code == 200:
-    #     print("GET Request Successful:", get_response.text)
+    get_response = api_client.get_request(endpoint="get-track-role/", )
+    if get_response.status_code == 200:
+        print("GET Request Successful:", get_response.text)
+    else:
+        print("GET Request Failed:", get_response.status_code, get_response.text)
+
+    # data = {
+    #     "model_name": "ANN",
+    #     "dataset_name": "Mnist",
+    #     "optimizer": "Adam",
+    #     "training_name": "USA"
+    # }
+
+    # # Example POST request
+    # post_response = api_client.post_request(endpoint="create-training-information/", data=data)
+    # if post_response.status_code == 201:
+    #     print("POST Request Successful:", post_response.text)
     # else:
-    #     print("GET Request Failed:", get_response.status_code, get_response.text)
+    #     print("POST Request Failed:", post_response.status_code, post_response.text)
 
-    data = {
-        "model_name": "ANN",
-        "dataset_name": "Mnist",
-        "optimizer": "Adam",
-        "training_name": "USA"
-    }
-
-    # Example POST request
-    post_response = api_client.post_request(endpoint="create-training-information/", data=data)
-    if post_response.status_code == 201:
-        print("POST Request Successful:", post_response.text)
-    else:
-        print("POST Request Failed:", post_response.status_code, post_response.text)
-
-    # Example PUT request
-    put_response = api_client.put_request(endpoint='update-admin/')
-    if put_response.status_code == 200:
-        print("PUT Request Successful:", put_response.text)
-    else:
-        print("PUT Request Failed:", put_response.status_code, put_response.text)
+    # # Example PUT request
+    # put_response = api_client.put_request(endpoint='update-admin/')
+    # if put_response.status_code == 200:
+    #     print("PUT Request Successful:", put_response.text)
+    # else:
+    #     print("PUT Request Failed:", put_response.status_code, put_response.text)
