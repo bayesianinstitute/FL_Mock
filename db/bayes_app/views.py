@@ -139,9 +139,13 @@ def create_or_update_admin(request):
 @api_view(['GET'])
 def get_admin_data(request):
     try:
-        # Assuming you want the latest admin data (based on timestamp)
-        admin_instance = Admin.objects.latest('timestamp')
-        serializer = AdminSerializer(admin_instance)
+        # Fetch all entries ordered by timestamp
+        admin_instances = Admin.objects.order_by('-timestamp')
+
+        if not admin_instances.exists():
+            return Response({'error': 'Admin data not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AdminSerializer(admin_instances, many=True)
         return Response(serializer.data)
     except Admin.DoesNotExist:
         return Response({'error': 'Admin data not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -204,3 +208,16 @@ def get_all_users_metrics(request, metric_name, training_name):
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
+@api_view(['GET'])
+def get_logs(request):
+    try:
+        # Fetch all logs ordered by timestamp
+        logs = Logs.objects.all().order_by('-timestamp')
+        
+        # Serialize the logs data
+        serializer = LogsSerializer(logs, many=True)
+        
+        # Return the serialized data as a JSON response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

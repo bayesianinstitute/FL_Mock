@@ -15,7 +15,41 @@
   <body>
     <div id="userContent" style="display: none">
       <!-- User-specific content goes here -->
-      <h1>Welcome, User!</h1>
+      <div class="container mt-4">
+        <!-- Input Fields -->
+        <div class="card">
+          <div class="card-header">
+            <h1 class="card-title">Configuration</h1>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="model-name">Topic Name</label>
+              <input
+                type="text"
+                id="model-name"
+                class="form-control"
+                placeholder="Enter topic name"
+              />
+            </div>
+
+            <!-- Action Buttons -->
+            <button onclick="startTraining()" class="btn btn-primary">
+              Start Training
+            </button>
+            <button onclick="stopTraining()" class="btn btn-danger">
+              Stop Training
+            </button>
+            <button
+              onclick="showLogs()"
+              class="btn btn-info"
+              data-toggle="modal"
+              data-target="#logsModal"
+            >
+              Show Logs
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="adminContent" style="display: none">
@@ -40,6 +74,7 @@
                   <th>User Role</th>
                   <th>Training Status</th>
                   <th>Network Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="user-table-body">
@@ -62,7 +97,7 @@
                 </div>
               </div>
             </div>
-        
+
             <!-- Line Graph Container for Loss -->
             <div class="col-md-6">
               <div class="card mt-4 mt-md-0">
@@ -75,7 +110,7 @@
               </div>
             </div>
           </div>
-        
+
           <div class="row mt-4">
             <!-- Line Graph Container for Validation Accuracy -->
             <div class="col-md-6">
@@ -84,19 +119,64 @@
                   <h6 class="card-title">Validation Accuracy Over Round</h6>
                 </div>
                 <div class="card-body">
-                  <canvas id="validationAccuracyChart" width="400" height="200"></canvas>
+                  <canvas
+                    id="validationAccuracyChart"
+                    width="400"
+                    height="200"
+                  ></canvas>
                 </div>
               </div>
             </div>
-        
+
             <!-- Add more col-md-6 containers for additional charts if needed -->
           </div>
         </div>
-        
+      </div>
+    </div>
 
     <div id="backupAdminContent" style="display: none">
-      <!-- Backup Admin-specific content goes here -->
-      <h1>Welcome, Backup Admin!</h1>
+      <h1>Backup Admin</h1>
+    </div>
+
+    <!-- Logs Modal -->
+    <div
+      class="modal fade"
+      id="logsModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="logsModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div
+          class="modal-content"
+          style="background-color: black; color: white"
+        >
+          <div class="modal-header">
+            <h5 class="modal-title" id="logsModalLabel">Logs</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <ul id="logsList"></ul>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -207,6 +287,30 @@
         }
       }
 
+      async function showLogs() {
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/v1/logs/')
+          const logsData = await response.json()
+
+          console.log('Logs Data:', logsData)
+
+          // Display logs in the modal
+          const logsList = document.getElementById('logsList')
+          logsList.innerHTML = '' // Clear existing logs
+
+          logsData.forEach((log) => {
+            const listItem = document.createElement('li')
+            listItem.textContent = log.message
+            logsList.appendChild(listItem)
+          })
+
+          // Show the logs modal
+          $('#logsModal').modal('show')
+        } catch (error) {
+          console.error('Error fetching logs:', error)
+        }
+      }
+
       function renderUserTable(adminData) {
         const userTableBody = document.getElementById('user-table-body')
 
@@ -225,12 +329,41 @@
           const cell2 = row.insertCell(1)
           const cell3 = row.insertCell(2)
           const cell4 = row.insertCell(3)
+          const cell5 = row.insertCell(4) // Action column
 
           cell1.textContent = user.node_id
           cell2.textContent = user.role // Assuming the user role is always 'Admin'
           cell3.textContent = user.training_status
           cell4.textContent = user.network_status
+
+          // Create "Stop" button
+          const stopButton = document.createElement('button')
+          stopButton.textContent = 'Stop'
+          stopButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mr-1')
+          stopButton.addEventListener('click', () => stopUser(user.node_id))
+          cell5.appendChild(stopButton)
+
+          // Create "Restart" button
+          const restartButton = document.createElement('button')
+          restartButton.textContent = 'Restart'
+          restartButton.classList.add('btn', 'btn-success', 'btn-sm')
+          restartButton.addEventListener('click', () =>
+            restartUser(user.node_id)
+          )
+          cell5.appendChild(restartButton)
         })
+      }
+
+      function stopUser(nodeId) {
+        // Logic to stop the user with the given nodeId
+        console.log(`Stopping user with Node ID ${nodeId}`)
+        // Add your API call or other logic here
+      }
+
+      function restartUser(nodeId) {
+        // Logic to restart the user with the given nodeId
+        console.log(`Restarting user with Node ID ${nodeId}`)
+        // Add your API call or other logic here
       }
 
       function plotLineGraph(data, chartId) {
