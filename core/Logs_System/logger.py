@@ -2,39 +2,41 @@ import logging
 import colorlog
 
 class Logger:
+    _loggers = {}  # Class variable to store instances
+
+    def __new__(cls, name='default_logger'):
+        # Check if an instance with the given name already exists
+        if name not in cls._loggers:
+            instance = super(Logger, cls).__new__(cls)
+            cls._loggers[name] = instance
+            return instance
+        else:
+            return cls._loggers[name]
+
     def __init__(self, name='default_logger'):
-        # Create a standard logger instead of colorlog.Logger
-        self.logger = logging.getLogger(name)
-        self.logger.setLevel(logging.DEBUG)
+        # If the logger already exists, do not reconfigure it
+        if not hasattr(self, 'logger'):
+            self.logger = logging.getLogger(name)
+            self.logger.setLevel(logging.DEBUG)
 
-        # Create a colorlog stream handler
-        handler = colorlog.StreamHandler()
-
-        # Define a formatter with different colors for different log levels
-        formatter = colorlog.ColoredFormatter(
-            '%(log_color)s%(asctime)s [%(levelname)s]%(reset)s: %(message)s - %(filename)s:%(lineno)d',
-            datefmt='%Y-%m-%d %H:%M:%S',
-            log_colors={
-                'DEBUG': 'cyan',
-                'INFO': 'green',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'red,bg_white',
-            }
-        )
-
-        # Set the formatter for the handler
-        handler.setFormatter(formatter)
-
-        # Set the logging level for the handler
-        handler.setLevel(logging.DEBUG)
-
-        # Add the handler to the logger
-        self.logger.addHandler(handler)
+            handler = colorlog.StreamHandler()
+            formatter = colorlog.ColoredFormatter(
+                '%(log_color)s%(asctime)s [%(levelname)s]%(reset)s: %(message)s - %(filename)s:%(lineno)d',
+                datefmt='%Y-%m-%d %H:%M:%S',
+                log_colors={
+                    'DEBUG': 'cyan',
+                    'INFO': 'green',
+                    'WARNING': 'yellow',
+                    'ERROR': 'red',
+                    'CRITICAL': 'red,bg_white',
+                }
+            )
+            handler.setFormatter(formatter)
+            handler.setLevel(logging.DEBUG)
+            self.logger.addHandler(handler)
 
     def get_logger(self):
         return self.logger
-
 
 # Example usage:
 

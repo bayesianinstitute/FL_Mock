@@ -24,7 +24,6 @@ class AdminOPS:
 
     def admin_logic(self, ):
         
-        self.is_admin = True
         self.logger.info("I am Admin ")
         self.mqtt_obj.send_head_id(self.id)
 

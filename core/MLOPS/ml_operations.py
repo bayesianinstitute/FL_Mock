@@ -5,7 +5,7 @@ from core.Logs_System.logger import Logger
 class MLOperations:
     def __init__(self,training_type,optimizer):
         # You can add any necessary initialization code here
-        self.logger=Logger(name='MLOPSs_Logger').get_logger()
+        self.logger=Logger(name='MLOPS_Logger').get_logger()
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
         self.path_global_model="global_model.h5"
