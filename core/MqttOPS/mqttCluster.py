@@ -8,7 +8,7 @@ from core.Logs_System.logger import Logger
 
 class MQTTCluster:
     def __init__(self, broker_address, num_clients, cluster_name,  internal_cluster_topic, head_status, id):
-        self.logger=Logger(name='MqttComm_logger').get_logger()
+        self.logger=Logger(name='MqttCommm_logger').get_logger()
         self.broker_address = broker_address
         self.num_clients = num_clients
         self.cluster_name = cluster_name
