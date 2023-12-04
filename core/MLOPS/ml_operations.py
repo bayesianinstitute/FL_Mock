@@ -5,7 +5,7 @@ from core.Logs_System.logger import Logger
 class MLOperations:
     def __init__(self,training_type,optimizer):
         # You can add any necessary initialization code here
-        self.logger=Logger(name='MLOPS_Logger').get_logger()
+        self.logger=Logger(name='MLOPSs_Logger').get_logger()
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
         self.path_global_model="global_model.h5"
@@ -110,7 +110,7 @@ class MLOperations:
     def send_model_to_ipfs(self,path):
         return self.ipfs.push_model(path)
         
-    def aggregate_models(self,get_model_list):
+    def aggregate_models(self,get_model_list:list):
         """
         This method represents the action taken when the aggregator aggregates received models.
 
@@ -141,7 +141,7 @@ class MLOperations:
 
         self.logger.info("Global model Aggregate weights")
 
-        self.logger.info(f"global model {global_model.summary()}")
+        self.logger.debug(f"global model {global_model.summary()}")
 
         # Save the trained model
         model.save(self.path_global_model)

@@ -3,7 +3,7 @@ from core.MqttOPS.mqtt_operations import MqttOperations
 from core.MLOPS.ml_operations import MLOperations
 import argparse
 
-from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
+# from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
 import uuid
 from core.Logs_System.logger import Logger
 
@@ -41,7 +41,6 @@ class DFLWorkflow:
         self.mqtt_operations = None
         self.optimizer = optimizer
         self.training_type=training_type
-        self.ml_operations = MLOperations(self.training_type, self.optimizer)
         self.global_model = None
 
         self.cluster_name=cluster_name
@@ -55,6 +54,10 @@ class DFLWorkflow:
         self.updated_broker = updated_broker
 
         self.apiClient=ApiClient()
+        self.admin = Admin( self.training_type, self.optimizer)
+        self.user = User( self.training_type, self.optimizer)
+
+
 
     # Function to terminate the program
     def terminate_program(self):
@@ -93,13 +96,8 @@ class DFLWorkflow:
         else:
             self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
 
-        # try
         Round_Counter = 0
-        # Create an instance of IdentifyParticipant and  to do voting if the client is a worker or head
-        # self.participant = IdentifyParticipant(
-        #     self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
-    
-        # self.is_admin = self.participant.main()
+
         # Initialize  MQTT operations for communication
         self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
                                               self.cluster_name,
@@ -113,16 +111,15 @@ class DFLWorkflow:
             # TODO:  Need api to update training rounds 
             Round_Counter = Round_Counter + 1
             self.logger.info(f"Round_Counter: {Round_Counter}")
+
+            # Admin
             if role_data['role'] == "Admin":
                 self.logger.info(f"Admin")
-                admin = Admin(self.apiClient, self.ml_operations, self.mqtt_operations,self.logger)
-                self.logger.info(f"Admin 1")
-                admin.admin_logic(role_data,mqtt_obj)
+                self.admin.admin_logic(mqtt_obj,self.id)
+            # User
             elif role_data['role'] == "User":
                 self.logger.info(f"User")
-                user = User(self.apiClient, self.ml_operations, self.mqtt_operations,self.logger)
-                self.logger.info(f"User 1")
-                user.user_logic(role_data,mqtt_obj)
+                self.user.user_logic(mqtt_obj)
             else:
                  pass
                 # Temporary to close the program
@@ -130,9 +127,6 @@ class DFLWorkflow:
                     
                     break
             self.logger.info(f"Training completed with round {Round_Counter} !! ")
-        
-        # excpt Exception as e:
-        # self.logger.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     # Parse command-line arguments

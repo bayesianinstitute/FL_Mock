@@ -199,8 +199,8 @@ class MQTTCluster:
             self.logger.warning(f"Trying to fetch global attempt: {int(elapsed_time)} seconds")
 
 
-            if elapsed_time >= 10:
-                self.logger.warning(f"Timeout: Unable to get global model within 10 seconds")
+            if elapsed_time >= 6:
+                self.logger.warning(f"Timeout: Unable to get global model within 6 seconds")
                 return None
 
         return self.global_model_hash

@@ -24,14 +24,30 @@ class IPFS:
             sys.exit(1)
 
     def fetch_model(self, model_hash):
-        model_bytes = self.client.cat(model_hash)
-                # Create a temporary file to save the model bytes
+        self.logger.debug(f"Model hash: {model_hash}")
+        try:
+            # Retrieve the model bytes from the client using model_hash
+            model_bytes = self.client.cat(model_hash)
+        except Exception as e:
+            self.logger.error(f"Error retrieving model with hash {model_hash}: {str(e)}")
+            return None
+
+        # Create a temporary file to save the model bytes
         with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
-            temp_model_file.write(model_bytes)
-
-        # Load the model from the temporary file
-        model = keras.models.load_model(temp_model_file.name)
-
+            try:
+                # Write the model bytes to the temporary file
+                temp_model_file.write(model_bytes)
+            except Exception as e:
+                # Handle the case when there's an issue writing to the temporary file
+                self.logger.error(f"Error writing model bytes to temporary file: {str(e)}")
+                return None
+        try:
+            model = keras.models.load_model(temp_model_file.name)
+        except Exception as e:
+            self.logger.error(f"Error loading model from temporary file: {str(e)}")
+            return None
+        finally:
+            temp_model_file.close()
         return model
 
 

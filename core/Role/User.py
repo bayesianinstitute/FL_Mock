@@ -1,15 +1,15 @@
 import json
 from core.API.endpoint import *
+from core.API.ClientAPI import ApiClient
+from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
-
 class User:
-    def __init__(self, apiClient, ml_operations, mqtt_operations,logger):
-        self.apiClient = apiClient
-        self.ml_operations = ml_operations
-        self.mqtt_operations = mqtt_operations
-        self.logger = logger
+    def __init__(self,  training_type, optimizer):
+        self.apiClient=ApiClient()
+        self.ml_operations = MLOperations(training_type, optimizer)
+        self.logger = Logger(name='user-role').get_logger()
 
-    def user_logic(self, role_data, mqtt_obj):
+    def user_logic(self,  mqtt_obj):
         # Update connected Status
         connected_status = self.apiClient.put_request(network_connected_endpoint)
         if connected_status.status_code == 200:

@@ -1,20 +1,24 @@
 from core.API.endpoint import *
 import json
 
-# admin_module.py
+from core.API.ClientAPI import ApiClient
+from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
+# admin_module.py
 
 class Admin:
-    def __init__(self, apiClient, ml_operations, mqtt_operations,logger):
-        self.apiClient = apiClient
-        self.ml_operations = ml_operations
-        self.mqtt_operations = mqtt_operations
-        self.logger = logger
+    def __init__(self, training_type, optimizer):
+        self.apiClient=ApiClient()
+        self.ml_operations = MLOperations(training_type, optimizer)
 
-    def admin_logic(self, role_data, mqtt_obj):
+        self.logger = Logger(name='admin-role').get_logger()
+
+        self.model_list = []
+
+    def admin_logic(self,  mqtt_obj,id):
         self.is_admin = True
         self.logger.info("I am Admin ")
-        mqtt_obj.send_head_id(self.id)
+        mqtt_obj.send_head_id(id)
         # TODO: get status of client using mqtt
         # instead of managing a list of hashes need an API to get all work hash
         get_user = self.apiClient.get_request(get_admin_data)
@@ -26,11 +30,12 @@ class Admin:
             self.logger.error(f"GET Request Failed:{ get_user.status_code, get_user.text}")
         
         # TODO:  Get API all client model hash and need logic to check if we get all hashes from all workers
-        get_list = user_data['model_hash']
-        self.logger.info(f"Send global model:{ get_list}")
+        model_hash = user_data['model_hash']
+        self.model_list.append(model_hash)
+        self.logger.info(f"Send global model:{ self.model_list}")
         
         # Send all the list of hashes to aggregate and get the global model hash
-        self.global_model = self.ml_operations.aggregate_models(get_list)
+        self.global_model = self.ml_operations.aggregate_models(self.model_list)
         
         # TODO:  post API to add the latest global model hash
         self.logger.info(f"Got Global model hash: {self.global_model}")
