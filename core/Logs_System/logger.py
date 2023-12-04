@@ -3,7 +3,8 @@ import colorlog
 
 class Logger:
     def __init__(self, name='default_logger'):
-        self.logger = colorlog.getLogger(name)
+        # Create a standard logger instead of colorlog.Logger
+        self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
 
         # Create a colorlog stream handler
@@ -11,7 +12,7 @@ class Logger:
 
         # Define a formatter with different colors for different log levels
         formatter = colorlog.ColoredFormatter(
-            '%(log_color)s%(asctime)s [%(levelname)s]%(reset)s: %(message)s',
+            '%(log_color)s%(asctime)s [%(levelname)s]%(reset)s: %(message)s - %(filename)s:%(lineno)d',
             datefmt='%Y-%m-%d %H:%M:%S',
             log_colors={
                 'DEBUG': 'cyan',
@@ -34,9 +35,10 @@ class Logger:
     def get_logger(self):
         return self.logger
 
+
 # Example usage:
 
-if __name__=='__main__':
+if __name__ == '__main__':
     logger = Logger(name='my_logger').get_logger()
 
     logger.debug("This is a debug message")

@@ -11,6 +11,10 @@ from core.API.ClientAPI import ApiClient
 from core.API.endpoint import *
 import json
 
+from core.Role.Admin import Admin
+from core.Role.User import User
+
+
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
     def __init__(self,
@@ -89,134 +93,46 @@ class DFLWorkflow:
         else:
             self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
 
-        try:
-            get_list = None
-            Round_Counter = 0
-
-            # Create an instance of IdentifyParticipant and  to do voting if the client is a worker or head
-            # self.participant = IdentifyParticipant(
-            #     self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
+        # try
+        Round_Counter = 0
+        # Create an instance of IdentifyParticipant and  to do voting if the client is a worker or head
+        # self.participant = IdentifyParticipant(
+        #     self.id, self.broker_service, self.voting_topic, self.winner_declare, self.min_node)
+    
+        # self.is_admin = self.participant.main()
+        # Initialize  MQTT operations for communication
+        self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
+                                              self.cluster_name,
+                                            self.broker_service,
+                                            self.min_node,
+                                            self.is_admin,
+                                            self.id)
+        # Start, initialize, and get MQTT communication object
+        mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
+        while True:
+            # TODO:  Need api to update training rounds 
+            Round_Counter = Round_Counter + 1
+            self.logger.info(f"Round_Counter: {Round_Counter}")
+            if role_data['role'] == "Admin":
+                self.logger.info(f"Admin")
+                admin = Admin(self.apiClient, self.ml_operations, self.mqtt_operations,self.logger)
+                self.logger.info(f"Admin 1")
+                admin.admin_logic(role_data,mqtt_obj)
+            elif role_data['role'] == "User":
+                self.logger.info(f"User")
+                user = User(self.apiClient, self.ml_operations, self.mqtt_operations,self.logger)
+                self.logger.info(f"User 1")
+                user.user_logic(role_data,mqtt_obj)
+            else:
+                 pass
+                # Temporary to close the program
+            if Round_Counter == 2:
+                    
+                    break
+            self.logger.info(f"Training completed with round {Round_Counter} !! ")
         
-            # self.is_admin = self.participant.main()
-
-            # Initialize  MQTT operations for communication
-            self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
-                                                  self.cluster_name,
-                                                self.broker_service,
-                                                self.min_node,
-                                                self.is_admin,
-                                                self.id)
-
-            # Start, initialize, and get MQTT communication object
-            mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
-
-            while True:
-
-                # TODO:  Need api to update training rounds 
-
-                Round_Counter = Round_Counter + 1
-                self.logger.info(f"Round_Counter: {Round_Counter}")
-
-                if role_data['role']=="Admin":
-                    self.is_admin=True
-                    self.logger.info(f"I am Admin " )
-                    mqtt_obj.send_head_id(self.id)                    
-                    # TODO : get status of client using mqtt
-                    # instead managing list of hashes need api to get all work hash
-                    get_user=self.apiClient.get_request(get_admin_data)
-                    if get_user.status_code == 200:
-                        self.logger.info(f"Get Request Successful: {get_user.text}" )
-                        user_data = json.loads(get_user.text)
-                        print(user_data)
-                    else:
-                        self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
-                    # TODO:  Get api all client model hash and need logic to check if we get all hashes from all workers
-                    get_list = user_data['model_hash']
-                    self.logger.info(f"Send global model:{ get_list}")
-                    # Send all the list of hashes to aggregate and get the global model hash
-                    self.global_model = self.ml_operations.aggregate_models(get_list)
-                    # TODO:  post api to add latest global model hash
-                    self.logger.info(f"Got Global model hash: {self.global_model}" )
-                    # Sending global model hash to all workers
-                    self.logger.info(self.ml_operations.send_global_model_to_others(mqtt_obj, self.global_model))
-                    # Clearing all previous model hashes from all workers
-                    mqtt_obj.client_hash_mapping.clear()
-                    self.logger.info("Clear all hash operations")
-                    # TODO: Get api the latest global model hash
-                    latest_global_model_hash = mqtt_obj.global_model()
-                    self.logger.info(f"I am aggregator, here is the global model hash:{ latest_global_model_hash}")
-                    # Set the latest global model hash and set weights in MLOperation
-                    self.ml_operations.is_global_model_hash(latest_global_model_hash)
-
-                elif role_data['role']=="User":
-                    self.is_admin=False
-
-                    self.logger.info(f"I am User!" )
-
-                    # Update connected Status
-                    connected_status=self.apiClient.put_request(network_connected_endpoint)
-                    if connected_status.status_code == 200:
-                            print("PUT network_status Request Successful:", connected_status.text)
-                            user_status = json.loads(connected_status.text)
-                            message = "connection_status"
-                            message_json = json.dumps({
-                                "msg": message,
-                                "id": user_status['id'],
-                                "network_status": user_status['network_status']
-                            })
-                            mqtt_obj.send_internal_messages(message_json)
-                    else:
-                            print("PUT Request Failed:", connected_status.status_code, connected_status.text)
-
-                    # Update training Status
-                    training_status=self.apiClient.put_request(toggle_training_status_endpoint)
-                    if training_status.status_code == 200:
-                        print("PUT training_status Request Successful:",training_status.text)
-                        user_status = json.loads(training_status.text)
-                        message= "training_status"
-                        message_json = json.dumps({
-                                "msg": message,
-                                "id": user_status['id'],
-                                "training_status": user_status['training_status'],
-                            })
-                        mqtt_obj.send_internal_messages(message_json)
-                    else:
-                        print("PUT Request Failed:", training_status.status_code, training_status.text)
-
-
-                    hash,accuracy,loss = self.ml_operations.train_machine_learning_model()
-                    self.logger.info(f"Model hash: {hash}" )
-
-
-                    # TODO: Need post api to update latest training model hash
-                    # Send the model to the internal cluster
-                    message_json =json.dumps({
-                        "client_id": user_status['id'],
-                        "model_hash": hash,
-                        "accuracy":accuracy,
-                        "loss":loss,
-                    })
-
-                    mqtt_obj.send_internal_messages_model(message_json)
-
-                    # Get the latest global model hash
-                    self.terminate_program()
-
-                    latest_global_model_hash = mqtt_obj.global_model()
-                    # TODO:  post api to add latest global model hash
-                    self.logger.info(f"I am not aggregator, got global model hash: { latest_global_model_hash}")
-                    # Set the latest global model hash and set weights in MLOperation
-                    self.ml_operations.is_global_model_hash(latest_global_model_hash)
-                    mqtt_obj.global_model_hash=None
-
-                    # Temporary to close the program
-                if Round_Counter == 6:
-                        break
-
-                self.logger.info(f"Training completed with round {Round_Counter} !! ")
-            
-        except Exception as e:
-            self.logger.error(f"An error occurred: {e}")
+        # excpt Exception as e:
+        # self.logger.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     # Parse command-line arguments

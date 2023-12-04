@@ -185,21 +185,24 @@ class MQTTCluster:
 
 
     def global_model(self):
-
         if self.worker_head_node:
-            
             return self.global_model_hash
 
-        
+        start_time = time.time()
         while not self.global_model_hash:
             # You can add a sleep here to reduce CPU usage
             self.logger.debug("Waiting for global model")
 
-            time.sleep(5)  
-            if self.terimate_status:
-                self.logger.warning("Force to disconnect")
-                break
-            pass
+            time.sleep(2)
+            elapsed_time = time.time() - start_time
+
+            self.logger.warning(f"Trying to fetch global attempt: {int(elapsed_time)} seconds")
+
+
+            if elapsed_time >= 10:
+                self.logger.warning(f"Timeout: Unable to get global model within 10 seconds")
+                return None
+
         return self.global_model_hash
 
     
