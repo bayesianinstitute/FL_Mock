@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dfluser,dfladmin,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_admin,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_accuracy_by_training_name_and_node_id,get_all_users_accuracy
+from .views import dfluser,dfladmin,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_admin,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics
 
 
 
@@ -24,6 +24,8 @@ urlpatterns = [
     path('api/v1/post-global-model-hash/', post_global_model_hash, name='post_global_model_hash'),
     path('api/v1/get-global-model-hash/', get_global_model_hash, name='get_global_model_hash'),
     path('api/v1/get-track-role/', get_track_role, name='get_track_role'),
-    path('api/v1/accuracy/<str:training_name>/', get_all_users_accuracy, name='accuracy-api-all'),
-    path('api/v1/accuracy/<str:training_name>/<int:node_id>/', get_accuracy_by_training_name_and_node_id, name='accuracy-api'),
+   
+    path('api/v1/<str:metric_name>/<str:training_name>/', get_all_users_metrics, name='metrics-api-all'),
+    
+   
 ]

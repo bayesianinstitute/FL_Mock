@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Federated Learning Admin Dashboard</title>
+    <title>Bayes Admin Dashboard</title>
     <!-- Include Bootstrap CSS -->
     <link
       rel="stylesheet"
@@ -22,14 +22,14 @@
       <!-- Admin-specific content goes here -->
       <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <a class="navbar-brand" href="#">Admin Dashboard</a>
+          <a class="navbar-brand" href="#">Bayes Admin</a>
         </nav>
       </header>
       <div class="container mt-4">
         <!-- User Table -->
         <div class="card">
           <div class="card-header">
-            <h1 class="card-title">Users</h1>
+            <h1 class="card-title">Bayes Users</h1>
           </div>
           <div class="card-body">
             <!-- Display user information in a table -->
@@ -49,27 +49,50 @@
           </div>
         </div>
 
-        <!-- Line Graph Container -->
-        <div class="card mt-4">
-          <div class="card-header">
-            <h6 class="card-title">Accuracy Over Round</h6>
+        <div class="container mt-4">
+          <div class="row">
+            <!-- Line Graph Container for Accuracy -->
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="card-title">Accuracy Over Round</h6>
+                </div>
+                <div class="card-body">
+                  <canvas id="accuracyChart" width="400" height="200"></canvas>
+                </div>
+              </div>
+            </div>
+        
+            <!-- Line Graph Container for Loss -->
+            <div class="col-md-6">
+              <div class="card mt-4 mt-md-0">
+                <div class="card-header">
+                  <h6 class="card-title">Loss Over Round</h6>
+                </div>
+                <div class="card-body">
+                  <canvas id="lossChart" width="400" height="200"></canvas>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="card-body">
-            <canvas id="accuracyChart" width="400" height="200"></canvas>
+        
+          <div class="row mt-4">
+            <!-- Line Graph Container for Validation Accuracy -->
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="card-title">Validation Accuracy Over Round</h6>
+                </div>
+                <div class="card-body">
+                  <canvas id="validationAccuracyChart" width="400" height="200"></canvas>
+                </div>
+              </div>
+            </div>
+        
+            <!-- Add more col-md-6 containers for additional charts if needed -->
           </div>
         </div>
-
-        <!-- Line Graph Container for Loss -->
-        <div class="card mt-4">
-          <div class="card-header">
-            <h6 class="card-title">Loss Over Round</h6>
-          </div>
-          <div class="card-body">
-            <canvas id="lossChart" width="400" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
+        
 
     <div id="backupAdminContent" style="display: none">
       <!-- Backup Admin-specific content goes here -->
@@ -130,6 +153,9 @@
 
           // Plot the line graph for loss using the loss/USA/ API
           await fetchLossDataAndPlotGraph()
+
+          // Plot the line graph for validation accuracy using the validation_accuracy/USA/ API
+          await fetchValidationAccuracyDataAndPlotGraph()
         } catch (error) {
           console.error('Error fetching admin data:', error)
         }
@@ -162,6 +188,22 @@
           plotLineGraph(lossData, 'lossChart')
         } catch (error) {
           console.error('Error fetching loss data:', error)
+        }
+      }
+
+      async function fetchValidationAccuracyDataAndPlotGraph() {
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:8000/api/v1/validation_accuracy/USA/'
+          )
+          const validationAccuracyData = await response.json()
+
+          console.log('Validation Accuracy Data:', validationAccuracyData)
+
+          // Plot the line graph
+          plotLineGraph(validationAccuracyData, 'validationAccuracyChart')
+        } catch (error) {
+          console.error('Error fetching validation accuracy data:', error)
         }
       }
 
@@ -240,7 +282,12 @@
               y: {
                 title: {
                   display: true,
-                  text: chartId === 'accuracyChart' ? 'Accuracy' : 'Loss',
+                  text:
+                    chartId === 'accuracyChart'
+                      ? 'Accuracy'
+                      : chartId === 'lossChart'
+                      ? 'Loss'
+                      : 'Validation Accuracy',
                 },
                 ticks: {
                   beginAtZero: true,

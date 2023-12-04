@@ -6,6 +6,7 @@ from .serializers import TrainingInformationSerializer,TrainingResultSerializer,
 from django.shortcuts import render
 import random
 from itertools import groupby
+from django.db.models import F
 
 def dfluser(request):
     return render(request, 'dfl/user.html')
@@ -173,16 +174,25 @@ def get_track_role(request):
         return Response({'error': 'Track data not found'}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['GET'])
-def get_all_users_accuracy(request, training_name):
+def get_all_users_metrics(request, metric_name, training_name):
     try:
-        accuracy_records = TrainingResultAdmin.objects.filter(
+        # Ensure that the metric_name is one of the allowed metrics
+        allowed_metrics = ['accuracy', 'loss', 'validation_accuracy']
+        if metric_name not in allowed_metrics:
+            return Response({'error': f"Invalid metric parameter. Allowed values: {', '.join(allowed_metrics)}"}, status=400)
+
+        # Use F expressions to dynamically select the desired metric field
+        metric_field = F(metric_name)
+
+        # Query the database with the selected metric field
+        metric_records = TrainingResultAdmin.objects.filter(
             training_info__training_name=training_name
-        ).order_by('node_id')  # Ensure records are ordered by node_id
+        ).order_by('node_id').values('node_id', metric=metric_field)
 
         grouped_data = []
-        for node_id, records in groupby(accuracy_records, key=lambda x: x.node_id):
-            # Convert the group of records into a list of accuracy values
-            data = [record.accuracy for record in records]
+        for node_id, records in groupby(metric_records, key=lambda x: x['node_id']):
+            # Convert the group of records into a list of metric values
+            data = [record['metric'] for record in records]
 
             # Append the data to the result list
             grouped_data.append({
@@ -194,15 +204,3 @@ def get_all_users_accuracy(request, training_name):
     except Exception as e:
         return Response({'error': str(e)}, status=500)
 
-
-@api_view(['GET'])
-def get_accuracy_by_training_name_and_node_id(request, training_name, node_id):
-    try:
-        accuracy_records = TrainingResultAdmin.objects.filter(
-            training_info__training_name=training_name, 
-            node_id=node_id
-        ).order_by('timestamp')  # Ensure records are ordered by timestamp
-        serializer = TrainingResultAdminSerializer(accuracy_records, many=True)
-        return Response(serializer.data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
