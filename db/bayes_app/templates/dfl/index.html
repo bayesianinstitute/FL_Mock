@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Federated Learning Admin Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div id="userContent" style="display: none">
+      <!-- User-specific content goes here -->
+      <h1>Welcome, User!</h1>
+    </div>
+
+    <div id="adminContent" style="display: none">
+      <!-- Admin-specific content goes here -->
+      <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <a class="navbar-brand" href="#">Admin Dashboard</a>
+        </nav>
+      </header>
+      <div class="container mt-4">
+        <!-- User Table -->
+        <div class="card">
+          <div class="card-header">
+            <h1 class="card-title">Users</h1>
+          </div>
+          <div class="card-body">
+            <!-- Display user information in a table -->
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Node Id</th>
+                  <th>User Role</th>
+                  <th>Training Status</th>
+                  <th>Network Status</th>
+                </tr>
+              </thead>
+              <tbody id="user-table-body">
+                <!-- User data will be dynamically added here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Line Graph Container -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h6 class="card-title">Accuracy Over Round</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="accuracyChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Line Graph Container for Loss -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h6 class="card-title">Loss Over Round</h6>
+          </div>
+          <div class="card-body">
+            <canvas id="lossChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="backupAdminContent" style="display: none">
+      <!-- Backup Admin-specific content goes here -->
+      <h1>Welcome, Backup Admin!</h1>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+      async function fetchData() {
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:8000/api/v1/get-track-role/'
+          )
+          const data = await response.json()
+
+          // Identify the role
+          const role = data.role
+
+          // Switch UI based on the role
+          switch (role) {
+            case 'User':
+              document.getElementById('userContent').style.display = 'block'
+              break
+            case 'Admin':
+              document.getElementById('adminContent').style.display = 'block'
+              await fetchAdminData() // Fetch and render admin data
+              break
+            case 'BackupAdmin':
+              document.getElementById('backupAdminContent').style.display =
+                'block'
+              break
+            default:
+              // Handle unknown roles or errors
+              console.error('Unknown role:', role)
+          }
+        } catch (error) {
+          // Handle API fetch errors
+          console.error('API error:', error)
+        }
+      }
+
+      async function fetchAdminData() {
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:8000/api/v1/get-admin-data/'
+          )
+          const adminData = await response.json()
+
+          console.log('Admin Data:', adminData)
+
+          // Process the received data and update the table
+          renderUserTable(adminData)
+
+          // Plot the line graph using the accuracy/USA/ API
+          await fetchAccuracyDataAndPlotGraph()
+
+          // Plot the line graph for loss using the loss/USA/ API
+          await fetchLossDataAndPlotGraph()
+        } catch (error) {
+          console.error('Error fetching admin data:', error)
+        }
+      }
+
+      async function fetchAccuracyDataAndPlotGraph() {
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:8000/api/v1/accuracy/USA/'
+          )
+          const accuracyData = await response.json()
+
+          console.log('Accuracy Data:', accuracyData)
+
+          // Plot the line graph
+          plotLineGraph(accuracyData, 'accuracyChart')
+        } catch (error) {
+          console.error('Error fetching accuracy data:', error)
+        }
+      }
+
+      async function fetchLossDataAndPlotGraph() {
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/v1/loss/USA/')
+          const lossData = await response.json()
+
+          console.log('Loss Data:', lossData)
+
+          // Plot the line graph
+          plotLineGraph(lossData, 'lossChart')
+        } catch (error) {
+          console.error('Error fetching loss data:', error)
+        }
+      }
+
+      function renderUserTable(adminData) {
+        const userTableBody = document.getElementById('user-table-body')
+
+        // Clear existing table content
+        userTableBody.innerHTML = ''
+
+        // Check if adminData is an array, if not, wrap it in an array
+        const dataArray = Array.isArray(adminData) ? adminData : [adminData]
+
+        // Loop through dataArray and append rows to the table
+        dataArray.forEach((user) => {
+          const row = userTableBody.insertRow()
+
+          // Assuming user object has properties like nodeId, userRole, trainingStatus, networkStatus
+          const cell1 = row.insertCell(0)
+          const cell2 = row.insertCell(1)
+          const cell3 = row.insertCell(2)
+          const cell4 = row.insertCell(3)
+
+          cell1.textContent = user.node_id
+          cell2.textContent = user.role // Assuming the user role is always 'Admin'
+          cell3.textContent = user.training_status
+          cell4.textContent = user.network_status
+        })
+      }
+
+      function plotLineGraph(data, chartId) {
+        const chartCanvas = document.getElementById(chartId)
+
+        // Extract unique node_ids
+        const nodeIds = [...new Set(data.map((record) => record.node_id))]
+
+        // Prepare datasets for each user
+        const datasets = nodeIds.map((nodeId, index) => {
+          const userRecords = data.find((record) => record.node_id === nodeId)
+          const dataPoints = userRecords.data.map((value, round) => ({
+            x: round + 1, // Start the training round from 1
+            y: value,
+          }))
+
+          return {
+            label: `User ${nodeId}`,
+            data: dataPoints,
+            borderColor: `rgba(${Math.random() * 255}, ${
+              Math.random() * 255
+            }, ${Math.random() * 255}, 1)`,
+            borderWidth: 1,
+            fill: false,
+          }
+        })
+
+        new Chart(chartCanvas, {
+          type: 'line',
+          data: {
+            labels: Array.from({ length: datasets[0].data.length }, (_, i) =>
+              (i + 1).toString()
+            ), // Start the x-axis labels from 1
+            datasets: datasets,
+          },
+          options: {
+            scales: {
+              x: {
+                type: 'linear',
+                position: 'bottom',
+                title: {
+                  display: true,
+                  text: 'Training Round',
+                },
+                ticks: {
+                  beginAtZero: true,
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: chartId === 'accuracyChart' ? 'Accuracy' : 'Loss',
+                },
+                ticks: {
+                  beginAtZero: true,
+                },
+              },
+            },
+          },
+        })
+      }
+
+      fetchData() // Call the main function
+    </script>
+  </body>
+</html>

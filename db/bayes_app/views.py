@@ -1,16 +1,20 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash
-from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer
+from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
+from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer
 from django.shortcuts import render
 import random
+from itertools import groupby
 
 def dfluser(request):
     return render(request, 'dfl/user.html')
 
 def dfladmin(request):
     return render(request, 'dfl/admin.html')
+
+def dfl(request):
+    return render(request, 'dfl/index.html')
 
 # Create your views here.
 @api_view(['POST'])
@@ -167,3 +171,38 @@ def get_track_role(request):
         return Response({'role': role})
     except Track.DoesNotExist:
         return Response({'error': 'Track data not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def get_all_users_accuracy(request, training_name):
+    try:
+        accuracy_records = TrainingResultAdmin.objects.filter(
+            training_info__training_name=training_name
+        ).order_by('node_id')  # Ensure records are ordered by node_id
+
+        grouped_data = []
+        for node_id, records in groupby(accuracy_records, key=lambda x: x.node_id):
+            # Convert the group of records into a list of accuracy values
+            data = [record.accuracy for record in records]
+
+            # Append the data to the result list
+            grouped_data.append({
+                'node_id': node_id,
+                'data': data
+            })
+
+        return Response(grouped_data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+def get_accuracy_by_training_name_and_node_id(request, training_name, node_id):
+    try:
+        accuracy_records = TrainingResultAdmin.objects.filter(
+            training_info__training_name=training_name, 
+            node_id=node_id
+        ).order_by('timestamp')  # Ensure records are ordered by timestamp
+        serializer = TrainingResultAdminSerializer(accuracy_records, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
