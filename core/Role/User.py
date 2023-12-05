@@ -21,22 +21,26 @@ class UserOPS:
         
 
     def user_logic(self, ):
-        
-        user_status = self.update_network_status()
-        self.send_network_status( user_status)
+        round=1
+        while(1):
+            user_status = self.update_network_status()
+            self.send_network_status( user_status)
 
-        user_status = self.update_training_status()
-        self.send_training_status(user_status)
+            user_status = self.update_training_status()
+            self.send_training_status(user_status)
 
-        hash, accuracy, loss = self.ml_operations.train_machine_learning_model()
-        self.logger.info(f"Model hash: {hash}")
+            hash, accuracy, loss = self.ml_operations.train_machine_learning_model()
+            self.logger.info(f"Model hash: {hash}")
 
-        self.send_model_to_internal_cluster( user_status, hash, accuracy, loss)
+            self.send_model_to_internal_cluster( user_status, hash, accuracy, loss)
 
-        latest_global_model_hash = self.mqtt_obj.global_model()
+            latest_global_model_hash = self.mqtt_obj.global_model()
 
-        if latest_global_model_hash:
-            self.process_global_model_hash( latest_global_model_hash)
+            if latest_global_model_hash:
+                self.process_global_model_hash( latest_global_model_hash)
+            round=round+1
+            if round==3:
+                break
 
     def update_network_status(self):
         connected_status = self.apiClient.put_request(network_connected_endpoint)
