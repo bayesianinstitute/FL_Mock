@@ -2,6 +2,8 @@ import paho.mqtt.client as mqtt
 import random
 import time
 import json
+import time
+
 # clients = []
 from core.Logs_System.logger import Logger
 
@@ -23,6 +25,8 @@ class MQTTCluster:
         self.terimate_status = False
         self.head_id=None
         self.switch_Status=False
+        self.terim_mid=None
+        self.mid=None
 
     def connect_clients(self):
         self.client = mqtt.Client(self.id)
@@ -48,14 +52,16 @@ class MQTTCluster:
         client_id = client._client_id.decode('utf-8')
         cluster_id = self.cluster_name
 
+
+
         if message.topic == self.internal_cluster_topic:
-            self.handle_internal_message(message, client_id, cluster_id,client)
+            self.handle_internal_message(message, client_id, cluster_id,client,message.mid)
 
-
-    def handle_internal_message(self, message, client_id, cluster_id,client):
+    def handle_internal_message(self, message, client_id, cluster_id,client,mid):
         data = message.payload.decode('utf-8')
         try:
             json_data = json.loads(data)
+
 
             self.logger.info(f"Received data: {json_data}")
 
@@ -70,22 +76,21 @@ class MQTTCluster:
             
             # Check for the terminate message
             if 'terimate_msg' in json_data:
-                self.handle_terminate_message(client_id, cluster_id)
+                self.handle_terminate_message(client_id, cluster_id,mid)
 
         except json.JSONDecodeError as e:
             pass  # Handle JSON decoding errors
 
-    def terimate_status(self):
-        return self.terimate_status
 
-    def handle_terminate_message(self, client_id, cluster_id):
+    def handle_terminate_message(self, client_id, cluster_id,mid):
     # Handle the termination message here
-        self.logger.warning(f"Received terminate message from {client_id} in cluster {cluster_id}")
+        self.terim_mid=mid
+        self.logger.critical(f"Terminating id {self.terim_mid} and mid {self.mid}")
+        if self.terim_mid==self.mid: 
+            self.logger.warning(f"Received terminate message from {client_id} in cluster {cluster_id}")            
 
-        self.terimate_status= True
-        
-
-        self.logger.warning(f"ALL Should Disconnected message from client : {client_id}")
+            self.logger.warning(f"ALL Should Disconnected message from client : {client_id}")
+            self.terimate_status= True
     
     # Send the termination message
     def send_terminate_message(self, t_msg):
@@ -95,10 +100,10 @@ class MQTTCluster:
         }
         data = json.dumps(message)
 
-        self.client.publish(self.internal_cluster_topic, data,)
+        self.client.publish(self.internal_cluster_topic, data,qos=1)
         self.logger.info("Successfully sent send_terminate_message")
 
-        return True    
+        # return True    
 
 
     def handle_global_model(self, json_data, client_id, cluster_id):
@@ -120,6 +125,7 @@ class MQTTCluster:
                 self.handle_client_msg(json_data)
         except :
             self.logger.error("exception in handle_internal_data ")
+
 
     def handle_client_msg(self,json_data):
         self.logger.info(json_data['msg'])
@@ -244,7 +250,8 @@ class MQTTCluster:
             return False
 
     def on_publish(self,client, userdata, mid):
-        self.logger.debug(f"Message Ack Published for client id : {client._client_id.decode('utf-8')} and  (mid={mid})")
+        self.mid=mid
+        self.logger.debug(f"Message Ack Published for client id : {client._client_id.decode('utf-8')} and  (mid={self.mid})")
 
     def on_subscribe(self,client, userdata, mid,granted_qos):
         self.logger.debug(f"Message Ack Subscribe for client id : {client._client_id.decode('utf-8')} and (mid={mid})")

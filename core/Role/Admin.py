@@ -5,6 +5,7 @@ from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
 from core.MqttOPS.mqtt_operations import MqttOperations
+import time
 
 class AdminOPS:
     def __init__(self, training_type, optimizer,
@@ -20,21 +21,53 @@ class AdminOPS:
         self.mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
         self.logger = Logger(name='admin-role').get_logger()
 
+        self.is_running = True  # Flag to control whether the program should run or stop
 
+    def stop_program(self):
+        self.is_running = False
+        self.logger.warning(f"Stopping message")
+        self.mqtt_obj.send_terminate_message("terimate msg from admin")
+        self.logger.info(f"Status {self.mqtt_obj.terimate_status}")
+
+        # TODO: 
+        # Need api to update status when get acknowledge
+
+        # Wait for acknowledgment
+        while self.mqtt_obj.terimate_status==False:
+            self.logger.debug(f"Waiting for status {self.mqtt_obj.terimate_status} ")
+            time.sleep(8)
+
+        self.logger.warning("Received acknowledgment. Stopping the program.")
+
+        # TODO: 
+        # Need api to tigger this 
+        # Update in database to terminate the program
+        # also  give latest model hash in UI
+
+        # Send a message through MQTT to terminate the program
+        # Add your MQTT logic here
 
     def admin_logic(self, ):
         
         self.logger.info("I am Admin ")
         self.mqtt_obj.send_head_id(self.id)
+        r=1
+        
+        while self.is_running:
+            if r==3:
+                self.logger.warning(f"stop message {r}")
+                self.stop_program()
 
-        user_data = self.get_user_data()
 
-        if user_data:
-            self.process_user_data(user_data)
-        else:
-            self.logger.error("Failed to retrieve user data")
+            r=r+1
+            user_data = self.get_user_data()
+            
+            if user_data:
+                self.process_user_data(user_data)
+            else:
+                self.logger.error("Failed to retrieve user data")
 
-        self.global_model_operations()
+            self.global_model_operations()
 
     def get_user_data(self):
         # TODO: get status of client using mqtt
@@ -72,7 +105,8 @@ class AdminOPS:
 
     def process_user_data(self, user_data):
         # TODO:  Get API all client model hash and need logic to check if we get all hashes from all workers
-        model_hash = user_data.get('model_hash')
+
+        model_hash = user_data[0]['model_hash']
         self.model_list.append(model_hash)
         self.logger.info(f"Send global model: {self.model_list}")
 
@@ -80,10 +114,10 @@ class AdminOPS:
         # Send all the list of hashes to aggregate and get the global model hash
         self.global_model = self.ml_operations.aggregate_models(self.model_list)
 
-        # TODO:  post API to add the latest global model hash
         self.logger.info(f"Got Global model hash: {self.global_model}")
 
-        # post API to add the latest global model
+        # TODO:  post API to add the latest global model hash - Done
+
         global_hash=self.post_global_model(self.global_model)
 
         # Sending global model hash to all workers
