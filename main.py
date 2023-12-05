@@ -91,20 +91,25 @@ if __name__ == "__main__":
         print("Error: config.json not found. Please create the file with the necessary configuration.")
         sys.exit(1)
 
+    print(f"Config {config}")
     # Extract values from the configuration file
-    broker_service = config.get("broker_service")
-    cluster_name = config.get("cluster_name")
-    client_id = config.get("id")
-    min_node = config.get("min_node")
+    broker_service = config['DFL_Config'].get("broker_service")
+    cluster_name = config['DFL_Config'].get("cluster_name")
+    client_id = config['DFL_Config'].get("id")
+    min_node = config['DFL_Config'].get("min_node")
+    updated_broker = config['DFL_Config'].get("updated_broker")
+    model_type = config['DFL_Config'].get("model_type")
+    optimizer = config['DFL_Config'].get("optimizer")
 
     voting_topic = f'Voting/{cluster_name}'
     declare_winner_topic = f'Winner/{cluster_name}'
     internal_cluster_topic = f'{cluster_name}/internal_cluster_topic'
 
+
     # Create DFLWorkflow instance with configuration values
     workflow = DFLWorkflow(broker_service, internal_cluster_topic, cluster_name, client_id,
                            voting_topic, declare_winner_topic, min_node,
-                           config.get("updated_broker"),
-                           config.get("model_type"),
-                           config.get("optimizer"))
+                           updated_broker,
+                           model_type,
+                           optimizer)
     workflow.run()
