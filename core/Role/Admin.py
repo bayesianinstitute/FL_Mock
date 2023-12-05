@@ -37,33 +37,51 @@ class AdminOPS:
         self.logger.warning("Received acknowledgment. Stopping the program.")
 
 
-    def admin_logic(self, ):
+    # def admin_logic(self, ):
         
+    #     self.logger.info("I am Admin ")
+    #     self.mqtt_obj.send_head_id(self.id)
+    #     while self.is_running:
+    
+         
+    #         user_data = self.get_user_data()
+            
+    #         if user_data:
+    #             self.process_user_data(user_data)
+    #         else:
+    #             self.logger.error("Failed to retrieve user data")
+
+    #         self.global_model_operations()
+       
+    def admin_logic(self):
         self.logger.info("I am Admin ")
         self.mqtt_obj.send_head_id(self.id)
-       
-        #TODO: if the user sending message using mqtt add user in database and also updates connected status
-        #receive from User 
-        
-        #TODO: Check no_of_user in database
 
-            # if the user is 1 do not aggregate and update the global model hash 
-            # if user is more than 2 wait for their all their model hash then aggregation 
-        
-        # Send the global model hash to all the users after the aggregation using MQTT 
-        # Update the global model hash
+        # TODO: Check no_of_user in the database
+        no_of_users = self.get_number_of_users()
 
         while self.is_running:
-
-         
             user_data = self.get_user_data()
-            
+
             if user_data:
                 self.process_user_data(user_data)
             else:
                 self.logger.error("Failed to retrieve user data")
 
-            self.global_model_operations()
+            # If there is only one user, do not aggregate and update the global model hash
+            if no_of_users == 1:
+                self.logger.info("Only one user. Skipping aggregation.")
+                self.send_updated_global_model()
+
+            # If there are more than two users, wait for their model hashes and perform aggregation
+            elif no_of_users > 2 and len(self.model_list) == no_of_users:
+                self.logger.info(f"All {no_of_users} users have sent their model hashes. Performing aggregation.")
+                self.global_model_operations()
+                self.send_updated_global_model()
+            else:
+                self.logger.info(f"Waiting for model hashes from users. {len(self.model_list)}/{no_of_users} received.")
+
+
 
     def get_user_data(self):
         

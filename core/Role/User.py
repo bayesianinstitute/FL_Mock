@@ -22,17 +22,9 @@ class UserOPS:
 
     def user_logic(self, ):
 
-        #TODO: Save Your User Data in database
-
-
-        #TODO: Get User Data from database
-        #TODO: Send User Data to Admin
-        
         while(1):
             
-            
-            
-            
+    
             user_status = self.update_network_status()
             self.send_network_status( user_status)
 
