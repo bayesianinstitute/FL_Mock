@@ -56,7 +56,7 @@ class AdminOPS:
         while self.is_running:
             if r==3:
                 self.logger.warning(f"stop message {r}")
-                self.stop_program()
+                break
 
 
             r=r+1
