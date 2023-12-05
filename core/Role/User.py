@@ -21,8 +21,10 @@ class UserOPS:
         
 
     def user_logic(self, ):
-        round=1
         while(1):
+            #TODO: Send User Data to Admin
+            
+            
             user_status = self.update_network_status()
             self.send_network_status( user_status)
 
@@ -38,9 +40,7 @@ class UserOPS:
 
             if latest_global_model_hash:
                 self.process_global_model_hash( latest_global_model_hash)
-            round=round+1
-            if round==3:
-                break
+
 
     def update_network_status(self):
         connected_status = self.apiClient.put_request(network_connected_endpoint)

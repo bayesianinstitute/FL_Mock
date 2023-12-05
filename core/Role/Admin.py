@@ -29,9 +29,6 @@ class AdminOPS:
         self.mqtt_obj.send_terminate_message("terimate msg from admin")
         self.logger.info(f"Status {self.mqtt_obj.terimate_status}")
 
-        # TODO: 
-        # Need api to update status when get acknowledge
-
         # Wait for acknowledgment
         while self.mqtt_obj.terimate_status==False:
             self.logger.debug(f"Waiting for status {self.mqtt_obj.terimate_status} ")
@@ -39,27 +36,26 @@ class AdminOPS:
 
         self.logger.warning("Received acknowledgment. Stopping the program.")
 
-        # TODO: 
-        # Need api to tigger this 
-        # Update in database to terminate the program
-        # also  give latest model hash in UI
-
-        # Send a message through MQTT to terminate the program
-        # Add your MQTT logic here
 
     def admin_logic(self, ):
         
         self.logger.info("I am Admin ")
         self.mqtt_obj.send_head_id(self.id)
-        r=1
+       
+        #TODO: if the user sending message using mqtt add user in database and also updates connected status
+        #receive from User 
         
+        #TODO: Check no_of_user in database
+
+            # if the user is 1 do not aggregate and update the global model hash 
+            # if user is more than 2 wait for their all their model hash then aggregation 
+        
+        # Send the global model hash to all the users after the aggregation using MQTT 
+        # Update the global model hash
+
         while self.is_running:
-            if r==3:
-                self.logger.warning(f"stop message {r}")
-                break
 
-
-            r=r+1
+         
             user_data = self.get_user_data()
             
             if user_data:
@@ -70,7 +66,7 @@ class AdminOPS:
             self.global_model_operations()
 
     def get_user_data(self):
-        # TODO: get status of client using mqtt
+        
         get_user = self.apiClient.get_request(get_admin_data)
 
         if get_user.status_code == 200:
@@ -81,7 +77,7 @@ class AdminOPS:
             return None
     
     def get_latest_global_model(self):
-        # TODO: get status of client using mqtt
+        
         get_model = self.apiClient.get_request(get_global_model_hash)
 
         if get_model.status_code == 200:
@@ -104,7 +100,6 @@ class AdminOPS:
             self.logger.error(f"POST Request Failed: {post_response.status_code, post_response.text}")
 
     def process_user_data(self, user_data):
-        # TODO:  Get API all client model hash and need logic to check if we get all hashes from all workers
 
         model_hash = user_data[0]['model_hash']
         self.model_list.append(model_hash)
@@ -115,9 +110,7 @@ class AdminOPS:
         self.global_model = self.ml_operations.aggregate_models(self.model_list)
 
         self.logger.info(f"Got Global model hash: {self.global_model}")
-
-        # TODO:  post API to add the latest global model hash - Done
-
+        
         global_hash=self.post_global_model(self.global_model)
 
         # Sending global model hash to all workers
@@ -128,11 +121,7 @@ class AdminOPS:
         self.mqtt_obj.client_hash_mapping.clear()
         self.logger.info("Clear all hash operations")
 
-        # TODO: Get API the latest global model hash - Done
-        
         latest_global_model_hash = self.get_latest_global_model()
 
         self.logger.info(f"I am aggregator, here is the global model hash: {latest_global_model_hash['global_model_hash']}")
-
-        # Set the latest global model hash and set weights in MLOperation
         self.ml_operations.is_global_model_hash(latest_global_model_hash)
