@@ -1,7 +1,7 @@
 {
     "DFL_Config": {
         "broker_service": "test.mosquitto.org",
-        "cluster_name": "USA",
+        "cluster_name": "Faijan",
         "id": "1",
         "min_node": 1,
         "updated_broker": "broker.hivemq.com",
