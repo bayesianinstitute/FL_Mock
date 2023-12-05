@@ -82,28 +82,29 @@ class DFLWorkflow:
         self.logger.info(f"User")
         self.user.user_logic()
         
-
 if __name__ == "__main__":
-    # Parse command-line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("broker_service", help="Name of broker service", type=str)
-    parser.add_argument("cluster_name", help="Name of the cluster", type=str)
-    parser.add_argument("id", help="client_id", type=str)
-    parser.add_argument("min_node", help="minimum Node", type=int)
+    try:
+        # Try to open the configuration file
+        with open("config/config.json", "r") as file:
+            config = json.load(file)
+    except FileNotFoundError:
+        print("Error: config.json not found. Please create the file with the necessary configuration.")
+        sys.exit(1)
 
-    updated_broker = 'broker.hivemq.com'
+    # Extract values from the configuration file
+    broker_service = config.get("broker_service")
+    cluster_name = config.get("cluster_name")
+    client_id = config.get("id")
+    min_node = config.get("min_node")
 
-    model_type = 'CNN'
+    voting_topic = f'Voting/{cluster_name}'
+    declare_winner_topic = f'Winner/{cluster_name}'
+    internal_cluster_topic = f'{cluster_name}/internal_cluster_topic'
 
-    optimizer = "Adam"
-
-    args = parser.parse_args()
-
-    voting_topic = f'Voting/{args.cluster_name}'
-    declare_winner_topic = f'Winner/{args.cluster_name}'
-
-    internal_cluster_topic=f'{args.cluster_name}/internal_cluster_topic'
-    
-    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name, args.id,
-                           voting_topic, declare_winner_topic, args.min_node, updated_broker, model_type, optimizer)
+    # Create DFLWorkflow instance with configuration values
+    workflow = DFLWorkflow(broker_service, internal_cluster_topic, cluster_name, client_id,
+                           voting_topic, declare_winner_topic, min_node,
+                           config.get("updated_broker"),
+                           config.get("model_type"),
+                           config.get("optimizer"))
     workflow.run()
