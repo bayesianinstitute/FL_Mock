@@ -52,6 +52,8 @@ class MQTTCluster:
     def on_message(self, client, userdata, message):
         client_id = client._client_id.decode('utf-8')
         cluster_id = self.cluster_name
+        data = message.payload.decode('utf-8')
+        self.logger.debug(f"data: {data}")
 
 
 
