@@ -131,6 +131,7 @@ class NodeStatus(models.Model):
         ('disconnected', 'Disconnected'),
         ('idle', 'Idle'),
     ]
+    
 
     training_status = models.CharField(
         max_length=20,
