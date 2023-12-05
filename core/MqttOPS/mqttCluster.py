@@ -46,6 +46,7 @@ class MQTTCluster:
     def set_head_node_id(self,data):
         self.head_id=data['head_id']
         self.logger.info(f"set successful head id: {self.head_id}")
+        time.sleep(6)
 
 
     def on_message(self, client, userdata, message):
@@ -71,11 +72,13 @@ class MQTTCluster:
             if 'global_model' in json_data:
                 self.handle_global_model(json_data, client_id, cluster_id)
 
+            if 'msg' in json_data:
+                self.handle_client_msg(json_data)
+
             if self.is_worker_head(client):
                 self.handle_internal_data(json_data, client_id, cluster_id)
             
-            if 'msg' in json_data:
-                self.handle_client_msg(json_data)
+
             # Check for the terminate message
             if 'terimate_msg' in json_data:
                 self.handle_terminate_message(client_id, cluster_id,mid)
@@ -130,8 +133,9 @@ class MQTTCluster:
 
 
     def handle_client_msg(self,json_data):
-        self.logger.debug("Checking msg")
+        self.logger.debug("Checking received msg")
         self.logger.info(json_data)
+        time.sleep(10)
 
     def handle_client_disconnected(self, json_data):
         # TODO: need admin api put to update number of client in database and status
