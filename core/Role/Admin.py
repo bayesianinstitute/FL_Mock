@@ -46,6 +46,29 @@ class AdminOPS:
         else:
             self.logger.error(f"GET Request Failed: {get_user.status_code, get_user.text}")
             return None
+    
+    def get_latest_global_model(self):
+        # TODO: get status of client using mqtt
+        get_model = self.apiClient.get_request(get_global_model_hash)
+
+        if get_model.status_code == 200:
+            self.logger.info(f"Get Request Successful: {get_model.text}")
+            return json.loads(get_model.text)
+        else:
+            self.logger.error(f"GET Request Failed: {get_model.status_code, get_model.text}")
+            return None
+    
+    def post_global_model(self,glb_hash=None):
+        data = {
+        "global_model_hash": glb_hash,}
+        post_response = self.apiClient.post_request(endpoint=post_global_model_hash, data=data)
+        if post_response.status_code == 201:
+            self.logger.info(f"POST Request Successful: {post_response.text}" )
+            glb_data=json.loads(post_response.text)
+            return glb_data['global_model_hash']
+
+        else:
+            self.logger.error(f"POST Request Failed: {post_response.status_code, post_response.text}")
 
     def process_user_data(self, user_data):
         # TODO:  Get API all client model hash and need logic to check if we get all hashes from all workers
@@ -60,17 +83,22 @@ class AdminOPS:
         # TODO:  post API to add the latest global model hash
         self.logger.info(f"Got Global model hash: {self.global_model}")
 
+        # post API to add the latest global model
+        global_hash=self.post_global_model(self.global_model)
+
         # Sending global model hash to all workers
         
-        self.logger.info(self.ml_operations.send_global_model_to_others(self.mqtt_obj, self.global_model))
+        self.logger.info(self.ml_operations.send_global_model_to_others(self.mqtt_obj, global_hash))
 
         # Clearing all previous model hashes from all workers
         self.mqtt_obj.client_hash_mapping.clear()
         self.logger.info("Clear all hash operations")
 
-        # TODO: Get API the latest global model hash
-        latest_global_model_hash = self.mqtt_obj.global_model()
-        self.logger.info(f"I am aggregator, here is the global model hash: {latest_global_model_hash}")
+        # TODO: Get API the latest global model hash - Done
+        
+        latest_global_model_hash = self.get_latest_global_model()
+
+        self.logger.info(f"I am aggregator, here is the global model hash: {latest_global_model_hash['global_model_hash']}")
 
         # Set the latest global model hash and set weights in MLOperation
         self.ml_operations.is_global_model_hash(latest_global_model_hash)
