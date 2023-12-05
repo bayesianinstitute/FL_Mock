@@ -74,6 +74,8 @@ class MQTTCluster:
             if self.is_worker_head(client):
                 self.handle_internal_data(json_data, client_id, cluster_id)
             
+            if 'msg' in json_data:
+                self.handle_client_msg(json_data)
             # Check for the terminate message
             if 'terimate_msg' in json_data:
                 self.handle_terminate_message(client_id, cluster_id,mid)
@@ -128,7 +130,8 @@ class MQTTCluster:
 
 
     def handle_client_msg(self,json_data):
-        self.logger.info(json_data['msg'])
+        self.logger.debug("Checking msg")
+        self.logger.info(json_data)
 
     def handle_client_disconnected(self, json_data):
         # TODO: need admin api put to update number of client in database and status
@@ -237,10 +240,9 @@ class MQTTCluster:
 
     def send_internal_messages_global_model(self, modelhash):
         self.logger.info(f" trying to Global model to internal_messages_model: {modelhash} " )
-        if self.is_worker_head(self.client):
-            data = json.dumps({"global_model": modelhash})
-            self.client.publish(self.internal_cluster_topic, data)
-            self.logger.info("Successfully send Global model to internal_messages_model")
+        data = json.dumps({"global_model": modelhash})
+        self.client.publish(self.internal_cluster_topic, data,qos=1)
+        self.logger.info("Successfully send Global model to internal_messages_model")
     
     def switch_head(self, ):
 

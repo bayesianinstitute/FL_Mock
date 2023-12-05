@@ -12,6 +12,7 @@ class AdminOPS:
                  internal_cluster_topic, cluster_name,
                 broker_service, min_node, is_admin, id):
         self.apiClient = ApiClient()
+        self.is_admin = True
         self.ml_operations = MLOperations(training_type, optimizer)
         self.mqtt_operations = MqttOperations(internal_cluster_topic, cluster_name,
                                               broker_service, min_node, is_admin, id)
