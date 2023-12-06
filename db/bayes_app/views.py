@@ -221,3 +221,18 @@ def get_logs(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def add_nodes(request):
+    if request.method == 'POST':
+        node_id = request.data.get('node_id')
+        
+        # Check if a record with the same node_id already exists
+        if Admin.objects.filter(node_id=node_id).exists():
+            return Response({'error': 'Record with the same node_id already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = AdminSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

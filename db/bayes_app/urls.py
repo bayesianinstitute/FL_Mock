@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dfluser,dfladmin,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_admin,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs
+from .views import dfluser,dfladmin,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_admin,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes
 
 
 
@@ -27,5 +27,5 @@ urlpatterns = [
    
     path('api/v1/<str:metric_name>/<str:training_name>/', get_all_users_metrics, name='metrics-api-all'),
     path('api/v1/logs/', get_logs, name='get_logs'),
-   
+    path('api/v1/add_nodes/', add_nodes, name='add_admin'),
 ]
