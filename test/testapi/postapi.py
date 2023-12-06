@@ -3,6 +3,7 @@ import requests
 url = "http://127.0.0.1:8000/api/v1/create_training_result/"
 
 data = {
+    "accuracy":1,
     "training_accuracy": 1,
     "validation_accuracy": 1,
     "loss": 1,

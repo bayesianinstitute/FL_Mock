@@ -7,6 +7,7 @@ from django.shortcuts import render
 import random
 from itertools import groupby
 from django.db.models import F
+from django.views.decorators.csrf import csrf_protect
 
 def dfluser(request):
     return render(request, 'dfl/user.html')
@@ -236,3 +237,13 @@ def add_nodes(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def unique_node_id_count(request):
+    if request.method == 'GET':
+        # Get the count of unique node_id values using Django ORM
+        unique_node_id_count = Admin.objects.values('node_id').distinct().count()
+
+        # Return the count as a JSON response
+        return Response({'count': unique_node_id_count})
+    

@@ -18,31 +18,87 @@ class AdminOPS:
         
     
 
-    def admin_logic(self, ):
-        
+    def admin_logic(self):
         self.logger.info("I am Admin ")
+        # self.mqtt_obj.send_head_id(self.id)
+        # while self.is_running:
+        #     self.logger.debug("Waiting")
+        #TODO: if the user sending message using mqtt add user in database and also updates connected status
     
-
-
-        while True:
-
-            self.logger.debug(f'Waiting for')
-
-            time.sleep(5)
-    
-         
-            user_data = self.get_user_data()
+        admin_data = {
+            "training_status": "in_progress",
+            "role": "Admin",
+            "node_id": 7,
+            "model_hash": "your_model_hash_here",
+            "network_status": "connected"
+        }
+   
+        status=self.add_admin(admin_data)
+        if status:
+            self.logger.info("Added")
+        else:
+            self.logger.info("Not Added")
             
-            if user_data:
-                self.process_user_data(user_data)
-            else:
-                self.logger.error("Failed to retrieve user data")
+        #TODO: Check no_of_user in database
+            # if the user is 1 do not aggregate and update the global model hash 
+            # if user is more than 2 wait for their all their model hash then aggregation 
+
+        user_count = self.get_node_count()
+
+        # Check if the user count is 1 (no aggregation needed) or more than 2 (wait for all hashes)
+        if user_count == 1:
+            self.logger.debug("User count: 1")
+            # If only one user, update the global model hash immediately
+            #self.global_model_hash = user_model_hash
+        elif user_count > 2:
+            # If more than two users, wait for all users to submit their model hashes
+            #self.user_model_hashes.add(user_model_hash)
+            self.logger.debug("More than User count: 2")
+            
+            if len(self.user_model_hashes) == user_count:
+                # Perform aggregation when all users have submitted their model hashes
+                self.global_model_hash = self.perform_aggregation(self.user_model_hashes)
+                self.aggregation_in_progress = False
 
 
-            self.global_model_operations()
+           
 
+    def add_admin(self, admin_data):
+           
+        # Assuming admin_data is a dictionary containing data for the Admin model
+        admin_data_json = json.dumps(admin_data)
 
+        response = self.apiClient.post_request(add_nodes, data=admin_data_json)
 
+        if response and response.status_code == 201:
+            self.logger.info(f"POST add_admin Request Successful: {response.text}")
+            return json.loads(response.text)
+        else:
+            self.logger.info(f"POST Request Failed: {response.status_code, response.text}")
+            return None
+    
+    def get_node_count(self):
+
+        # Make the GET request using the get_request method
+        response = self.apiClient.get_request(node_id_count)
+
+        # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Parse the JSON response and get the user count
+            count_data = response.json()
+            user_count = count_data.get('count')
+            return user_count
+        else:
+            # Handle the case where the request was not successful
+            print(f"GET Request Failed: {response.status_code}, {response.text}")
+            return None
+
+    def perform_aggregation(self, user_model_hashes):
+            # Placeholder for your aggregation logic
+        # Replace this with your actual aggregation logic
+        aggregated_hash = hash(''.join(user_model_hashes))
+        return aggregated_hash
+    
     def get_user_data(self):
         
         get_user = self.apiClient.get_request(get_admin_data)

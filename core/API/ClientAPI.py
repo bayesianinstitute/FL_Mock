@@ -14,6 +14,7 @@ class ApiClient:
         headers = {
             "Content-Type": "application/json"
         }
+        print(data)
         response = requests.post(url, json=data, headers=headers)
         return response
 

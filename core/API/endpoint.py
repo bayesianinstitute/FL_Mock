@@ -21,3 +21,6 @@ get_admin_data="get-admin-data/"
 post_global_model_hash="post-global-model-hash/"
 get_global_model_hash="get-global-model-hash/"
 get_track_role="get-track-role/"
+node_id_count="node_id_count/"
+#POST 
+add_nodes="add_nodes/"
