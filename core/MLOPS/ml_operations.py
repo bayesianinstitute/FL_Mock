@@ -184,7 +184,7 @@ class MLOperations:
         Returns:
         A message indicating that the global model has been sent to others.
         """
-        mqtt_obj.send_internal_messages_global_model(global_model_hash)
+        mqtt_obj.send_admin_to_client_global_model(global_model_hash)
         return "Global model sent to others"
 
 

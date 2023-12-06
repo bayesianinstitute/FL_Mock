@@ -1,8 +1,13 @@
 import paho.mqtt.client as mqtt
 
+admin_to_client_topic = "admin_to_client_topic"
+client_to_admin_topic = "client_to_admin_topic"
+
+
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
-    client.subscribe("Faijan_internal_cluster_topic")
+    client.subscribe(admin_to_client_topic)
+    client.subscribe(client_to_admin_topic)
 
 def on_message(client, userdata, msg):
     print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")

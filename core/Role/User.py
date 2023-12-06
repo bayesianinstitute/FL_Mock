@@ -20,6 +20,8 @@ class UserOPS:
         self.mqtt_obj = mqtt_comm_obj
 
     def user_logic(self, ):
+        self.mqtt_obj.receive_msg('User')
+
 
         while(1):
             
@@ -58,7 +60,7 @@ class UserOPS:
                 "id": user_status['id'],
                 "network_status": user_status['network_status']
             })
-            self.mqtt_obj.send_internal_messages(message_json)
+            self.mqtt_obj.send_client_to_admin_messages(message_json)
 
     def update_training_status(self):
         training_status = self.apiClient.put_request(toggle_training_status_endpoint)
@@ -77,7 +79,7 @@ class UserOPS:
                 "id": user_status['id'],
                 "training_status": user_status['training_status'],
             })
-            self.mqtt_obj.send_internal_messages(message_json)
+            self.mqtt_obj.send_client_to_admin_messages(message_json)
 
     def send_model_to_internal_cluster(self,  user_status, hash, accuracy, loss):
         if user_status:
@@ -87,7 +89,7 @@ class UserOPS:
                 "accuracy": accuracy,
                 "loss": loss,
             })
-            self.mqtt_obj.send_internal_messages_model(message_json)
+            self.mqtt_obj.send_client_to_admin_model(message_json)
 
     def process_global_model_hash(self,  latest_global_model_hash):
         self.logger.info(f"I am not aggregator, got global model hash: {latest_global_model_hash}")

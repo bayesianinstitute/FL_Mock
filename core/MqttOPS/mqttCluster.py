@@ -27,6 +27,8 @@ class MQTTCluster:
         self.switch_Status=False
         self.terim_mid=None
         self.mid=None
+        self.admin_to_client_topic = "admin_to_client_topic"
+        self.client_to_admin_topic = "client_to_admin_topic"
 
     def connect_clients(self):
         self.client = mqtt.Client(self.id)
@@ -36,11 +38,18 @@ class MQTTCluster:
         will_set_msg=json.dumps({"Client-disconnected": self.id})
         self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1, retain=False)
         self.client.connect(self.broker_address, 1883)
+        self.client.loop_start()
+
+
+    def receive_msg(self,role:str):
         while not self.client.is_connected():
             time.sleep(1)
-
-            self.client.subscribe(self.internal_cluster_topic, qos=1)
-            self.client.loop_start()
+            if role == "Admin":
+                self.client.subscribe(self.client_to_admin_topic, qos=1)
+            elif role == "User":
+                self.client.subscribe(self.admin_to_client_topic,qos=1)
+            else :
+                pass
 
     def get_head_node_id(self):
         if self.worker_head_node:
@@ -57,12 +66,16 @@ class MQTTCluster:
 
     def on_message(self, client, userdata, message):
         try:
+            
             client_id = client._client_id.decode('utf-8')
             cluster_id = self.cluster_name
             data = message.payload.decode('utf-8')
-            self.logger.debug(f"data: {data}")
+            
+            self.logger.debug(f"Received message on topic {message.topic}")
 
-            if message.topic == self.internal_cluster_topic:
+            self.logger.critical(f"data: {data}")
+
+            if message.topic == self.admin_to_client_topic or message.topic == self.client_to_admin_topic:
                 self.handle_internal_message(message, client_id, cluster_id, client, message.mid)
 
         except Exception as e:
@@ -182,10 +195,6 @@ class MQTTCluster:
         if self.worker_head_node:
             return client
 
-    def subscribe_to_internal_messages(self):
-        # Subscribe to the internal_cluster_topic for message reception
-        self.client.subscribe(self.internal_cluster_topic, qos=1)
-
     def receive_internal_messages(self):
         self.client.on_message = self.on_message
 
@@ -237,27 +246,26 @@ class MQTTCluster:
         }
         data=json.dumps(message)
         self.logger.info(data)
-        self.client.publish(self.internal_cluster_topic,data)
+        self.client.publish(self.admin_to_client_topic,data,qos=1)
         self.logger.info(f"Successfully Head id:{str(id)} ")
 
 
 
-    def send_internal_messages_model(self, message):
+    def send_client_to_admin_model(self, message):
 
-        self.logger.info(f"send_internal_messages_model:{message}" )
-        self.client.publish(self.internal_cluster_topic, message)
-        self.logger.info("Successfully sent_internal_messages_model")
+        self.logger.info(f"send_client_to_admin_model:{message}" )
+        self.client.publish(self.client_to_admin_topic, message,qos=1)
+        # self.logger.info("Successfully sent_internal_messages_model")
 
 
-    def send_internal_messages(self,message_json):
+    def send_client_to_admin_messages(self,message_json):
 
-        self.client.publish(self.internal_cluster_topic,message_json)
-        # self.logger.info(f" topic : {self.internal_cluster_topic} Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
+        self.client.publish(self.client_to_admin_topic,message_json,qos=1)
 
-    def send_internal_messages_global_model(self, modelhash):
+    def send_admin_to_client_global_model(self, modelhash):
         self.logger.info(f" trying to Global model to internal_messages_model: {modelhash} " )
         data = json.dumps({"global_model": modelhash})
-        self.client.publish(self.internal_cluster_topic, data,qos=1)
+        self.client.publish(self.admin_to_client_topic, data,qos=1)
         self.logger.info("Successfully send Global model to internal_messages_model")
     
     def switch_head(self, ):

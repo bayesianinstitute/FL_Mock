@@ -20,7 +20,8 @@ class AdminOPS:
 
     def admin_logic(self):
         self.logger.info("I am Admin ")
-        # self.mqtt_obj.send_head_id(self.id)
+        self.mqtt_obj.receive_msg('Admin')
+        self.mqtt_obj.send_head_id("Admin id : 4")
         # while self.is_running:
         #     self.logger.debug("Waiting")
         #TODO: if the user sending message using mqtt add user in database and also updates connected status

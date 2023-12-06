@@ -110,9 +110,9 @@ if __name__ == "__main__":
     model_type = config['DFL_Config'].get("model_type")
     optimizer = config['DFL_Config'].get("optimizer")
 
-    voting_topic = f'Voting_{cluster_name}'
-    declare_winner_topic = f'Winner_{cluster_name}'
-    internal_cluster_topic = f'{cluster_name}_internal_cluster_topic'
+    voting_topic = f'Voting/{cluster_name}'
+    declare_winner_topic = f'Winner/{cluster_name}'
+    internal_cluster_topic = f'{cluster_name}/internal_cluster_topic'
 
 
     # Create DFLWorkflow instance with configuration values
