@@ -247,3 +247,16 @@ def unique_node_id_count(request):
         # Return the count as a JSON response
         return Response({'count': unique_node_id_count})
     
+@api_view(['POST'])
+def add_global_model_hash(request):
+    if request.method == 'POST':
+        # Assuming the new global model hash is sent in the request data
+        new_global_model_hash = request.data.get('global_model_hash')
+
+        # Create a new GlobalModelHash entry with the new global model hash
+        global_model_hash_instance = GlobalModelHash.objects.create(
+            global_model_hash=new_global_model_hash
+        )
+
+        # Return a response indicating success
+        return Response({'message': 'Global model hash added successfully'})

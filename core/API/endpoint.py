@@ -24,3 +24,4 @@ get_track_role="get-track-role/"
 node_id_count="node_id_count/"
 #POST 
 add_nodes="add_nodes/"
+add_global_model_hash="add_global_model_hash/"

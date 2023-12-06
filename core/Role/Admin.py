@@ -28,7 +28,7 @@ class AdminOPS:
         admin_data = {
             "training_status": "in_progress",
             "role": "Admin",
-            "node_id": 7,
+            "node_id": 8,
             "model_hash": "your_model_hash_here",
             "network_status": "connected"
         }
@@ -48,27 +48,50 @@ class AdminOPS:
         # Check if the user count is 1 (no aggregation needed) or more than 2 (wait for all hashes)
         if user_count == 1:
             self.logger.debug("User count: 1")
+            data = {
+                "global_model_hash": "HAsha256",
+            }
+            #user Train model hash 
+            
+            
             # If only one user, update the global model hash immediately
+            # Api to update the global model
+            status=self.add_global_model_hash(data)
+            if status:
+                self.logger.debug("Added global model")
+            else:
+                self.logger.debug("Not Added global model")
             #self.global_model_hash = user_model_hash
         elif user_count > 2:
             # If more than two users, wait for all users to submit their model hashes
             #self.user_model_hashes.add(user_model_hash)
-            self.logger.debug("More than User count: 2")
             
-            if len(self.user_model_hashes) == user_count:
-                # Perform aggregation when all users have submitted their model hashes
-                self.global_model_hash = self.perform_aggregation(self.user_model_hashes)
-                self.aggregation_in_progress = False
+            # Api to update the global model
+            self.logger.debug("More than User count: 2")
+            data = {
+                "global_model_hash": "HAsha256",
+            }
+
+            #TODO: perform Aggregation
+            
+            
+            # If only one user, update the global model hash immediately
+            # Api to update the global model
+            status=self.add_global_model_hash(data)
+            if status:
+                self.logger.debug("Added global model")
+            else:
+                self.logger.debug("Not Added global model")
+            # if len(self.user_model_hashes) == user_count:
+            #     # Perform aggregation when all users have submitted their model hashes
+            #     self.global_model_hash = self.perform_aggregation(self.user_model_hashes)
+            #     self.aggregation_in_progress = False
 
 
            
 
     def add_admin(self, admin_data):
-           
-        # Assuming admin_data is a dictionary containing data for the Admin model
-        admin_data_json = json.dumps(admin_data)
-
-        response = self.apiClient.post_request(add_nodes, data=admin_data_json)
+        response = self.apiClient.post_request(add_nodes, admin_data)
 
         if response and response.status_code == 201:
             self.logger.info(f"POST add_admin Request Successful: {response.text}")
@@ -92,7 +115,18 @@ class AdminOPS:
             # Handle the case where the request was not successful
             print(f"GET Request Failed: {response.status_code}, {response.text}")
             return None
+    
+    def add_global_model_hash(self, data):
+        response = self.apiClient.post_request(add_global_model_hash, data)
 
+        if response and response.status_code == 200:
+            self.logger.info(f"POST add_global_model_hash Request Successful: {response.text}")
+            return json.loads(response.text)
+        else:
+            self.logger.info(f"POST Request Failed: {response.status_code, response.text}")
+            return None
+    
+        
     def perform_aggregation(self, user_model_hashes):
             # Placeholder for your aggregation logic
         # Replace this with your actual aggregation logic
