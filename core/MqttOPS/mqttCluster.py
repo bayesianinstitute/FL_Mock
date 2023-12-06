@@ -35,21 +35,21 @@ class MQTTCluster:
         self.client.on_message = self.on_message
         self.client.on_publish=self.on_publish
         self.client.on_subscribe=self.on_subscribe
-        will_set_msg=json.dumps({"Client-disconnected": self.id})
-        self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1, retain=False)
         self.client.connect(self.broker_address, 1883)
         self.client.loop_start()
 
 
     def receive_msg(self,role:str):
-        while not self.client.is_connected():
-            time.sleep(1)
-            if role == "Admin":
-                self.client.subscribe(self.client_to_admin_topic, qos=1)
-            elif role == "User":
-                self.client.subscribe(self.admin_to_client_topic,qos=1)
-            else :
-                pass
+        will_set_msg=json.dumps({"Client-disconnected": self.id})
+
+        if role == "Admin":
+            self.client.subscribe(self.client_to_admin_topic, qos=1)
+            self.client.will_set(self.client_to_admin_topic,will_set_msg , qos=1, retain=False)
+        elif role == "User":
+            self.client.subscribe(self.admin_to_client_topic,qos=1)
+            self.client.will_set(self.admin_to_client_topic,will_set_msg , qos=1, retain=False)
+        else :
+            pass
 
     def get_head_node_id(self):
         if self.worker_head_node:
