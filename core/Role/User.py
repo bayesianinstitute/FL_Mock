@@ -8,17 +8,16 @@ from core.MqttOPS.mqtt_operations import MqttOperations
 import json
 
 class UserOPS:
-    def __init__(self, training_type, optimizer,internal_cluster_topic, cluster_name,
-                                              broker_service, min_node, is_admin, id):
+    def __init__(self, mqtt_comm_obj,ml_ops_obj):
         self.logger = Logger(name='user-role').get_logger()
         
         self.apiClient = ApiClient()
-        self.ml_operations = MLOperations(training_type, optimizer)
-        self.mqtt_operations = MqttOperations(internal_cluster_topic, cluster_name,
-                                              broker_service, min_node, is_admin, id)
+
         
-        self.mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
+        self.ml_operations = ml_ops_obj
+
         
+        self.mqtt_obj = mqtt_comm_obj
 
     def user_logic(self, ):
 

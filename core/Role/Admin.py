@@ -8,79 +8,38 @@ from core.MqttOPS.mqtt_operations import MqttOperations
 import time
 
 class AdminOPS:
-    def __init__(self, training_type, optimizer,
-                 internal_cluster_topic, cluster_name,
-                broker_service, min_node, is_admin, id):
+    def __init__(self,mqtt_comm_obj,ml_ops_obj):
+        self.logger = Logger(name='user-role').get_logger()
         self.apiClient = ApiClient()
-        self.is_admin = True
-        self.ml_operations = MLOperations(training_type, optimizer)
-        self.mqtt_operations = MqttOperations(internal_cluster_topic, cluster_name,
-                                              broker_service, min_node, is_admin, id)
+        self.ml_operations = ml_ops_obj        
+        self.mqtt_obj = mqtt_comm_obj
+        self.model_list=[]
+
         
-        self.model_list = []
-        self.id=id
-        self.mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
-        self.logger = Logger(name='admin-role').get_logger()
+    
 
-        self.is_running = True  # Flag to control whether the program should run or stop
-
-    def stop_program(self):
-        self.is_running = False
-        self.logger.warning(f"Stopping message")
-        self.mqtt_obj.send_terminate_message("terimate msg from admin")
-        self.logger.info(f"Status {self.mqtt_obj.terimate_status}")
-
-        # Wait for acknowledgment
-        while self.mqtt_obj.terimate_status==False:
-            self.logger.debug(f"Waiting for status {self.mqtt_obj.terimate_status} ")
-            time.sleep(8)
-
-        self.logger.warning("Received acknowledgment. Stopping the program.")
-
-
-    # def admin_logic(self, ):
+    def admin_logic(self, ):
         
-    #     self.logger.info("I am Admin ")
-    #     self.mqtt_obj.send_head_id(self.id)
-    #     while self.is_running:
+        self.logger.info("I am Admin ")
+    
+
+
+        while True:
+
+            self.logger.debug(f'Waiting for')
+
+            time.sleep(5)
     
          
-    #         user_data = self.get_user_data()
-            
-    #         if user_data:
-    #             self.process_user_data(user_data)
-    #         else:
-    #             self.logger.error("Failed to retrieve user data")
-
-    #         self.global_model_operations()
-       
-    def admin_logic(self):
-        self.logger.info("I am Admin ")
-        self.mqtt_obj.send_head_id(self.id)
-
-        # TODO: Check no_of_user in the database
-        no_of_users = self.get_number_of_users()
-
-        while self.is_running:
             user_data = self.get_user_data()
-
+            
             if user_data:
                 self.process_user_data(user_data)
             else:
                 self.logger.error("Failed to retrieve user data")
 
-            # If there is only one user, do not aggregate and update the global model hash
-            if no_of_users == 1:
-                self.logger.info("Only one user. Skipping aggregation.")
-                self.send_updated_global_model()
 
-            # If there are more than two users, wait for their model hashes and perform aggregation
-            elif no_of_users > 2 and len(self.model_list) == no_of_users:
-                self.logger.info(f"All {no_of_users} users have sent their model hashes. Performing aggregation.")
-                self.global_model_operations()
-                self.send_updated_global_model()
-            else:
-                self.logger.info(f"Waiting for model hashes from users. {len(self.model_list)}/{no_of_users} received.")
+            self.global_model_operations()
 
 
 

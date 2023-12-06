@@ -34,10 +34,13 @@ class MQTTCluster:
         self.client.on_publish=self.on_publish
         self.client.on_subscribe=self.on_subscribe
         will_set_msg=json.dumps({"Client-disconnected": self.id})
-        self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1,)
+        self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1, retain=False)
         self.client.connect(self.broker_address, 1883)
-        self.client.subscribe(self.internal_cluster_topic, qos=1)
-        self.client.loop_start()
+        while not self.client.is_connected():
+            time.sleep(1)
+
+            self.client.subscribe(self.internal_cluster_topic, qos=1)
+            self.client.loop_start()
 
     def get_head_node_id(self):
         if self.worker_head_node:
@@ -48,17 +51,24 @@ class MQTTCluster:
         self.logger.info(f"set successful head id: {self.head_id}")
         time.sleep(6)
 
+    def on_disconnect(self, client, userdata, rc):
+        if rc != 0:
+            self.logger.warning(f"Unexpected disconnection. RC: {rc}")
 
     def on_message(self, client, userdata, message):
-        client_id = client._client_id.decode('utf-8')
-        cluster_id = self.cluster_name
-        data = message.payload.decode('utf-8')
-        self.logger.debug(f"data: {data}")
+        try:
+            client_id = client._client_id.decode('utf-8')
+            cluster_id = self.cluster_name
+            data = message.payload.decode('utf-8')
+            self.logger.debug(f"data: {data}")
+
+            if message.topic == self.internal_cluster_topic:
+                self.handle_internal_message(message, client_id, cluster_id, client, message.mid)
+
+        except Exception as e:
+            self.logger.error(f"Error in on_message: {e}")
 
 
-
-        if message.topic == self.internal_cluster_topic:
-            self.handle_internal_message(message, client_id, cluster_id,client,message.mid)
 
     def handle_internal_message(self, message, client_id, cluster_id,client,mid):
         data = message.payload.decode('utf-8')

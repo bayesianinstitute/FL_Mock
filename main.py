@@ -8,6 +8,9 @@ from core.Logs_System.logger import Logger
 from core.API.ClientAPI import ApiClient
 from core.API.endpoint import *
 import json
+from core.MqttOPS.mqtt_operations import MqttOperations
+
+from core.MLOPS.ml_operations import MLOperations
 
 from core.Role.Admin import AdminOPS
 from core.Role.User import UserOPS
@@ -28,10 +31,16 @@ class DFLWorkflow:
         self.min_node = min_node
         self.updated_broker = updated_broker
         self.apiClient = ApiClient()
-        self.admin = AdminOPS(self.training_type, self.optimizer,self.internal_cluster_topic, self.cluster_name,
-                                              self.broker_service, self.min_node, self.is_admin, self.id)
-        self.user = UserOPS(self.training_type, self.optimizer,self.internal_cluster_topic, self.cluster_name,
-                                              self.broker_service, self.min_node, self.is_admin, self.id)
+
+        
+        self.ml_operations = MLOperations(training_type, optimizer)
+        self.mqtt_operations = MqttOperations(internal_cluster_topic, cluster_name,
+                                              broker_service, min_node, self.is_admin, id)
+        
+        self.mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
+
+        self.admin = AdminOPS(self.mqtt_obj,self.ml_operations)
+        self.user = UserOPS(self.mqtt_obj,self.ml_operations)
 
     def terminate_program(self):
         self.logger.warning("Terminated program successfully ")
