@@ -38,7 +38,7 @@ class AdminOPS:
         if status:
             self.logger.info("Added")
         else:
-            self.logger.info("Not Added")
+            self.logger.error("Not Added")
             
         #TODO: Check no_of_user in database
             # if the user is 1 do not aggregate and update the global model hash 
@@ -61,7 +61,7 @@ class AdminOPS:
             if status:
                 self.logger.debug("Added global model")
             else:
-                self.logger.debug("Not Added global model")
+                self.logger.error("Not Added global model")
             #self.global_model_hash = user_model_hash
         elif user_count > 2:
             # If more than two users, wait for all users to submit their model hashes
@@ -82,7 +82,7 @@ class AdminOPS:
             if status:
                 self.logger.debug("Added global model")
             else:
-                self.logger.debug("Not Added global model")
+                self.logger.error("Not Added global model")
             # if len(self.user_model_hashes) == user_count:
             #     # Perform aggregation when all users have submitted their model hashes
             #     self.global_model_hash = self.perform_aggregation(self.user_model_hashes)

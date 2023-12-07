@@ -27,7 +27,7 @@ class DFLWorkflow:
         self.voting_topic = voting_topic
         self.winner_declare = declare_winner_topic
         self.id = f'{id}-{uuid.uuid4()}'
-        self.is_admin = None
+        self.is_admin = 'Admin'
         self.min_node = min_node
         self.updated_broker = updated_broker
         self.apiClient = ApiClient()

@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import random
 import time
 import json
-import time
+import string
 
 # clients = []
 from core.Logs_System.logger import Logger
@@ -21,7 +21,7 @@ class MQTTCluster:
         self.global_model_hash = None
         self.client_hash_mapping = {}
         self.round = 0
-        self.id = f"{self.cluster_name}_Client_{id}"
+        self.id = f"{self.cluster_name}_Client_{id}_{self.generate_random_characters(3)}"
         self.terimate_status = False
         self.head_id=None
         self.switch_Status=False
@@ -30,13 +30,12 @@ class MQTTCluster:
         self.admin_to_client_topic = "admin_to_client_topic"
         self.client_to_admin_topic = "client_to_admin_topic"
 
-    def connect_clients(self):
+    def connect_clients(self,):
         self.client = mqtt.Client(self.id)
         self.client.on_message = self.on_message
         self.client.on_publish=self.on_publish
         self.client.on_subscribe=self.on_subscribe
-        self.client.connect(self.broker_address, 1883)
-        self.client.loop_start()
+
 
 
     def receive_msg(self,role:str):
@@ -50,6 +49,9 @@ class MQTTCluster:
             self.client.will_set(self.admin_to_client_topic,will_set_msg , qos=1, retain=False)
         else :
             pass
+        
+        self.client.connect(self.broker_address, 1883)
+        self.client.loop_start()
 
     def get_head_node_id(self):
         if self.worker_head_node:
@@ -282,6 +284,8 @@ class MQTTCluster:
     def on_subscribe(self,client, userdata, mid,granted_qos):
         self.logger.debug(f"Message Ack Subscribe for client id : {client._client_id.decode('utf-8')} and (mid={mid})")
 
+    def generate_random_characters(self, length):
+        return ''.join(random.choice('0123456789') for _ in range(length))
 
 
     def switch_broker(self, new_broker_address):
