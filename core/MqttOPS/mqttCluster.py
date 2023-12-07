@@ -36,8 +36,6 @@ class MQTTCluster:
         self.client.on_publish=self.on_publish
         self.client.on_subscribe=self.on_subscribe
 
-
-
     def receive_msg(self,role:str):
         will_set_msg=json.dumps({"Client-disconnected": self.id})
 
@@ -48,19 +46,12 @@ class MQTTCluster:
             self.client.subscribe(self.admin_to_client_topic,qos=1)
             self.client.will_set(self.admin_to_client_topic,will_set_msg , qos=1, retain=False)
         else :
-            pass
-        
+            pass   
         self.client.connect(self.broker_address, 1883)
         self.client.loop_start()
 
-    def get_head_node_id(self):
-        if self.worker_head_node:
-            return self.head_id
+        return self.id
 
-    def set_head_node_id(self,data):
-        self.head_id=data['head_id']
-        self.logger.info(f"set successful head id: {self.head_id}")
-        time.sleep(6)
 
     def on_disconnect(self, client, userdata, rc):
         if rc != 0:
@@ -83,7 +74,19 @@ class MQTTCluster:
         except Exception as e:
             self.logger.error(f"Error in on_message: {e}")
 
+    def send_id(self,role,id):
+        message={
+            "id":id,
+            "role":role,
+        }
+        data=json.dumps(message)
+        self.logger.info(data)
+        if role=="User":
+            self.client.publish(self.client_to_admin_topic,data,qos=1)
+        elif role=="Admin":
+            self.client.publish(self.admin_to_client_topic,data,qos=1)
 
+        self.logger.debug(f"Successfully sent id:{str(id)} ")
 
     def handle_internal_message(self, message, client_id, cluster_id,client,mid):
         data = message.payload.decode('utf-8')
@@ -242,14 +245,19 @@ class MQTTCluster:
         return self.global_model_hash
 
     
-    def send_head_id(self,id):
+    def send_id(self,role,id):
         message={
-            "head_id":id,
+            "id":id,
+            "role":role,
         }
         data=json.dumps(message)
         self.logger.info(data)
-        self.client.publish(self.admin_to_client_topic,data,qos=1)
-        self.logger.info(f"Successfully Head id:{str(id)} ")
+        if role=="User":
+            self.client.publish(self.client_to_admin_topic,data,qos=1)
+        elif role=="Admin":
+            self.client.publish(self.admin_to_client_topic,data,qos=1)
+
+        self.logger.debug(f"Successfully sent id:{str(id)} ")
 
 
 
@@ -283,6 +291,17 @@ class MQTTCluster:
 
     def on_subscribe(self,client, userdata, mid,granted_qos):
         self.logger.debug(f"Message Ack Subscribe for client id : {client._client_id.decode('utf-8')} and (mid={mid})")
+    
+    
+
+    def get_head_node_id(self):
+        if self.worker_head_node:
+            return self.head_id
+
+    def set_head_node_id(self,data):
+        self.head_id=data['head_id']
+        self.logger.info(f"set successful head id: {self.head_id}")
+        time.sleep(6)
 
     def generate_random_characters(self, length):
         return ''.join(random.choice('0123456789') for _ in range(length))

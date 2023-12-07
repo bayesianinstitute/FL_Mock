@@ -1,11 +1,9 @@
 import json
 from core.API.endpoint import *
 from core.API.ClientAPI import ApiClient
-from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
-from core.MqttOPS.mqtt_operations import MqttOperations
 
-import json
+import time
 
 class UserOPS:
     def __init__(self, mqtt_comm_obj,ml_ops_obj):
@@ -20,7 +18,18 @@ class UserOPS:
         self.mqtt_obj = mqtt_comm_obj
 
     def user_logic(self, ):
-        self.mqtt_obj.receive_msg('User')
+        id=self.mqtt_obj.receive_msg('User')
+        self.mqtt_obj.send_id(role='User',id=id)
+
+        while True:
+            try :
+                self.logger.debug("Waiting")
+                time.sleep(9)
+            except KeyboardInterrupt:
+                print("Disconnected.")
+                break
+
+        return "3"
 
 
         while(1):

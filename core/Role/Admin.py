@@ -2,9 +2,7 @@ from core.API.endpoint import *
 import json
 
 from core.API.ClientAPI import ApiClient
-from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
-from core.MqttOPS.mqtt_operations import MqttOperations
 import time
 
 class AdminOPS:
@@ -20,10 +18,12 @@ class AdminOPS:
 
     def admin_logic(self):
         self.logger.info("I am Admin ")
-        self.mqtt_obj.receive_msg('Admin')
-        self.mqtt_obj.send_head_id("Admin id : 4")
-        # while self.is_running:
-        #     self.logger.debug("Waiting")
+        
+        id=self.mqtt_obj.receive_msg(role='Admin')
+        self.mqtt_obj.send_id(role='Admin',id=id)
+        while True:
+            self.logger.debug("Waiting")
+            time.sleep(9)
         #TODO: if the user sending message using mqtt add user in database and also updates connected status
     
         admin_data = {
