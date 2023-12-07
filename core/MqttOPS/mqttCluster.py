@@ -245,19 +245,19 @@ class MQTTCluster:
         return self.global_model_hash
 
     
-    def send_id(self,role,id):
-        message={
-            "id":id,
-            "role":role,
-        }
-        data=json.dumps(message)
-        self.logger.info(data)
-        if role=="User":
-            self.client.publish(self.client_to_admin_topic,data,qos=1)
-        elif role=="Admin":
-            self.client.publish(self.admin_to_client_topic,data,qos=1)
+    # def send_id(self,role,id):
+    #     message={
+    #         "id":id,
+    #         "role":role,
+    #     }
+    #     data=json.dumps(message)
+    #     self.logger.info(data)
+    #     if role=="User":
+    #         self.client.publish(self.client_to_admin_topic,data,qos=1)
+    #     elif role=="Admin":
+    #         self.client.publish(self.admin_to_client_topic,data,qos=1)
 
-        self.logger.debug(f"Successfully sent id:{str(id)} ")
+    #     self.logger.debug(f"Successfully sent id:{str(id)} ")
 
 
 
@@ -331,4 +331,4 @@ if __name__ == "__main__":
     cluster.connect_clients()
 
     # Subscribe to internal messages
-    cluster.subscribe_to_internal_messages()
+    cluster.receive_internal_messages()
