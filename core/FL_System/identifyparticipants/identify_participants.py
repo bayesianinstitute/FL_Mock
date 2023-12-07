@@ -24,92 +24,96 @@ class IdentifyParticipant:
 
     # Get  performance infor
     def get_computer_info(self):
+        try:
+            ram = psutil.virtual_memory()
+            used_ram = ram.used
+            total_ram = ram.total
+            available_ram = ram.available
 
-        ram = psutil.virtual_memory()
-        used_ram = ram.used
-        total_ram = ram.total
-        # Get available RAM
-        available_ram = ram.available
+            self.logger.info(f"Used RAM: {used_ram / (1024 ** 3):.2f} GB")
+            self.logger.info(f"Total RAM: {total_ram / (1024 ** 3):.2f} GB")
+            self.logger.info(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
 
-        self.logger.info(f"Used RAM: {used_ram / (1024 ** 3):.2f} GB")
-        self.logger.info(f"Total RAM: {total_ram / (1024 ** 3):.2f} GB")
-        self.logger.info(f"Available RAM: {available_ram / (1024 ** 3):.2f} GB")
-        return {"ram": available_ram}
+            return {"ram": available_ram}
+        except Exception as e:
+            self.logger.error(f"Error fetching computer info: {e}")
+            return {"ram": 0}  # Return a default value
 
-        # Get  Connect to Broker
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            # print(f"Connected to Broker")
             client.subscribe(self.ram_topic)
             client.subscribe(self.aggregator_topic)
         else:
-            self.logger.error("Unable to connect to Broker result code: {}".format(rc))
+            self.logger.error("Unable to connect to Broker. Result code: {}".format(rc))
 
     def on_message(self, client, userdata, message):
         try:
             ram_info = json.loads(message.payload.decode("utf-8"))
-            node_id = ram_info["node_id"]
-            ram_usage = int(ram_info["ram_usage"])
+            node_id = ram_info.get("node_id")
+            ram_usage = int(ram_info.get("ram_usage", 0))
 
-            if node_id not in userdata["ram_usages"]:
-                # Node is not in the dictionary, so we treat it as a new node
-                self.logger.info(f"Received RAM usage from {node_id}: {ram_usage} MB")
-                userdata["ram_usages"][node_id] = ram_usage
-                userdata["shared_count"] += 1
-            else:
-                if userdata["ram_usages"][node_id] != ram_usage:
-                    # Node is in the dictionary, but the RAM usage is different
+            if node_id and ram_usage:
+                if node_id not in userdata["ram_usages"]:
                     self.logger.info(f"Received RAM usage from {node_id}: {ram_usage} MB")
                     userdata["ram_usages"][node_id] = ram_usage
+                    userdata["shared_count"] += 1
+                else:
+                    if userdata["ram_usages"][node_id] != ram_usage:
+                        self.logger.info(f"Received RAM usage from {node_id}: {ram_usage} MB")
+                        userdata["ram_usages"][node_id] = ram_usage
 
-        except json.decoder.JSONDecodeError:
-            self.logger.error(f"Received an invalid JSON message from {message.topic}: {message.payload}")
+        except json.decoder.JSONDecodeError as e:
+            self.logger.error(f"Received an invalid JSON message from {message.topic}: {e}")
 
-    # Pushing computer info to Mqtt
     def announce_ram_usage(self):
-
-        ram_usage = self.computer_info["ram"]
-        ram_info = {
-            "node_id": self.participant_id,
-            "ram_usage": ram_usage
-        }
-        time.sleep(4)
-        self.client.publish(self.ram_topic, json.dumps(ram_info), qos=1)
+        try:
+            ram_usage = self.computer_info.get("ram", 0)
+            ram_info = {"node_id": self.participant_id, "ram_usage": ram_usage}
+            time.sleep(4)
+            self.client.publish(self.ram_topic, json.dumps(ram_info), qos=1)
+        except Exception as e:
+            self.logger.error(f"Error announcing RAM usage: {e}")
 
     def declare_aggregator(self):
-        aggregator_message = f"Machine {self.participant_id} is the aggregator!"
-
-        # self.client.publish(self.aggregator_topic, aggregator_message,qos=1)
+        try:
+            aggregator_message = f"Machine {self.participant_id} is the aggregator!"
+            self.client.publish(self.aggregator_topic, aggregator_message, qos=1)
+        except Exception as e:
+            self.logger.error(f"Error declaring aggregator: {e}")
 
     def is_highest_ram_usage(self, current_ram_usage):
-        # Check if current_ram_usage is higher than any other participant's RAM usage
-        other_ram_usages = self.client._userdata["ram_usages"]
-        self.logger.info("other_ram_usages :  ",other_ram_usages)
-        return all(current_ram_usage >= ram_usage for ram_usage in other_ram_usages.values())
+        try:
+            other_ram_usages = self.client._userdata.get("ram_usages", {})
+            self.logger.info("other_ram_usages: ", other_ram_usages)
+            return all(current_ram_usage >= ram_usage for ram_usage in other_ram_usages.values())
+        except Exception as e:
+            self.logger.error(f"Error checking RAM usage: {e}")
+            return False
 
     def main(self):
-        self.logger.info(f"My ID: {self.participant_id}")
+        try:
+            self.logger.info(f"My ID: {self.participant_id}")
 
+            while True:
+                self.announce_ram_usage()
 
-        while True:
+                shared_count = self.client._userdata.get("shared_count", 0)
 
-            # Announce untill we meet the minimum participant
-            self.announce_ram_usage()
-
-            shared_count = self.client._userdata.get("shared_count")
-
-            if shared_count < self.minimum_participate :  
-                self.logger.debug(f"Waiting for {self.minimum_participate  - shared_count} more machine(s) to start the process...")
-            else:
-                ram_usage = self.computer_info["ram"]
-                if self.is_highest_ram_usage(ram_usage):
-                    self.declare_aggregator()
-                    self.logger.info(f"I am the aggregator! RAM usage: {ram_usage} GB")
-                    self.aggregator = True
-                    return self.aggregator
+                if shared_count < self.minimum_participate:
+                    self.logger.debug(f"Waiting for {self.minimum_participate - shared_count} more machine(s) to start the process...")
                 else:
-                    self.logger.info("I am not the aggregator")
-                    return self.aggregator
+                    ram_usage = self.computer_info.get("ram", 0)
+                    if self.is_highest_ram_usage(ram_usage):
+                        self.declare_aggregator()
+                        self.logger.info(f"I am the aggregator! RAM usage: {ram_usage} GB")
+                        self.aggregator = True
+                        return self.aggregator
+                    else:
+                        self.logger.info("I am not the aggregator")
+                        return self.aggregator
+        except Exception as e:
+            self.logger.error(f"Error in main block: {e}")
+            return False
 
 
 if __name__ == '__main__':

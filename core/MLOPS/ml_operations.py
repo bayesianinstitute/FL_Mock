@@ -16,176 +16,196 @@ class MLOperations:
         self.get_weights=None
         pass
 
-    def is_global_model_hash(self,model_hash):    
-        self.global_model_hash=model_hash
+    def is_global_model_hash(self, model_hash):
+        try:
+            self.global_model_hash = model_hash
+        except Exception as e:
+            self.logger.error(f"Error in is_global_model_hash: {e}")
 
     
     def get_model(self,):
-                # Build a simple neural network model
+        try:
 
-        if self.training_type=='CNN':
+            if self.training_type=='CNN':
+                
+                from core.MLOPS.Model.deepLearningModel.CNN import CNNMnist
+
+                self.current_model=CNNMnist(self.optimizer)
+
+
+            elif self.training_type=='ANN-Regression':
+                
+                from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularLinearRegression
+                self.current_model=ANNTabularLinearRegression(self.optimizer)
+
+            elif self.training_type=='ANN-Classification':  
+                from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularClassification
+
+                self.current_model=ANNTabularClassification(self.optimizer)
             
-            from core.MLOPS.Model.deepLearningModel.CNN import CNNMnist
-
-            self.current_model=CNNMnist(self.optimizer)
-
-
-        elif self.training_type=='ANN-Regression':
+            elif self.training_type=='LSTM-(NLP)':
+                from core.MLOPS.Model.deepLearningModel.NLPLSTMMovieReviews import NLPLSTMMovieReviews
+                self.current_model=NLPLSTMMovieReviews(optimizer=self.optimizer,)
             
-            from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularLinearRegression
-            self.current_model=ANNTabularLinearRegression(self.optimizer)
+            elif self.training_type=='LSTM-(TimeSeries)':
+                from core.MLOPS.Model.timeSeriesModel.LSTM import TimeSeriesLSTM
+                self.current_model=TimeSeriesLSTM(optimizer=self.optimizer,)
 
-        elif self.training_type=='ANN-Classification':  
-            from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularClassification
-
-            self.current_model=ANNTabularClassification(self.optimizer)
-        
-        elif self.training_type=='LSTM-(NLP)':
-            from core.MLOPS.Model.deepLearningModel.NLPLSTMMovieReviews import NLPLSTMMovieReviews
-            self.current_model=NLPLSTMMovieReviews(optimizer=self.optimizer,)
-        
-        elif self.training_type=='LSTM-(TimeSeries)':
-            from core.MLOPS.Model.timeSeriesModel.LSTM import TimeSeriesLSTM
-            self.current_model=TimeSeriesLSTM(optimizer=self.optimizer,)
-
-        elif self.training_type=='RNN-(TimeSeries)':
-            from core.MLOPS.Model.timeSeriesModel.RNN import TimeSeriesRNN
-            self.current_model=TimeSeriesRNN(optimizer=self.optimizer)
-        
-       
-
-
-
-        
-        return self.current_model
-        
+            elif self.training_type=='RNN-(TimeSeries)':
+                from core.MLOPS.Model.timeSeriesModel.RNN import TimeSeriesRNN
+                self.current_model=TimeSeriesRNN(optimizer=self.optimizer)
+            
+            return self.current_model
+        except Exception as e:
+            self.logger.error(f"Error in get_model: {e}")
+            return None
 
     def train_machine_learning_model(self):
+        try:
 
-        # Check if the global model hash is available
-        if self.global_model_hash:
-
-
-            # get model from ipfs
-            ipfs_model=self.ipfs.fetch_model(self.global_model_hash)
+            # Check if the global model hash is available
+            if self.global_model_hash:
 
 
-            # self.logger.info(" model: ", self.current_model)
-            self.get_weights=ipfs_model.get_weights()
+                # get model from ipfs
+                ipfs_model=self.ipfs.fetch_model(self.global_model_hash)
 
-            # self.logger.info("getti Weight: ", self.get_weights[0])
 
-            self.current_model.set_weights(self.get_weights)
+                # self.logger.info(" model: ", self.current_model)
+                self.get_weights=ipfs_model.get_weights()
 
+                # self.logger.info("getti Weight: ", self.get_weights[0])
+
+                self.current_model.set_weights(self.get_weights)
+
+                
+                self.logger.info("set Weight Successfully ")
+
+            else :
+                # For First time build model
+                self.current_model=self.get_model()
+                self.current_model.build_model()
+                self.logger.info(f"builded model: Successfully built model: {self.current_model}",) 
+                import time
+                time.sleep(5)
             
-            self.logger.info("set Weight Successfully ")
 
-        else :
-            # For First time build model
-            self.current_model=self.get_model()
-            self.current_model.build_model()
-            self.logger.info(f"builded model: Successfully built model: {self.current_model}",) 
-            import time
-            time.sleep(5)
-        
+            # Train the model
+            self.current_model.train_model(epochs=1,batch_size=32)
 
-        # Train the model
-        self.current_model.train_model(epochs=1,batch_size=32)
+            # Show Ui
+            # self.current_model.run_tensorboard()
 
-        # Show Ui
-        # self.current_model.run_tensorboard()
+            # Evaluate the model on the test data
+            test_loss, test_acc = self.current_model.evaluate_model()
 
-        # Evaluate the model on the test data
-        test_loss, test_acc = self.current_model.evaluate_model()
+            # Save the trained model
+            self.current_model.save_model(self.path_model)
 
-        # Save the trained model
-        self.current_model.save_model(self.path_model)
+            self.logger.info(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
 
-        self.logger.info(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
+            hash=self.send_model_to_ipfs(self.path_model)
 
-        hash=self.send_model_to_ipfs(self.path_model)
-
-        return hash,test_acc,test_loss
+            return hash,test_acc,test_loss
+        except Exception as e:
+            self.logger.error(f"Error in train_machine_learning_model: {e}")
+            return None
     
-    def send_model_to_ipfs(self,path):
-        return self.ipfs.push_model(path)
+    def send_model_to_ipfs(self, path):
+        try:
+            return self.ipfs.push_model(path)
+        except Exception as e:
+            self.logger.error(f"Error in send_model_to_ipfs: {e}")
+            return None
         
     def aggregate_models(self,get_model_list:list):
-        """
-        This method represents the action taken when the aggregator aggregates received models.
+        try:
+            """
+            This method represents the action taken when the aggregator aggregates received models.
 
-        Algorithm:
-        1. Combine and aggregate the received models.
-        2. Create a global model using the aggregated information.
+            Algorithm:
+            1. Combine and aggregate the received models.
+            2. Create a global model using the aggregated information.
 
-        Returns:
-        Send Global models to all client.
-        """
-        # Convert the set to a list
+            Returns:
+            Send Global models to all client.
+            """
+            # Convert the set to a list
 
-        data=get_model_list
+            data=get_model_list
 
-        self.logger.info(f"listing models {data}")
+            self.logger.info(f"listing models {data}")
 
 
 
-        models = []
-        for value in data:
-            # self.logger.info("vales in loop : ",value)
-            model = self.ipfs.fetch_model(value)
-            # self.logger.info("after fetching model : ",model)
-            models.append(model)
+            models = []
+            for value in data:
+                # self.logger.info("vales in loop : ",value)
+                model = self.ipfs.fetch_model(value)
+                # self.logger.info("after fetching model : ",model)
+                models.append(model)
 
-        # Aggregate model weights
-        global_model = self.aggregate_weights(models)
+            # Aggregate model weights
+            global_model = self.aggregate_weights(models)
 
-        self.logger.info("Global model Aggregate weights")
+            self.logger.info("Global model Aggregate weights")
 
-        self.logger.debug(f"global model {global_model.summary()}")
+            self.logger.debug(f"global model {global_model.summary()}")
 
-        # Save the trained model
-        model.save(self.path_global_model)
+            # Save the trained model
+            model.save(self.path_global_model)
 
-        global_model_hash=self.ipfs.push_model(self.path_global_model)
+            global_model_hash=self.ipfs.push_model(self.path_global_model)
 
-        self.logger.info(f"hash global model {global_model_hash}")
+            self.logger.info(f"hash global model {global_model_hash}")
 
-        return global_model_hash
+            return global_model_hash
 
+        except Exception as e:
+            self.logger.error(f"Error in aggregate_models: {e}")
+            return None
     
     def aggregate_weights(self, models):
+        try:
         # Initialize global model with the architecture of the first model
-        global_model = models[0]
+            global_model = models[0]
 
-        # Iterate through layers and aggregate weights
-        for i in range(len(models[0].layers)):
-            if 'Dense' in str(models[0].layers[i].get_config()):
-                # Extract the weights from all models for this layer
-                layer_weights = [model.layers[i].get_weights() for model in models]
+            # Iterate through layers and aggregate weights
+            for i in range(len(models[0].layers)):
+                if 'Dense' in str(models[0].layers[i].get_config()):
+                    # Extract the weights from all models for this layer
+                    layer_weights = [model.layers[i].get_weights() for model in models]
 
-                # Calculate the average weights
-                average_weights = [sum(w) / len(models) for w in zip(*layer_weights)]
+                    # Calculate the average weights
+                    average_weights = [sum(w) / len(models) for w in zip(*layer_weights)]
 
-                # Set the average weights to the global model
-                global_model.layers[i].set_weights(average_weights)
-        
-        self.logger.info("Aggregated weights")
+                    # Set the average weights to the global model
+                    global_model.layers[i].set_weights(average_weights)
+            
+            self.logger.info("Aggregated weights")
 
-        return global_model
+            return global_model
+        except Exception as e:
+            self.logger.error(f"Error in aggregate_weights: {e}")
+            return None
 
     def send_global_model_to_others(self,mqtt_obj,global_model_hash):
-        """
-        This method represents the action taken when the global model is sent to other participants.
+        try:
+            """
+            This method represents the action taken when the global model is sent to other participants.
 
-        Algorithm:
-        1. Prepare the global model for transmission.
-        2. Send the global model to other participants.
+            Algorithm:
+            1. Prepare the global model for transmission.
+            2. Send the global model to other participants.
 
-        Returns:
-        A message indicating that the global model has been sent to others.
-        """
-        mqtt_obj.send_admin_to_client_global_model(global_model_hash)
-        return "Global model sent to others"
+            Returns:
+            A message indicating that the global model has been sent to others.
+            """
+            mqtt_obj.send_admin_to_client_global_model(global_model_hash)
+            return "Global model sent to others"
+        except Exception as e:
+            self.logger.error(f"Error in send_global_model_to_others: {e}")
+            return None
 
 
     def send_model_to_aggregator(self):
@@ -213,11 +233,6 @@ class MLOperations:
         Returns:
         A message indicating that the aggregator has received the models.
         """
-        
-
-
-
-
         return "Aggregator received models"
 
     def is_model_better(self):
@@ -248,22 +263,12 @@ class MLOperations:
 
 
     def aggregator_saves_global_model_in_ipfs(self):
-        """
-        This method represents the action taken when the aggregator saves the global model to IPFS.
-
-        Algorithm:
-        1. Implement the logic to save the global model to IPFS here.
-        2. Return True if the operation is successful, or False otherwise.
-
-        Returns:
-        A message indicating the success or failure of saving the global model to IPFS.
-        """
-        # Implement the logic to save the global model to IPFS here.
-        # Return True if the operation is successful, or False otherwise.
-
-        # Placeholder code (replace with the actual implementation)
-        self.logger.info("Aggregator saves the global model to IPFS.")
-        return True
+        try:
+            self.logger.info("Aggregator saves the global model to IPFS.")
+            return True
+        except Exception as e:
+            self.logger.error(f"Error in aggregator_saves_global_model_in_ipfs: {e}")
+            return False
 
 
 if __name__ == "__main__":

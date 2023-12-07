@@ -12,16 +12,15 @@ class IPFS:
         self.logger=Logger(name='ipfs_logger').get_logger()
         self.client = self._connect_to_ipfs(connection_link)
     
-    def _connect_to_ipfs(self,connect_link):
+    def _connect_to_ipfs(self, connect_link):
         try:
-            ipfs_conn_obj=ipfshttpclient.connect(connect_link)
+            ipfs_conn_obj = ipfshttpclient.connect(connect_link)
             self.logger.info("Connected to IPFS")
             return ipfs_conn_obj
         except Exception as e:
             self.logger.error(f"Error during IPFS connection: {e}")
-            self.logger.critical("unable to connect to IPFS")
-            import sys
-            sys.exit(1)
+            self.logger.critical("Unable to connect to IPFS")
+            raise  # Raising the exception to halt the program if IPFS connection fails
 
     def fetch_model(self, model_hash):
         self.logger.debug(f"Model hash: {model_hash}")
@@ -50,28 +49,35 @@ class IPFS:
             temp_model_file.close()
         return model
 
-
     def push_model(self, saved_model_path):
-        
-        model_hash = self.client.add(saved_model_path)['Hash']
-        
-        return model_hash
+        try:
+            model_hash = self.client.add(saved_model_path)['Hash']
+            return model_hash
+        except Exception as e:
+            self.logger.error(f"Error pushing model to IPFS: {str(e)}")
+            return None
 
     def download_model(self, model_hash, destination_folder):
-        # Create the directory if it doesn't exist
-        os.makedirs(destination_folder, exist_ok=True)
+        try:
+            # Create the directory if it doesn't exist
+            os.makedirs(destination_folder, exist_ok=True)
 
-        model_bytes = self.client.cat(model_hash)
+            # Retrieve the model bytes from IPFS
+            model_bytes = self.client.cat(model_hash)
 
-        # Specify the path for saving the model file locally
-        local_model_path = os.path.join(destination_folder, 'model.h5')
+            # Specify the path for saving the model file locally
+            local_model_path = os.path.join(destination_folder, 'model.h5')
 
-        with open(local_model_path, 'wb') as f:
-            f.write(model_bytes)
+            # Save the model bytes to the local file
+            with open(local_model_path, 'wb') as f:
+                f.write(model_bytes)
 
-        # Load the model from the local path
-        model = keras.models.load_model(local_model_path)
-        return model
+            # Load the model from the local path
+            model = keras.models.load_model(local_model_path)
+            return model
+        except Exception as e:
+            self.logger.error(f"Error downloading model from IPFS: {str(e)}")
+            return None
 
 # testing IPFS Class
 if __name__ == "__main__":
