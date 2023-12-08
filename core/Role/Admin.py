@@ -27,7 +27,7 @@ class Admin:
                     "network_status": "user_status['network_status']"
                 })
                 mqtt_obj.send_internal_messages(message_json)
-                
+                time.sleep(9)
                 admin_data = {
                     "training_status": "in_progress",
                     "role": "Admin",
