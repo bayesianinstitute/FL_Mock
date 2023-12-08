@@ -8,25 +8,27 @@ class User:
         self.apiClient=ApiClient()
         self.ml_operations = MLOperations(training_type, optimizer)
         self.logger = Logger(name='user-role').get_logger()
-
-    def user_logic(self):
+        self.mqtt_obj=None
+        
+    def user_logic(self,mqtt_obj):
+       
         try:
             while True:
                 user_status = self.update_network_status()
-                self.send_network_status(user_status)
+                self.send_network_status(user_status,mqtt_obj)
 
                 user_status = self.update_training_status()
-                self.send_training_status(user_status)
+                self.send_training_status(user_status,mqtt_obj)
 
                 hash, accuracy, loss = self.ml_operations.train_machine_learning_model()
                 self.logger.info(f"Model hash: {hash}")
 
-                self.send_model_to_internal_cluster(user_status, hash, accuracy, loss)
+                self.send_model_to_internal_cluster(user_status, hash, accuracy, loss,mqtt_obj)
 
-                latest_global_model_hash = self.mqtt_obj.global_model()
+                latest_global_model_hash = mqtt_obj.global_model()
 
                 if latest_global_model_hash:
-                    self.process_global_model_hash(latest_global_model_hash)
+                    self.process_global_model_hash(latest_global_model_hash,mqtt_obj)
 
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
@@ -47,7 +49,7 @@ class User:
             self.logger.error(f"Error in update_network_status: {str(e)}")
             return None
 
-    def send_network_status(self, user_status):
+    def send_network_status(self, user_status,mqtt_obj):
         try:
             if user_status:
                 message_json = json.dumps({
@@ -55,7 +57,7 @@ class User:
                     "id": user_status['id'],
                     "network_status": user_status['network_status']
                 })
-                self.mqtt_obj.send_internal_messages(message_json)
+                mqtt_obj.send_internal_messages(message_json)
 
         except Exception as e:
             self.logger.error(f"Error in send_network_status: {str(e)}")
@@ -75,7 +77,7 @@ class User:
             self.logger.error(f"Error in update_training_status: {str(e)}")
             return None
 
-    def send_training_status(self, user_status):
+    def send_training_status(self, user_status,mqtt_obj):
         try:
             if user_status:
                 message_json = json.dumps({
@@ -83,12 +85,13 @@ class User:
                     "id": user_status['id'],
                     "training_status": user_status['training_status'],
                 })
-                self.mqtt_obj.send_internal_messages(message_json)
+                mqtt_obj.send_internal_messages(message_json)
 
         except Exception as e:
             self.logger.error(f"Error in send_training_status: {str(e)}")
 
-    def send_model_to_internal_cluster(self, user_status, hash, accuracy, loss):
+    def send_model_to_internal_cluster(self, user_status, hash, accuracy, loss,mqtt_obj):
+        
         try:
             if user_status:
                 message_json = json.dumps({
@@ -97,16 +100,16 @@ class User:
                     "accuracy": accuracy,
                     "loss": loss,
                 })
-                self.mqtt_obj.send_internal_messages(message_json)
+                mqtt_obj.send_internal_messages(message_json)
 
         except Exception as e:
             self.logger.error(f"Error in send_model_to_internal_cluster: {str(e)}")
 
-    def process_global_model_hash(self, latest_global_model_hash):
+    def process_global_model_hash(self, latest_global_model_hash,mqtt_obj):
         try:
             self.logger.info(f"I am not aggregator, got global model hash: {latest_global_model_hash}")
             self.ml_operations.is_global_model_hash(latest_global_model_hash)
-            self.mqtt_obj.global_model_hash = None
+            mqtt_obj.global_model_hash = None
 
         except Exception as e:
             self.logger.error(f"Error in process_global_model_hash: {str(e)}")
