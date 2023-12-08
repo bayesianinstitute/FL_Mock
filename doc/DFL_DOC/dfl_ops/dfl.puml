@@ -1,0 +1,40 @@
+@startuml
+
+actor User
+participant Admin
+database DB
+
+User -> Admin: Send network status
+Admin -> Admin: Receive message using MQTT
+Admin -> DB: Add network status to DB
+DB --> Admin: Acknowledge
+
+User -> Admin: Send training status
+Admin -> Admin: Receive message using MQTT
+Admin -> DB: Add training status to DB
+DB --> Admin: Acknowledge
+
+User -> Admin: Train model and send accuracy, loss, and model hash
+User -> Admin: Check if global model is sent by Admin through MQTT
+Admin -> Admin: Receive message using MQTT
+Admin -> Admin: Update model weights and start training if received
+Admin -> Admin: Continue training if not received
+
+User -> Admin: Receive accuracy, loss, and model hash through MQTT
+Admin -> DB: Add information to DB
+Admin -> DB: Fetch the number of users and check if all model hashes are received
+DB --> Admin: Number of users and model hash status
+Admin -> Admin: If all model hashes received, aggregate and send global model through MQTT
+Admin -> Admin: If not, wait for model hashes from all clients
+
+Admin -> User: Terminate API called
+User -> Admin: Send terminate to all users
+User -> DB: Update database with terminate status
+Admin --> User: Acknowledge termination
+
+Admin -> User: Pause API called
+User -> Admin: Send pause message to all users
+User -> DB: Update database with pause status
+Admin --> User: Acknowledge pause
+
+@enduml
