@@ -1,4 +1,6 @@
 import json
+import time
+
 from core.API.endpoint import *
 from core.Role.MsgType import *
 
@@ -27,10 +29,12 @@ class User:
 
                 self.send_model_to_internal_cluster(user_status, hash, accuracy, loss,mqtt_obj)
 
-                latest_global_model_hash = mqtt_obj.global_model()
 
-                if latest_global_model_hash:
-                    self.process_global_model_hash(latest_global_model_hash,mqtt_obj)
+                received_message = mqtt_obj.handle_user_data()
+
+
+                if received_message:
+                    self.process_global_model_hash(received_message)
 
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
@@ -101,7 +105,6 @@ class User:
                 message_json = json.dumps({
                     "receiver": 'Admin',
                     "msg": RECEIVE_MODEL_INFO,
-
                     "client_id": user_status['id'],
                     "model_hash": hash,
                     "accuracy": accuracy,
@@ -112,11 +115,18 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in send_model_to_internal_cluster: {str(e)}")
 
-    def process_global_model_hash(self, latest_global_model_hash,mqtt_obj):
+    def process_global_model_hash(self, data):
+
         try:
-            self.logger.info(f"I am not aggregator, got global model hash: {latest_global_model_hash}")
-            self.ml_operations.is_global_model_hash(latest_global_model_hash)
-            mqtt_obj.global_model_hash = None
+            data = json.loads(data)
+
+            self.logger.info(f" got global model hash: {data}")
+            self.ml_operations.is_global_model_hash(data['global_hash'])
+
+            self.logger.warning("Successfully Set global model hash")
+            time.sleep(10)
 
         except Exception as e:
+            time.sleep(10)
+
             self.logger.error(f"Error in process_global_model_hash: {str(e)}")

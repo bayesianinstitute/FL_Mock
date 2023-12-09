@@ -127,17 +127,18 @@ class Admin:
         self.db.add_training_status(user_id, message_data)
         self.logger.info(f"Received training status from user {user_id}: {message_data}")
 
-    def handle_train_model(self, user_id, message_data):
+    def handle_train_model(self, user_id, message_data,mqtt_obj):
         # Handle train model logic
         # Update database with model training information
-        self.db.add_model_training_info(user_id, message_data)
-        self.logger.info(f"Received model training info from user {user_id}: {message_data}")
+        # self.db.add_model_training_info(user_id, message_data)
+        # self.logger.info(f"Received model training info from user {user_id}: {message_data}")
 
-        # Check if global model is sent
-        if self.db.check_global_model_received():
+        # # Check if global model is sent
+        # if self.db.check_global_model_received(mq):
             # Aggregate and send global model through MQTT
-            global_model = self.db.aggregate_global_model()
-            self.mqtt_obj.send_global_model(global_model)
+            # global_model = self.db.aggregate_global_model()
+            message_data=self.send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB')
+            mqtt_obj.send_internal_messages(message_data)
             self.logger.info("Sent global model to users")
 
     def handle_receive_model_info(self, user_id, message_data):
@@ -165,7 +166,15 @@ class Admin:
         self.mqtt_obj.send_acknowledge_pause(user_id)
 
 
+    def send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'):
+        message_json = json.dumps({
+            "receiver": 'User',
+            "msg": SEND_GLOBAL_MODEL_HASH,
+            "Admin": 1,
+            "global_hash":hash
 
+        })
+        return message_json
 
 
     # def add_admin(self, admin_data):

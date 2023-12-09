@@ -8,6 +8,7 @@ TRAIN_MODEL = "TrainModel"
 RECEIVE_MODEL_INFO = "ReceiveModelInfo"
 TERMINATE_API = "TerminateAPI"
 PAUSE_API = "PauseAPI"
+SEND_GLOBAL_MODEL_HASH = "SendGlobalModelHASH"
 
 topics = 'internal_cluster_topic'
 import random
@@ -21,35 +22,18 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
 
-def send_network_status():
+def send_global_model():
     message_json = json.dumps({
-        "receiver": 'Admin',
-        "msg": SEND_NETWORK_STATUS,
-        "client_id": id,
-        "network_status": "active",
-    })
-    return message_json
-
-def send_model_to_internal_cluster():
-    message_json = json.dumps({
-        "receiver": 'Admin',
-        "msg": RECEIVE_MODEL_INFO,
-        "client_id": id,
-        "model_hash": "Faijan hahs",
-        "accuracy": "500000",
-        "loss": "3",
-    })
-    return message_json
-
-def send_training_status():
-    message_json = json.dumps({
-        "receiver": 'Admin',
-        "msg": SEND_TRAINING_STATUS,
-        "training_status": 'training_status',
-        "client_id": id,
+        "receiver": 'User',
+        "msg": SEND_GLOBAL_MODEL_HASH,
+        "Admin": id,
+        "global_hash":'QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'
 
     })
     return message_json
+
+
+
 
 if __name__ == "__main__":
     client = mqtt.Client()
@@ -67,15 +51,12 @@ if __name__ == "__main__":
     while True:
         try:
             # Call your message-sending methods and publish the resulting JSON
-            client.publish(topics, send_network_status(), qos=2)
-            client.publish(topics, send_training_status(), qos=2)
 
-            time.sleep(5)   
+            time.sleep(9)   
 
-            client.publish(topics, send_model_to_internal_cluster(), qos=2)
+            client.publish(topics, send_global_model(), qos=2)
 
-            print("Successfully sent messages to admin")
-            time.sleep(id)
+            print("Successfully sent GLobal Model to User")
 
 
         except KeyboardInterrupt:
