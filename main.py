@@ -93,26 +93,25 @@ class DFLWorkflow:
                                             self.id)
         # Start, initialize, and get MQTT communication object
         mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
-        while True:
+        # while True:
             # TODO:  Need api to update training rounds 
-            Round_Counter = Round_Counter + 1
-            self.logger.info(f"Round_Counter: {Round_Counter}")
-
-            # Admin
-            if role_data['role'] == "Admin":
-                self.logger.info(f"Admin")
-                self.admin.admin_logic(mqtt_obj,self.id)
-            # User
-            elif role_data['role'] == "User":
-                self.logger.info(f"User")
-                self.user.user_logic(mqtt_obj)
-            else:
-                 pass
+        Round_Counter = Round_Counter + 1
+        self.logger.info(f"Round_Counter: {Round_Counter}")
+        # Admin
+        if role_data['role'] == "Admin":
+            self.logger.info(f"Admin")
+            self.admin.admin_logic(mqtt_obj,self.id)
+        # User
+        elif role_data['role'] == "User":
+            self.logger.info(f"User")
+            self.user.user_logic(mqtt_obj)
+        else:
+             pass
                 # Temporary to close the program
-            if Round_Counter == 2:
+            # if Round_Counter == 2:
                     
-                    break
-            self.logger.info(f"Training completed with round {Round_Counter} !! ")
+            #         break
+            # self.logger.info(f"Training completed with round {Round_Counter} !! ")
 
 
 if __name__ == "__main__":
@@ -134,7 +133,7 @@ if __name__ == "__main__":
     voting_topic = f'Voting/{args.cluster_name}'
     declare_winner_topic = f'Winner/{args.cluster_name}'
 
-    internal_cluster_topic=f'{args.cluster_name}/internal_cluster_topic'
+    internal_cluster_topic='internal_cluster_topic'
     
     workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name, args.id,
                            voting_topic, declare_winner_topic, args.min_node, updated_broker, model_type, optimizer)

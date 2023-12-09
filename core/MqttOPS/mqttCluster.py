@@ -24,15 +24,21 @@ class MQTTCluster:
         self.head_id=None
         self.switch_Status=False
 
+    def on_connect(self,client, userdata, flags, rc):
+        self.logger.warning(f"Connected with result code {rc}")
+        self.client.subscribe(self.internal_cluster_topic,qos=2) 
+
     def connect_clients(self):
         self.client = mqtt.Client(self.id)
+        self.client.on_connect = self.on_connect
+
         self.client.on_message = self.on_message
         self.client.on_publish=self.on_publish
-        self.client.on_subscribe=self.on_subscribe
+        # self.client.on_subscribe=self.on_subscribe
         will_set_msg=json.dumps({"Client-disconnected": self.id})
-        self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=1,)
+        self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=2,)
         self.client.connect(self.broker_address, 1883)
-        self.client.subscribe(self.internal_cluster_topic, qos=1)
+        # self.client.subscribe(self.internal_cluster_topic, qos=2)
         self.client.loop_start()
 
     def get_head_node_id(self):
@@ -54,10 +60,11 @@ class MQTTCluster:
 
     def handle_internal_message(self, message, client_id, cluster_id,client):
         data = message.payload.decode('utf-8')
+        self.logger.critical(f"Received data: {data}")
+
         try:
             json_data = json.loads(data)
 
-            self.logger.critical(f"Received data: {json_data}")
 
             if "head_id" in json_data:
                 self.set_head_node_id(json_data)
@@ -95,7 +102,7 @@ class MQTTCluster:
         }
         data = json.dumps(message)
 
-        self.client.publish(self.internal_cluster_topic, data,)
+        self.client.publish(self.internal_cluster_topic, data,qos=2)
         self.logger.info("Successfully sent send_terminate_message")
 
         return True    
@@ -159,7 +166,7 @@ class MQTTCluster:
 
     def subscribe_to_internal_messages(self):
         # Subscribe to the internal_cluster_topic for message reception
-        self.client.subscribe(self.internal_cluster_topic, qos=1)
+        self.client.subscribe(self.internal_cluster_topic, qos=2)
 
     def receive_internal_messages(self):
         self.client.on_message = self.on_message
@@ -212,7 +219,7 @@ class MQTTCluster:
         }
         data=json.dumps(message)
         self.logger.info(data)
-        self.client.publish(self.internal_cluster_topic,data)
+        self.client.publish(self.internal_cluster_topic,data,qos=2)
         self.logger.info(f"Successfully Head id:{str(id)} ")
 
 
@@ -220,7 +227,7 @@ class MQTTCluster:
     def send_internal_messages_model(self, message):
 
         self.logger.info(f"send_internal_messages_model:{message}" )
-        self.client.publish(self.internal_cluster_topic, message)
+        self.client.publish(self.internal_cluster_topic, message,qos=2)
         self.logger.info("Successfully sent_internal_messages_model")
 
 
@@ -233,7 +240,7 @@ class MQTTCluster:
         self.logger.info(f" trying to Global model to internal_messages_model: {modelhash} " )
         if self.is_worker_head(self.client):
             data = json.dumps({"global_model": modelhash})
-            self.client.publish(self.internal_cluster_topic, data)
+            self.client.publish(self.internal_cluster_topic, data,qos=2)
             self.logger.info("Successfully send Global model to internal_messages_model")
     
     def switch_head(self, ):
