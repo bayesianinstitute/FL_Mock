@@ -1,5 +1,7 @@
 import json
 from core.API.endpoint import *
+from core.Role.MsgType import *
+
 from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
@@ -54,7 +56,7 @@ class User:
             if user_status:
                 message_json = json.dumps({
                     "receiver": 'Admin',
-                    "msg": "send network status",
+                    "msg": SEND_NETWORK_STATUS,
                     "id": user_status['id'],
                     "network_status": user_status['network_status']
                 })
@@ -83,7 +85,7 @@ class User:
             if user_status:
                 message_json = json.dumps({
                     "receiver": 'Admin',
-                    "msg": "training_status",
+                    "msg": SEND_TRAINING_STATUS,
                     "id": user_status['id'],
                     "training_status": user_status['training_status'],
                 })
@@ -98,6 +100,8 @@ class User:
             if user_status:
                 message_json = json.dumps({
                     "receiver": 'Admin',
+                    "msg": RECEIVE_MODEL_INFO,
+
                     "client_id": user_status['id'],
                     "model_hash": hash,
                     "accuracy": accuracy,

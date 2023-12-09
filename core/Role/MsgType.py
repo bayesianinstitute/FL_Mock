@@ -1,0 +1,6 @@
+SEND_NETWORK_STATUS = "SendNetworkStatus"
+SEND_TRAINING_STATUS = "SendTrainingStatus"
+TRAIN_MODEL = "TrainModel"
+RECEIVE_MODEL_INFO = "ReceiveModelInfo"
+TERMINATE_API = "TerminateAPI"
+PAUSE_API = "PauseAPI"

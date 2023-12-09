@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import random
 import time
 import json
-# clients = []
+import queue
 from core.Logs_System.logger import Logger
 
 
@@ -23,7 +23,7 @@ class MQTTCluster:
         self.terimate_status = False
         self.head_id=None
         self.switch_Status=False
-        self.current_data = None
+        self.received_data_queue = queue.Queue()
 
 
     def on_connect(self,client, userdata, flags, rc):
@@ -72,16 +72,13 @@ class MQTTCluster:
             # Check if the receiver is admin
             if json_data.get("receiver") == 'Admin':
                 self.logger.critical("The receiver is an admin.")
-                self.current_data=json_data
+                self.received_data_queue.put(json_data)
 
                 # This is in mqtt.py file and   Need to transfer json data to admin.py file
             elif json_data.get("receiver") == 'User' :
                 self.logger.critical("The receiver is User")
-                self.current_data=json_data
+                self.received_data_queue.put(json_data)
 
-                return json_data
-
-                # This is in mqtt.py file and   Need to transfer json data to User.py file
 
 
             # if "head_id" in json_data:
@@ -99,13 +96,18 @@ class MQTTCluster:
 
         except json.JSONDecodeError as e:
             pass  # Handle JSON decoding errors
-    def handle_admin_data(self,):
-        
-        return self.current_data
-    
+
+    def handle_admin_data(self):
+        try:
+            return self.received_data_queue.get_nowait()
+        except queue.Empty:
+            return None
     def handle_user_data(self,):
         
-        return self.current_data
+        try:
+            return self.received_data_queue.get_nowait()
+        except queue.Empty:
+            return None
 
 
     def terimate_status(self):

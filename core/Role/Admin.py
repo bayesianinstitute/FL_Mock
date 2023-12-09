@@ -1,4 +1,6 @@
 from core.API.endpoint import *
+from core.Role.MsgType import *
+
 import json
 
 from core.API.ClientAPI import ApiClient
@@ -22,12 +24,16 @@ class Admin:
 
             while True:
                 # Receive messages using MQTT
-                received_message = self.mqtt_obj.receive_internal_messages()
+                received_message = mqtt_obj.handle_admin_data()
 
                 if received_message:
                     # Process received messages
-                    self.process_received_message(received_message)             
-                    
+                    self.logger.debug(f"incoming received message:   {received_message}")
+                    # mqtt_obj.current_data.clear()
+
+                    self.process_received_message(received_message)   
+
+                time.sleep(1) 
              
              
             # while(1):
@@ -84,6 +90,7 @@ class Admin:
     def process_received_message(self, message):
         try:
             # Parse the received JSON message
+            self.logger.warning(f"Received message length: {len(message)}")
             message_data = json.loads(message)
 
             # Extract relevant information from the message
@@ -92,17 +99,17 @@ class Admin:
             network_status = message_data.get("network_status")
 
             # Process based on the message type
-            if msg_type == "SendNetworkStatus":
+            if msg_type == SEND_NETWORK_STATUS:
                 self.handle_network_status(user_id, network_status)
-            elif msg_type == "SendTrainingStatus":
+            elif msg_type == SEND_TRAINING_STATUS:
                 self.handle_training_status(user_id, message_data)
-            elif msg_type == "TrainModel":
+            elif msg_type == TRAIN_MODEL:
                 self.handle_train_model(user_id, message_data)
-            elif msg_type == "ReceiveModelInfo":
+            elif msg_type == RECEIVE_MODEL_INFO:
                 self.handle_receive_model_info(user_id, message_data)
-            elif msg_type == "TerminateAPI":
+            elif msg_type == TERMINATE_API:
                 self.handle_terminate_api(user_id)
-            elif msg_type == "PauseAPI":
+            elif msg_type == PAUSE_API:
                 self.handle_pause_api(user_id)
 
         except json.JSONDecodeError as e:
