@@ -71,13 +71,13 @@ class MQTTCluster:
 
             # Check if the receiver is admin
             if json_data.get("receiver") == 'Admin':
-                self.logger.critical("The receiver is an admin.")
-                self.received_data_queue.put(json_data)
+                self.logger.warning("The receiver is an admin.")
+                self.received_data_queue.put(data)
 
                 # This is in mqtt.py file and   Need to transfer json data to admin.py file
             elif json_data.get("receiver") == 'User' :
                 self.logger.critical("The receiver is User")
-                self.received_data_queue.put(json_data)
+                self.received_data_queue.put(data)
 
 
 
