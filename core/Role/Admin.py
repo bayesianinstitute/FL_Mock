@@ -31,7 +31,7 @@ class Admin:
                     self.logger.debug(f"incoming received message:   {received_message}")
                     # mqtt_obj.current_data.clear()
 
-                    self.process_received_message(received_message)   
+                    self.process_received_message(received_message,mqtt_obj)   
 
                 time.sleep(1) 
              
@@ -87,7 +87,7 @@ class Admin:
         except Exception as e:
             self.logger.error(f"Error in admin_logic: {str(e)}")
  
-    def process_received_message(self, message):
+    def process_received_message(self, message,mqtt_obj):
         try:
             # Parse the received JSON message
             self.logger.warning(f"Received message length: {len(message)}")
@@ -104,7 +104,7 @@ class Admin:
             elif msg_type == SEND_TRAINING_STATUS:
                 self.handle_training_status(user_id, message_data)
             elif msg_type == TRAIN_MODEL:
-                self.handle_train_model(user_id, message_data)
+                self.handle_train_model(user_id, message_data,mqtt_obj)
             elif msg_type == RECEIVE_MODEL_INFO:
                 self.handle_receive_model_info(user_id, message_data)
             elif msg_type == TERMINATE_API:
