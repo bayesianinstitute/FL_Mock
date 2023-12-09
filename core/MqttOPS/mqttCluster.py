@@ -23,6 +23,8 @@ class MQTTCluster:
         self.terimate_status = False
         self.head_id=None
         self.switch_Status=False
+        self.current_data = None
+
 
     def on_connect(self,client, userdata, flags, rc):
         self.logger.warning(f"Connected with result code {rc}")
@@ -58,6 +60,7 @@ class MQTTCluster:
             self.handle_internal_message(message, client_id, cluster_id,client)
 
 
+
     def handle_internal_message(self, message, client_id, cluster_id,client):
         data = message.payload.decode('utf-8')
         self.logger.critical(f"Received data: {data}")
@@ -66,21 +69,44 @@ class MQTTCluster:
             json_data = json.loads(data)
 
 
-            if "head_id" in json_data:
-                self.set_head_node_id(json_data)
+            # Check if the receiver is admin
+            if json_data.get("receiver") == 'Admin':
+                self.logger.critical("The receiver is an admin.")
+                self.current_data=json_data
 
-            if 'global_model' in json_data:
-                self.handle_global_model(json_data, client_id, cluster_id)
+                # This is in mqtt.py file and   Need to transfer json data to admin.py file
+            elif json_data.get("receiver") == 'User' :
+                self.logger.critical("The receiver is User")
+                self.current_data=json_data
 
-            if self.is_worker_head(client):
-                self.handle_internal_data(json_data, client_id, cluster_id)
+                return json_data
+
+                # This is in mqtt.py file and   Need to transfer json data to User.py file
+
+
+            # if "head_id" in json_data:
+            #     self.set_head_node_id(json_data)
+
+            # if 'global_model' in json_data:
+            #     self.handle_global_model(json_data, client_id, cluster_id)
+
+            # if self.is_worker_head(client):
+            #     self.handle_internal_data(json_data, client_id, cluster_id)
             
-            # Check for the terminate message
-            if 'terimate_msg' in json_data:
-                self.handle_terminate_message(client_id, cluster_id)
+            # # Check for the terminate message
+            # if 'terimate_msg' in json_data:
+            #     self.handle_terminate_message(client_id, cluster_id)
 
         except json.JSONDecodeError as e:
             pass  # Handle JSON decoding errors
+    def handle_admin_data(self,):
+        
+        return self.current_data
+    
+    def handle_user_data(self,):
+        
+        return self.current_data
+
 
     def terimate_status(self):
         return self.terimate_status
