@@ -108,9 +108,13 @@ class Admin:
             elif msg_type == RECEIVE_MODEL_INFO:
                 self.handle_receive_model_info(node_id, message_data)
             elif msg_type == TERMINATE_API:
-                self.handle_terminate_api(node_id)
+                self.handle_terminate_api(node_id,mqtt_obj)
             elif msg_type == PAUSE_API:
-                self.handle_pause_api(node_id)
+                self.handle_pause_api(node_id,mqtt_obj)
+            elif msg_type == RESUME_API:
+                self.handle_resume_api(node_id,mqtt_obj)
+
+
 
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {str(e)}")
@@ -170,23 +174,54 @@ class Admin:
         # self.db.add_received_model_info(user_id, message_data)
         self.logger.info(f"Received model info from user {user_id}: {message_data}")
 
-    def handle_terminate_api(self, user_id):
+    def handle_terminate_api(self, user_id,mqtt_obj):
         # Handle terminate API logic
         # Update database with terminate status
         # self.db.update_terminate_status(user_id)
+        message_json = json.dumps({
+        "receiver": 'User',
+        "role": 'Admin',
+
+        "msg": TERMINATE_API,
+        "Admin": id})
+    
+        
         self.logger.info(f"Terminated API for user {user_id}")
 
         # Send acknowledge termination to the user
-        self.mqtt_obj.send_acknowledge_termination(user_id)
+        mqtt_obj.send_internal_messages(message_json)
 
-    def handle_pause_api(self, user_id):
+    def handle_pause_api(self, user_id,mqtt_obj):
         # Handle pause API logic
         # Update database with pause status
         # self.db.update_pause_status(user_id)
+        message_json = json.dumps({
+        "receiver": 'User',
+        "role": 'Admin',
+
+        "msg": PAUSE_API,
+        "Admin": id})
+
         self.logger.info(f"Paused API for user {user_id}")
+        # Send acknowledge pause to the user
+
+        mqtt_obj.send_internal_messages(message_json)
+
+
+
+    def handle_resume_api(self, user_id):
+        # Handle pause API logic
+        # Update database with pause status
+        # self.db.update_pause_status(user_id)
+        message_json = json.dumps({
+        "receiver": 'User',
+        "role": 'Admin',
+        "msg": RESUME_API,
+        "Admin": id})
+        self.logger.info(f"Resume API for user {user_id}")
 
         # Send acknowledge pause to the user
-        self.mqtt_obj.send_acknowledge_pause(user_id)
+        self.mqtt_obj.send_internal_messages(message_json)
 
 
     def send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'):
