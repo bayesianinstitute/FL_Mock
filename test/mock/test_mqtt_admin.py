@@ -28,9 +28,10 @@ def send_network_status():
         "receiver": 'Admin',
         "role": 'User',
         "msg": SEND_NETWORK_STATUS,
-        "node_id": id,
-        "network_status": "active",
+        "node_id": 1,
+        "network_status": "connected",
     })
+
     return message_json
 
 def send_model_to_internal_cluster():

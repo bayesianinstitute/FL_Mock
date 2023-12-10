@@ -97,13 +97,14 @@ class Admin:
             msg_type = message_data.get("msg")
             role = message_data.get("role")
             node_id = message_data.get("node_id")
+            training_status = message_data.get("training_status")
             network_status = message_data.get("network_status")
 
             # Process based on the message type
             if msg_type == SEND_NETWORK_STATUS:
                 self.handle_network_status(node_id,role, network_status)                
             elif msg_type == SEND_TRAINING_STATUS:
-                self.handle_training_status(node_id, message_data)
+                self.handle_training_status(node_id,role, training_status)
             elif msg_type == RECEIVE_MODEL_INFO:
                 self.handle_receive_model_info(node_id, message_data)
             elif msg_type == TERMINATE_API:
@@ -123,21 +124,31 @@ class Admin:
             "network_status": network_status,
         }
 
-        status = self.add_network_status(data)
+        status = self.update_network_status(data)
         if status:
-            self.logger.critical(f"Network status Added")
+            self.logger.critical(f"Network status updated")
         else:
-            self.logger.error("Not Added global model")
+            self.logger.error("Network status not updated")
             
         # self.logger.critical(f"Network status:{message_data}")
         # self.db.add_network_status(user_id, network_status)
         # self.logger.info(f"Received network status from user {user_id}: {network_status}")
 
-    def handle_training_status(self, user_id, message_data):
+    def handle_training_status(self, node_id,role, training_status):
         # Handle training status logic
         # Update database with training status
         # self.db.add_training_status(user_id, message_data)
-        self.logger.info(f"Received training status from user {user_id}: {message_data}")
+        data = {
+            "role": role,
+            "node_id": node_id,
+            "training_status": training_status,
+        }
+
+        status = self.update_training_status(data)
+        if status:
+            self.logger.critical(f"Training status updated")
+        else:
+            self.logger.error("Training status not updated")
 
     # def handle_train_model(self, user_id, message_data,mqtt_obj):
     #     # Handle train model logic
@@ -189,9 +200,23 @@ class Admin:
         return message_json
 
 
-    def add_network_status(self, admin_data):
+    def update_network_status(self, admin_data):
         try:
-            response = self.apiClient.post_request(add_nodes, admin_data)
+            response = self.apiClient.post_request(create_or_update_status, admin_data)
+
+            if response and response.status_code == 201:
+                self.logger.info(f"POST add_admin Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None
+    
+    def update_training_status(self, admin_data):
+        try:
+            response = self.apiClient.post_request(create_or_update_status, admin_data)
 
             if response and response.status_code == 201:
                 self.logger.info(f"POST add_admin Request Successful: {response.text}")

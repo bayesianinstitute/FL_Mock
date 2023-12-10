@@ -8,6 +8,7 @@ import random
 from itertools import groupby
 from django.db.models import F
 from django.views.decorators.csrf import csrf_protect
+from django.shortcuts import get_object_or_404
 
 def dfluser(request):
     return render(request, 'dfl/user.html')
@@ -119,8 +120,8 @@ def toggle_training_status(request):
 @api_view(['POST'])
 def create_or_update_status(request):
     try:
-        # Attempt to get the existing Admin instance
-        admin_instance = Admin.objects.get()
+        # Try to get the existing Admin instance based on node_id
+        admin_instance = get_object_or_404(Admin, node_id=request.data['node_id'])
 
         # If the instance exists, update the data with the provided data
         serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
