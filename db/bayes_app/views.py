@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
-from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer
+from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
 from django.shortcuts import render
 import random
 from itertools import groupby
@@ -298,3 +298,16 @@ def update_operation_status(request):
                 return Response({"status": "error", "message": "Admin with the specified node_id does not exist"}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def get_operation_status(request):
+    try:
+        serializer = OperationStatusRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        node_id = serializer.validated_data['node_id']
+
+        admin_instance = Admin.objects.get(node_id=node_id)
+        serializer = OperationStatusResponseSerializer(admin_instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Admin.DoesNotExist:
+        return Response({"status": "error", "message": "Admin with the specified node_id does not exist"}, status=status.HTTP_404_NOT_FOUND)

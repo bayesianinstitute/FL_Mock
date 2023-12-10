@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dfluser,dfladmin,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status
+from .views import dfluser,dfladmin,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status,get_operation_status
 
 
 
@@ -35,4 +35,5 @@ urlpatterns = [
     path('api/v1/create_or_update_status/', create_or_update_status, name='create_or_update_status'),
     path('api/v1/add_training_result/', add_training_result, name='add_training_result'),
     path('api/v1/update-operation-status/', update_operation_status, name='update_operation_status'),
+    path('api/v1/get_operation_status/', get_operation_status, name='get_operation_status'),
 ]

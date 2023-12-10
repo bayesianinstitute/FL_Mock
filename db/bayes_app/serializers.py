@@ -53,3 +53,13 @@ class UpdateOperationStatusSerializer(serializers.Serializer):
     node_id = serializers.IntegerField()
     operation_status = serializers.ChoiceField(choices=Admin.OPERATION_CHOICES)
 
+class OperationStatusRequestSerializer(serializers.Serializer):
+    node_id = serializers.IntegerField()
+
+class OperationStatusResponseSerializer(serializers.Serializer):
+    operation_status = serializers.CharField(max_length=20)
+
+    def to_representation(self, instance):
+        return {
+            'operation_status': instance.operation_status,
+        }
