@@ -37,7 +37,6 @@ def send_network_status():
 def send_model_to_internal_cluster():
     message_json = json.dumps({
         "receiver": 'Admin',
-        "role": 'User',
         "msg": RECEIVE_MODEL_INFO,
         "node_id": id,
         "model_hash": "Faijan hahs",
@@ -51,7 +50,7 @@ def send_training_status():
         "receiver": 'Admin',
         "role": 'User',
         "msg": SEND_TRAINING_STATUS,
-        "training_status": 'training_status',
+        "training_status": 'in_progress',
         "node_id": id,
 
     })

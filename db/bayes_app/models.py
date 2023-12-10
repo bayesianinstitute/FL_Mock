@@ -30,7 +30,6 @@ class TrainingInformation(models.Model):
 class TrainingResult(models.Model):
     training_info = models.ForeignKey(TrainingInformation, on_delete=models.CASCADE, related_name='training_results',null=True, blank=True)
     accuracy = models.FloatField()
-    validation_accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
     
@@ -50,7 +49,6 @@ class TrainingResultAdmin(models.Model):
     )
     node_id = models.IntegerField()
     accuracy = models.FloatField()
-    validation_accuracy = models.FloatField()
     loss = models.FloatField()
     model_hash = models.CharField(max_length=255, blank=True, null=True) 
     timestamp = models.DateTimeField(auto_now_add=True)

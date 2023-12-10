@@ -121,7 +121,7 @@ def toggle_training_status(request):
 def create_or_update_status(request):
     try:
         # Try to get the existing Admin instance based on node_id
-        admin_instance = get_object_or_404(Admin, node_id=request.data['node_id'])
+        admin_instance = Admin.objects.get(node_id=request.data['node_id'])
 
         # If the instance exists, update the data with the provided data
         serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
@@ -181,7 +181,7 @@ def get_track_role(request):
 def get_all_users_metrics(request, metric_name, training_name):
     try:
         # Ensure that the metric_name is one of the allowed metrics
-        allowed_metrics = ['accuracy', 'loss', 'validation_accuracy']
+        allowed_metrics = ['accuracy', 'loss']
         if metric_name not in allowed_metrics:
             return Response({'error': f"Invalid metric parameter. Allowed values: {', '.join(allowed_metrics)}"}, status=400)
 
