@@ -90,14 +90,18 @@ if __name__ == "__main__":
             time.sleep(4)
 
             client.publish(topics, send_pause_message(), qos=2)
+            print("Successfully sent Pause to User")
+
 
             time.sleep(8)
 
             client.publish(topics, send_resume_message(), qos=2)
+            print("Successfully sent Resume to User")
 
             time.sleep(8)
 
             client.publish(topics, send_terminate_message(), qos=2)
+            print("Successfully sent Terimate to User")
 
 
             

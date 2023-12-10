@@ -34,7 +34,7 @@ class User:
 
 
                 if received_message:
-                    self.process_global_model_hash(received_message)
+                    self.process_received_message(received_message)
 
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
@@ -117,18 +117,50 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in send_model_to_internal_cluster: {str(e)}")
 
-    def process_global_model_hash(self, data):
+    def process_received_message(self, data):
 
         try:
-            data = json.loads(data)
+            message_data = json.loads(data)
 
-            self.logger.info(f" got global model hash: {data}")
-            self.ml_operations.is_global_model_hash(data['global_hash'])
+            # Extract relevant information from the message
+            msg_type = message_data.get("msg")
+            global_model = message_data.get("global_hash")
 
-            self.logger.warning("Successfully Set global model hash")
-            time.sleep(10)
+            # Process based on the message type
+            if msg_type == SEND_GLOBAL_MODEL_HASH:
+                self.handle_global_model( global_model)                
+            elif msg_type == PAUSE_API:
+                self.handle_pause_training( message_data)
+            elif msg_type == RESUME_API:
+                self.handle_resume_training( message_data)
+            elif msg_type == TERMINATE_API:
+                self.handle_terminate()
+
+
 
         except Exception as e:
+            self.logger.error(f"Error in process_global_model_hash: {str(e)}")
             time.sleep(10)
 
-            self.logger.error(f"Error in process_global_model_hash: {str(e)}")
+    
+    def handle_global_model( self,global_model) :
+        
+        self.logger.info(f" got global model hash: {global_model}")
+        self.ml_operations.is_global_model_hash(global_model)
+        self.logger.debug("Successfully Set global model hash")
+        pass
+
+    def handle_pause_training(self,message_data):
+        self.logger.debug(f" got pause training command: {message_data}")
+
+        pass
+
+    def handle_resume_training(self,message_data ):
+        self.logger.debug(f" got resume training command: {message_data}")
+
+        pass
+
+    def handle_terminate(self,message_data ):
+        self.logger.debug(f" got pause terimate command: {message_data}")
+
+        pass
