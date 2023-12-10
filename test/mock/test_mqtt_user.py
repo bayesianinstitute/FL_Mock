@@ -93,15 +93,16 @@ if __name__ == "__main__":
             print("Successfully sent Pause to User")
 
 
-            time.sleep(8)
+            time.sleep(20)
 
             client.publish(topics, send_resume_message(), qos=2)
             print("Successfully sent Resume to User")
 
-            time.sleep(8)
+            time.sleep(15)
 
             client.publish(topics, send_terminate_message(), qos=2)
             print("Successfully sent Terimate to User")
+            # break
 
 
             

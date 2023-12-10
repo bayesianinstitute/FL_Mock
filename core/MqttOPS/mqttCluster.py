@@ -90,8 +90,13 @@ class MQTTCluster:
             return None
 
 
-    def terimate_status(self):
-        return self.terimate_status
+    def terimate_connection(self):
+        try:
+                self.client.disconnect()
+                self.client.loop_stop()
+                self.logger.warning("Disconnected from the MQTT broker.")
+        except Exception as e:
+            self.logger.error(f"Error during disconnection: {str(e)}")
 
     def handle_terminate_message(self, client_id, cluster_id):
     # Handle the termination message here

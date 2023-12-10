@@ -12,7 +12,7 @@ class User:
         self.apiClient=ApiClient()
         self.ml_operations = MLOperations(training_type, optimizer)
         self.logger = Logger(name='user-role').get_logger()
-        self.mqtt_obj=None
+        self.pause_training = False
         
     def user_logic(self,mqtt_obj):
        
@@ -21,20 +21,23 @@ class User:
                 user_status = self.update_network_status()
                 self.send_network_status(user_status,mqtt_obj)
 
-                user_status = self.update_training_status()
-                self.send_training_status(user_status,mqtt_obj)
-
-                hash, accuracy, loss = self.ml_operations.train_machine_learning_model()
-                self.logger.info(f"Model hash: {hash}")
-
-                self.send_model_to_internal_cluster(user_status, hash, accuracy, loss,mqtt_obj)
-
-
                 received_message = mqtt_obj.handle_user_data()
 
-
                 if received_message:
-                    self.process_received_message(received_message)
+                    self.process_received_message(received_message,mqtt_obj)
+
+                if not self.pause_training:
+                    
+                    user_status = self.update_training_status() # Update training status
+                    self.send_training_status(user_status,mqtt_obj) # Send training status to admin using MQTT
+
+                    hash, accuracy, loss = self.ml_operations.train_machine_learning_model()
+                    self.logger.info(f"Model hash: {hash}")
+                    self.send_model_to_internal_cluster(user_status, hash, accuracy, loss, mqtt_obj)
+                    time.sleep(1)
+
+
+                
 
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
@@ -117,7 +120,7 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in send_model_to_internal_cluster: {str(e)}")
 
-    def process_received_message(self, data):
+    def process_received_message(self, data,mqtt_obj):
 
         try:
             message_data = json.loads(data)
@@ -134,8 +137,7 @@ class User:
             elif msg_type == RESUME_API:
                 self.handle_resume_training( message_data)
             elif msg_type == TERMINATE_API:
-                self.handle_terminate()
-
+                self.handle_terminate(message_data,mqtt_obj)
 
 
         except Exception as e:
@@ -151,16 +153,23 @@ class User:
         pass
 
     def handle_pause_training(self,message_data):
-        self.logger.debug(f" got pause training command: {message_data}")
-
+        self.pause_training = True
+        self.logger.debug(f" got pause training command: {message_data} and paused: {self.pause_training}")
         pass
 
     def handle_resume_training(self,message_data ):
-        self.logger.debug(f" got resume training command: {message_data}")
+        self.pause_training = False
 
+        self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
         pass
 
-    def handle_terminate(self,message_data ):
+    def handle_terminate(self,message_data,mqtt_obj):
         self.logger.debug(f" got pause terimate command: {message_data}")
+        mqtt_obj.terimate_connection()
+        self.logger.debug("Terminate Successfully!!!!!")
+        import sys
 
+        sys.exit(0)
+
+       
         pass
