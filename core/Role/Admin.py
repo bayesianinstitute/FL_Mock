@@ -31,6 +31,7 @@ class Admin:
                     self.logger.debug(f"incoming received message:   {received_message}")
                     # mqtt_obj.current_data.clear()
 
+
                     self.process_received_message(received_message,mqtt_obj)   
 
                 time.sleep(1) 
@@ -58,14 +59,14 @@ class Admin:
     def  handle_node_operation(self,mqtt_obj):
     
         # Get all Node operations
-        node_id=1
+        node_id=67
         data={
-            "node_id":1,
+            "node_id":67,
         }
         operation=self.get_operation_status(data)
         operation_status = operation.get('operation_status')
         self.logger.warning(f"{operation_status} operation")
-        if operation_status == 'terimate':
+        if operation_status == 'terminate':
                 self.handle_terminate_api(node_id,mqtt_obj)
         elif operation_status == 'pause':
                 self.handle_pause_api(node_id,mqtt_obj)
