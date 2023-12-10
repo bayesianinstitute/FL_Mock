@@ -8,6 +8,8 @@ TRAIN_MODEL = "TrainModel"
 RECEIVE_MODEL_INFO = "ReceiveModelInfo"
 TERMINATE_API = "TerminateAPI"
 PAUSE_API = "PauseAPI"
+RESUME_API = "ResumeAPI"
+SEND_GLOBAL_MODEL_HASH = "SendGlobalModelHASH"
 
 topics = 'internal_cluster_topic'
 import random
@@ -24,8 +26,9 @@ def on_message(client, userdata, msg):
 def send_network_status():
     message_json = json.dumps({
         "receiver": 'Admin',
+        "role": 'User',
         "msg": SEND_NETWORK_STATUS,
-        "client_id": id,
+        "node_id": id,
         "network_status": "active",
     })
     return message_json
@@ -33,8 +36,9 @@ def send_network_status():
 def send_model_to_internal_cluster():
     message_json = json.dumps({
         "receiver": 'Admin',
+        "role": 'User',
         "msg": RECEIVE_MODEL_INFO,
-        "client_id": id,
+        "node_id": id,
         "model_hash": "Faijan hahs",
         "accuracy": "500000",
         "loss": "3",
@@ -44,9 +48,10 @@ def send_model_to_internal_cluster():
 def send_training_status():
     message_json = json.dumps({
         "receiver": 'Admin',
+        "role": 'User',
         "msg": SEND_TRAINING_STATUS,
         "training_status": 'training_status',
-        "client_id": id,
+        "node_id": id,
 
     })
     return message_json
