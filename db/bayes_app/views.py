@@ -259,3 +259,14 @@ def add_global_model_hash(request):
 
         # Return a response indicating success
         return Response({'message': 'Global model hash added successfully'})
+    
+@api_view(['POST'])
+def add_training_result(request):
+    # Always create a new instance
+    serializer = TrainingResultAdminSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

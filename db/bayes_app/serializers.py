@@ -37,11 +37,9 @@ class GlobalModelHashSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TrainingResultAdminSerializer(serializers.ModelSerializer):
-    data = serializers.SerializerMethodField()
-
     class Meta:
         model = TrainingResultAdmin
-        fields = ['node_id', 'data']
+        fields = '__all__'
 
     def get_data(self, obj):
         return [obj.accuracy, obj.validation_accuracy, obj.loss]  # Add more fields if needed

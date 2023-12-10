@@ -99,6 +99,10 @@ class Admin:
             node_id = message_data.get("node_id")
             training_status = message_data.get("training_status")
             network_status = message_data.get("network_status")
+            accuracy = message_data.get("accuracy")
+            validation_accuracy = message_data.get("validation_accuracy")
+            loss = message_data.get("loss")
+            
 
             # Process based on the message type
             if msg_type == SEND_NETWORK_STATUS:
@@ -106,7 +110,7 @@ class Admin:
             elif msg_type == SEND_TRAINING_STATUS:
                 self.handle_training_status(node_id,role, training_status)
             elif msg_type == RECEIVE_MODEL_INFO:
-                self.handle_receive_model_info(node_id, message_data)
+                self.handle_receive_model_info(node_id, accuracy,validation_accuracy,loss)
             elif msg_type == TERMINATE_API:
                 self.handle_terminate_api(node_id,mqtt_obj)
             elif msg_type == PAUSE_API:
@@ -168,11 +172,22 @@ class Admin:
     #         mqtt_obj.send_internal_messages(message_data)
     #         self.logger.info("Sent global model to users")
 
-    def handle_receive_model_info(self, user_id, message_data):
+    def handle_receive_model_info(self,node_id, accuracy,validation_accuracy,loss):
         # Handle received model information logic
         # Update database with received model information
         # self.db.add_received_model_info(user_id, message_data)
-        self.logger.info(f"Received model info from user {user_id}: {message_data}")
+        data = {
+            "training_info":1,
+            "node_id": node_id,
+            "accuracy": accuracy,
+            "validation_accuracy":validation_accuracy,
+            "loss":loss,
+        }
+        status = self.update_receive_model_info(data)
+        if status:
+            self.logger.critical(f"Received Model Information")
+        else:
+            self.logger.error("Not Received Model Information")
 
     def handle_terminate_api(self, user_id,mqtt_obj):
         # Handle terminate API logic
@@ -235,12 +250,12 @@ class Admin:
         return message_json
 
 
-    def update_network_status(self, admin_data):
+    def update_network_status(self, data):
         try:
-            response = self.apiClient.post_request(create_or_update_status, admin_data)
+            response = self.apiClient.post_request(create_or_update_status, data)
 
             if response and response.status_code == 201:
-                self.logger.info(f"POST add_admin Request Successful: {response.text}")
+                self.logger.info(f"POST update_network_status Request Successful: {response.text}")
                 return json.loads(response.text)
             else:
                 self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
@@ -249,12 +264,12 @@ class Admin:
             self.logger.error(f"Error in add_admin: {str(e)}")
             return None
     
-    def update_training_status(self, admin_data):
+    def update_training_status(self, data):
         try:
-            response = self.apiClient.post_request(create_or_update_status, admin_data)
+            response = self.apiClient.post_request(add_training_result, data)
 
             if response and response.status_code == 201:
-                self.logger.info(f"POST add_admin Request Successful: {response.text}")
+                self.logger.info(f"POST update_training_status Request Successful: {response.text}")
                 return json.loads(response.text)
             else:
                 self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
@@ -262,6 +277,20 @@ class Admin:
         except Exception as e:
             self.logger.error(f"Error in add_admin: {str(e)}")
             return None
+    
+    def update_receive_model_info(self, data):
+        try:
+            response = self.apiClient.post_request(add_training_result, data)
+
+            if response and response.status_code == 201:
+                self.logger.info(f"POST update_receive_model_info Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None    
     
     # def get_node_count(self):
     #     try:
