@@ -102,6 +102,7 @@ class Admin:
             accuracy = message_data.get("accuracy")
             validation_accuracy = message_data.get("validation_accuracy")
             loss = message_data.get("loss")
+            model_hash = message_data.get("model_hash")
             
 
             # Process based on the message type
@@ -110,7 +111,7 @@ class Admin:
             elif msg_type == SEND_TRAINING_STATUS:
                 self.handle_training_status(node_id,role, training_status)
             elif msg_type == RECEIVE_MODEL_INFO:
-                self.handle_receive_model_info(node_id, accuracy,validation_accuracy,loss)
+                self.handle_receive_model_info(node_id, accuracy,loss)
             elif msg_type == TERMINATE_API:
                 self.handle_terminate_api(node_id,mqtt_obj)
             elif msg_type == PAUSE_API:
@@ -172,7 +173,7 @@ class Admin:
     #         mqtt_obj.send_internal_messages(message_data)
     #         self.logger.info("Sent global model to users")
 
-    def handle_receive_model_info(self,node_id, accuracy,validation_accuracy,loss):
+    def handle_receive_model_info(self,node_id, accuracy,loss,model_hash):
         # Handle received model information logic
         # Update database with received model information
         # self.db.add_received_model_info(user_id, message_data)
@@ -180,8 +181,8 @@ class Admin:
             "training_info":1,
             "node_id": node_id,
             "accuracy": accuracy,
-            "validation_accuracy":validation_accuracy,
             "loss":loss,
+            "model_hash":model_hash,
         }
         status = self.update_receive_model_info(data)
         if status:

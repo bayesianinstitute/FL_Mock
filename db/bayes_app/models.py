@@ -89,7 +89,16 @@ class Admin(models.Model):
         ('Admin', 'Admin'),
         ('BackupAdmin', 'BackupAdmin'),
     ]
-
+    OPERATION_CHOICES = [
+        ('resume', 'resume'),
+        ('pause', 'pause'),
+        ('terminate', 'terminate'),
+    ]
+    operation_status = models.CharField(
+        max_length=20,
+        choices=OPERATION_CHOICES,
+        default='resume'
+    )
     training_status = models.CharField(
         max_length=20,
         choices=TRAINING_STATUS_CHOICES,
@@ -131,7 +140,16 @@ class NodeStatus(models.Model):
         ('disconnected', 'Disconnected'),
         ('idle', 'Idle'),
     ]
-    
+    OPERATION_CHOICES = [
+        ('resume', 'resume'),
+        ('pause', 'pause'),
+        ('terminate', 'terminate'),
+    ]
+    operation_status = models.CharField(
+        max_length=20,
+        choices=OPERATION_CHOICES,
+        default='resume'
+    )
 
     training_status = models.CharField(
         max_length=20,

@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
-from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer
+from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer
 from django.shortcuts import render
 import random
 from itertools import groupby
@@ -270,3 +270,31 @@ def add_training_result(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+def update_operation_status(request):
+    if request.method == 'PUT':
+        serializer = UpdateOperationStatusSerializer(data=request.data)
+
+        if serializer.is_valid():
+            node_id = serializer.validated_data['node_id']
+            operation_status = serializer.validated_data['operation_status']
+
+            try:
+                admin_instance = Admin.objects.get(node_id=node_id)
+                previous_operation_status = admin_instance.operation_status
+
+                admin_instance.operation_status = operation_status
+                admin_instance.save()
+
+                return Response({
+                    "status": "success",
+                    "message": "Operation status updated successfully",
+                    "previous_operation_status": previous_operation_status,
+                    "current_operation_status": operation_status
+                }, status=status.HTTP_200_OK)
+            except Admin.DoesNotExist:
+                return Response({"status": "error", "message": "Admin with the specified node_id does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"status": "error", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

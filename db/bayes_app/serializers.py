@@ -48,3 +48,8 @@ class LogsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Logs
         fields = ['message']
+        
+class UpdateOperationStatusSerializer(serializers.Serializer):
+    node_id = serializers.IntegerField()
+    operation_status = serializers.ChoiceField(choices=Admin.OPERATION_CHOICES)
+
