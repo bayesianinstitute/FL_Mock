@@ -56,11 +56,18 @@ def send_training_status():
 
     })
     return message_json
-
 if __name__ == "__main__":
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
+
+    will_set_msg = json.dumps({
+        "receiver": 'Admin',
+        "msg": "Disconnected-Node",
+        "id": id,
+    })
+
+    client.will_set(topics, will_set_msg, qos=2)
 
     broker_address = "test.mosquitto.org"
     port = 1883
@@ -82,7 +89,6 @@ if __name__ == "__main__":
 
             print("Successfully sent messages to admin")
             time.sleep(id)
-
 
         except KeyboardInterrupt:
             client.disconnect()

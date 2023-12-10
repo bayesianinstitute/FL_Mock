@@ -90,7 +90,6 @@ class Admin:
     def process_received_message(self, message,mqtt_obj):
         try:
             # Parse the received JSON message
-            self.logger.warning(f"Received message length: {len(message)}")
             message_data = json.loads(message)
 
             # Extract relevant information from the message
@@ -118,6 +117,9 @@ class Admin:
                 self.handle_pause_api(node_id,mqtt_obj)
             elif msg_type == RESUME_API:
                 self.handle_resume_api(node_id,mqtt_obj)
+            elif msg_type == Disconnect:
+                self.handle_Disconnect_node_api(node_id)
+
 
 
 
@@ -292,6 +294,11 @@ class Admin:
         except Exception as e:
             self.logger.error(f"Error in add_admin: {str(e)}")
             return None    
+        
+    def handle_Disconnect_node_api(self,node_id):
+        #TODO : Match the node_id and update network status to Disconnect
+        self.logger.warning(f"Disconnected {node_id}")
+        pass
     
     # def get_node_count(self):
     #     try:

@@ -10,3 +10,5 @@ RECEIVE_MODEL_INFO = "ReceiveModelInfo"
 TERMINATE_API = "TerminateAPI"
 PAUSE_API = "PauseAPI"
 RESUME_API = "ResumeAPI"
+
+Disconnect="Disconnected-Node"

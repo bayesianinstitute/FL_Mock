@@ -33,7 +33,7 @@ class MQTTCluster:
         # self.client.on_subscribe=self.on_subscribe
         will_set_msg=json.dumps({
                     "receiver": 'Admin',
-                    "msg": "Disconnected",
+                    "msg": "Disconnected-Node",
                     "id": self.id,})
         
         self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=2,)
