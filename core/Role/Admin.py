@@ -23,6 +23,8 @@ class Admin:
             self.logger.info("I am Admin ")
 
             while True:
+
+
                 # Receive messages using MQTT
                 received_message = mqtt_obj.handle_admin_data()
 
@@ -32,8 +34,10 @@ class Admin:
                     # mqtt_obj.current_data.clear()
 
                     self.process_received_message(received_message,mqtt_obj)   
+                    time.sleep(1) 
 
-                time.sleep(1) 
+
+                self.handle_node_operation(mqtt_obj)
              
              
             # while(1):
@@ -86,7 +90,38 @@ class Admin:
 
         except Exception as e:
             self.logger.error(f"Error in admin_logic: {str(e)}")
- 
+    
+
+    def  handle_node_operation(self,mqtt_obj):
+
+        # Get all Node operations
+        node_id=8
+        operation=self.get_operation_status(8)
+        operation_status = operation.get('operation_status')
+
+        if operation_status == 'terimate':
+                self.handle_terminate_api(node_id,mqtt_obj)
+
+        elif operation_status == 'pause':
+                self.handle_pause_api(node_id,mqtt_obj)
+        elif operation_status == 'resume':
+                self.handle_resume_api(node_id,mqtt_obj)
+        time.sleep(1) 
+
+    def get_operation_status(self, node_id):
+        try:
+            response = self.apiClient.post_request(get_operation_status, node_id)
+
+            if response and response.status_code == 201:
+                self.logger.info(f"POST update_network_status Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None
+
     def process_received_message(self, message,mqtt_obj):
         try:
             # Parse the received JSON message
@@ -111,20 +146,15 @@ class Admin:
                 self.handle_training_status(node_id,role, training_status)
             elif msg_type == RECEIVE_MODEL_INFO:
                 self.handle_receive_model_info(node_id, accuracy,loss)
-            elif msg_type == TERMINATE_API:
-                self.handle_terminate_api(node_id,mqtt_obj)
-            elif msg_type == PAUSE_API:
-                self.handle_pause_api(node_id,mqtt_obj)
-            elif msg_type == RESUME_API:
-                self.handle_resume_api(node_id,mqtt_obj)
+
             elif msg_type == Disconnect:
                 self.handle_Disconnect_node_api(node_id)
 
 
-
-
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {str(e)}")
+
+    
 
     def handle_network_status(self, node_id,role, network_status):
         # Handle network status logic
@@ -199,7 +229,7 @@ class Admin:
         message_json = json.dumps({
         "receiver": 'User',
         "role": 'Admin',
-
+        "node_id": user_id,
         "msg": TERMINATE_API,
         "Admin": id})
     
@@ -216,7 +246,7 @@ class Admin:
         message_json = json.dumps({
         "receiver": 'User',
         "role": 'Admin',
-
+        "node_id": user_id,
         "msg": PAUSE_API,
         "Admin": id})
 
@@ -235,6 +265,7 @@ class Admin:
         "receiver": 'User',
         "role": 'Admin',
         "msg": RESUME_API,
+        "node_id": user_id,
         "Admin": id})
         self.logger.info(f"Resume API for user {user_id}")
 
