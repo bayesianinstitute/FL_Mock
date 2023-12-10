@@ -16,6 +16,7 @@ class Admin:
         self.logger = Logger(name='admin-role').get_logger()
 
         self.model_list = []
+        self.prev_operation_status = None
 
     def admin_logic(self,  mqtt_obj,id):
         try:
@@ -66,13 +67,21 @@ class Admin:
         operation=self.get_operation_status(data)
         operation_status = operation.get('operation_status')
         self.logger.warning(f"{operation_status} operation")
+
+        if operation_status == self.prev_operation_status:
+            self.logger.info(f"Skipping redundant {operation_status} operation")
+            return
+        
         if operation_status == 'terminate':
                 self.handle_terminate_api(node_id,mqtt_obj)
         elif operation_status == 'pause':
                 self.handle_pause_api(node_id,mqtt_obj)
         elif operation_status == 'resume':
                 self.handle_resume_api(node_id,mqtt_obj)
+        
+        self.prev_operation_status = operation_status
         time.sleep(1) 
+        
 
 
  
