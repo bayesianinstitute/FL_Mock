@@ -60,8 +60,9 @@ class User:
             if user_status:
                 message_json = json.dumps({
                     "receiver": 'Admin',
+                    "role": 'User',
                     "msg": SEND_NETWORK_STATUS,
-                    "id": user_status['id'],
+                    "node_id": user_status['node_id'],
                     "network_status": user_status['network_status']
                 })
                 mqtt_obj.send_internal_messages(message_json)
@@ -89,8 +90,9 @@ class User:
             if user_status:
                 message_json = json.dumps({
                     "receiver": 'Admin',
+                    "role": 'User',
                     "msg": SEND_TRAINING_STATUS,
-                    "id": user_status['id'],
+                    "node_id": user_status['node_id'],
                     "training_status": user_status['training_status'],
                 })
                 mqtt_obj.send_internal_messages(message_json)
@@ -105,7 +107,7 @@ class User:
                 message_json = json.dumps({
                     "receiver": 'Admin',
                     "msg": RECEIVE_MODEL_INFO,
-                    "client_id": user_status['id'],
+                    "node_id": user_status['node_id'],
                     "model_hash": hash,
                     "accuracy": accuracy,
                     "loss": loss,

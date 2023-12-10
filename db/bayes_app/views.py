@@ -117,7 +117,7 @@ def toggle_training_status(request):
 
 
 @api_view(['POST'])
-def create_or_update_admin(request):
+def create_or_update_status(request):
     try:
         # Attempt to get the existing Admin instance
         admin_instance = Admin.objects.get()
@@ -125,9 +125,7 @@ def create_or_update_admin(request):
         # If the instance exists, update the data with the provided data
         serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
     except Admin.DoesNotExist:
-        # If no instance exists, create a new one with a random node_id
-        random_node_id = random.randint(1, 1000)  # Adjust the range as needed
-        request.data['node_id'] = random_node_id
+        # If no instance exists, create a new one
         serializer = AdminSerializer(data=request.data)
 
     if serializer.is_valid():

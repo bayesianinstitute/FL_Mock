@@ -95,62 +95,74 @@ class Admin:
 
             # Extract relevant information from the message
             msg_type = message_data.get("msg")
-            user_id = message_data.get("id")
+            role = message_data.get("role")
+            node_id = message_data.get("node_id")
             network_status = message_data.get("network_status")
 
             # Process based on the message type
             if msg_type == SEND_NETWORK_STATUS:
-                self.handle_network_status(user_id, network_status)
+                self.handle_network_status(node_id,role, network_status)                
             elif msg_type == SEND_TRAINING_STATUS:
-                self.handle_training_status(user_id, message_data)
-            elif msg_type == TRAIN_MODEL:
-                self.handle_train_model(user_id, message_data,mqtt_obj)
+                self.handle_training_status(node_id, message_data)
             elif msg_type == RECEIVE_MODEL_INFO:
-                self.handle_receive_model_info(user_id, message_data)
+                self.handle_receive_model_info(node_id, message_data)
             elif msg_type == TERMINATE_API:
-                self.handle_terminate_api(user_id)
+                self.handle_terminate_api(node_id)
             elif msg_type == PAUSE_API:
-                self.handle_pause_api(user_id)
+                self.handle_pause_api(node_id)
 
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {str(e)}")
 
-    def handle_network_status(self, user_id, network_status):
+    def handle_network_status(self, node_id,role, network_status):
         # Handle network status logic
-        # Update database with network status
-        self.db.add_network_status(user_id, network_status)
-        self.logger.info(f"Received network status from user {user_id}: {network_status}")
+        
+        data = {
+            "role": role,
+            "node_id": node_id,
+            "network_status": network_status,
+        }
+
+        status = self.add_network_status(data)
+        if status:
+            self.logger.critical(f"Network status Added")
+        else:
+            self.logger.error("Not Added global model")
+            
+        # self.logger.critical(f"Network status:{message_data}")
+        # self.db.add_network_status(user_id, network_status)
+        # self.logger.info(f"Received network status from user {user_id}: {network_status}")
 
     def handle_training_status(self, user_id, message_data):
         # Handle training status logic
         # Update database with training status
-        self.db.add_training_status(user_id, message_data)
+        # self.db.add_training_status(user_id, message_data)
         self.logger.info(f"Received training status from user {user_id}: {message_data}")
 
-    def handle_train_model(self, user_id, message_data,mqtt_obj):
-        # Handle train model logic
-        # Update database with model training information
-        # self.db.add_model_training_info(user_id, message_data)
-        # self.logger.info(f"Received model training info from user {user_id}: {message_data}")
+    # def handle_train_model(self, user_id, message_data,mqtt_obj):
+    #     # Handle train model logic
+    #     # Update database with model training information
+    #     # self.db.add_model_training_info(user_id, message_data)
+    #     # self.logger.info(f"Received model training info from user {user_id}: {message_data}")
 
-        # # Check if global model is sent
-        # if self.db.check_global_model_received(mq):
-            # Aggregate and send global model through MQTT
-            # global_model = self.db.aggregate_global_model()
-            message_data=self.send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB')
-            mqtt_obj.send_internal_messages(message_data)
-            self.logger.info("Sent global model to users")
+    #     # # Check if global model is sent
+    #     # if self.db.check_global_model_received(mq):
+    #         # Aggregate and send global model through MQTT
+    #         # global_model = self.db.aggregate_global_model()
+    #         message_data=self.send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB')
+    #         mqtt_obj.send_internal_messages(message_data)
+    #         self.logger.info("Sent global model to users")
 
     def handle_receive_model_info(self, user_id, message_data):
         # Handle received model information logic
         # Update database with received model information
-        self.db.add_received_model_info(user_id, message_data)
+        # self.db.add_received_model_info(user_id, message_data)
         self.logger.info(f"Received model info from user {user_id}: {message_data}")
 
     def handle_terminate_api(self, user_id):
         # Handle terminate API logic
         # Update database with terminate status
-        self.db.update_terminate_status(user_id)
+        # self.db.update_terminate_status(user_id)
         self.logger.info(f"Terminated API for user {user_id}")
 
         # Send acknowledge termination to the user
@@ -159,7 +171,7 @@ class Admin:
     def handle_pause_api(self, user_id):
         # Handle pause API logic
         # Update database with pause status
-        self.db.update_pause_status(user_id)
+        # self.db.update_pause_status(user_id)
         self.logger.info(f"Paused API for user {user_id}")
 
         # Send acknowledge pause to the user
@@ -177,19 +189,19 @@ class Admin:
         return message_json
 
 
-    # def add_admin(self, admin_data):
-    #     try:
-    #         response = self.apiClient.post_request(add_nodes, admin_data)
+    def add_network_status(self, admin_data):
+        try:
+            response = self.apiClient.post_request(add_nodes, admin_data)
 
-    #         if response and response.status_code == 201:
-    #             self.logger.info(f"POST add_admin Request Successful: {response.text}")
-    #             return json.loads(response.text)
-    #         else:
-    #             self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
-    #             return None
-    #     except Exception as e:
-    #         self.logger.error(f"Error in add_admin: {str(e)}")
-    #         return None
+            if response and response.status_code == 201:
+                self.logger.info(f"POST add_admin Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None
     
     # def get_node_count(self):
     #     try:
