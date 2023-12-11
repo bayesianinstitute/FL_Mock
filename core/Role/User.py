@@ -17,9 +17,22 @@ class User:
     def user_logic(self,mqtt_obj):
        
         try:
+            last_update_time = time.time()
+
+            # send for first time
+            user_status = self.update_network_status()
+            self.send_network_status(user_status, mqtt_obj)
+
             while True:
-                user_status = self.update_network_status()
-                self.send_network_status(user_status,mqtt_obj)
+                current_time = time.time()
+
+                # Check if 60 seconds have passed since the last update
+                if current_time - last_update_time >= 10:
+                    user_status = self.update_network_status()
+                    self.send_network_status(user_status, mqtt_obj)
+
+                    # Update the last update time
+                    last_update_time = current_time
 
                 received_message = mqtt_obj.handle_user_data()
 
@@ -45,13 +58,13 @@ class User:
         
     def update_network_status(self):
         try:
-            # connected_status = self.apiClient.put_request(network_connected_endpoint)
+            connected_status = self.apiClient.put_request(network_connected_endpoint)
 
-            # if connected_status.status_code == 200:
-            #     self.logger.info(f"PUT network_status Request Successful: {connected_status.text}")
-            #     return json.loads(connected_status.text)
-            # else:
-            #     self.logger.info(f"PUT Request Failed: {connected_status.status_code, connected_status.text}")
+            if connected_status.status_code == 200:
+                self.logger.info(f"PUT network_status Request Successful: {connected_status.text}")
+                return json.loads(connected_status.text)
+            else:
+                self.logger.info(f"PUT Request Failed: {connected_status.status_code, connected_status.text}")
                 return None
 
         except Exception as e:
@@ -75,13 +88,13 @@ class User:
 
     def update_training_status(self):
         try:
-            # training_status = self.apiClient.put_request(toggle_training_status_endpoint)
+            training_status = self.apiClient.put_request(toggle_training_status_endpoint)
 
-            # if training_status.status_code == 200:
-            #     self.logger.info(f"PUT training_status Request Successful: {training_status.text}")
-            #     return json.loads(training_status.text)
-            # else:
-            #     self.logger.error(f"PUT Request Failed: {training_status.status_code, training_status.text}")
+            if training_status.status_code == 200:
+                self.logger.info(f"PUT training_status Request Successful: {training_status.text}")
+                return json.loads(training_status.text)
+            else:
+                self.logger.error(f"PUT Request Failed: {training_status.status_code, training_status.text}")
                 return None
 
         except Exception as e:
@@ -98,7 +111,9 @@ class User:
                     "node_id": user_status['id'],
                     "training_status": user_status['training_status'],
                 })
+
                 mqtt_obj.send_internal_messages(message_json)
+                self.logger.warning(f"sending training infor {message_json}")
 
         except Exception as e:
             self.logger.error(f"Error in send_training_status: {str(e)}")
@@ -110,12 +125,13 @@ class User:
                 message_json = json.dumps({
                     "receiver": 'Admin',
                     "msg": RECEIVE_MODEL_INFO,
-                    "node_id": user_status['id'],
+                    "node_id": 67,
                     "model_hash": hash,
                     "accuracy": accuracy,
                     "loss": loss,
                 })
                 mqtt_obj.send_internal_messages(message_json)
+                self.logger.warning(f"message : {message_json}")
 
         except Exception as e:
             self.logger.error(f"Error in send_model_to_internal_cluster: {str(e)}")
