@@ -63,3 +63,8 @@ class OperationStatusResponseSerializer(serializers.Serializer):
         return {
             'operation_status': instance.operation_status,
         }
+
+class TrainingUniqueInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainingInformation
+        fields = ['training_name']

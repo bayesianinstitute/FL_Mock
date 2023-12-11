@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
-from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
+from .serializers import TrainingInformationSerializer,TrainingUniqueInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
 from django.shortcuts import render
 import random
 from itertools import groupby
@@ -275,3 +275,12 @@ def get_operation_status(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Admin.DoesNotExist:
         return Response({"status": "error", "message": "Admin with the specified node_id does not exist"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['GET'])
+def get_unique_training_names(request):
+    if request.method == 'GET':
+        unique_training_names = TrainingInformation.objects.values('training_name').distinct()
+        training_names_list = [entry['training_name'] for entry in unique_training_names]
+        response_data = {"data": training_names_list}
+        return Response(response_data, status=status.HTTP_200_OK)

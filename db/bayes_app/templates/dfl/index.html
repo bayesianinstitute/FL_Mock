@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -56,14 +57,17 @@
       <!-- Admin-specific content goes here -->
       <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <a class="navbar-brand" href="#">Bayes Admin</a>
+          <a class="navbar-brand" href="#">
+            Bayes Admin Dashboard
+          </a>
         </nav>
       </header>
+      
       <div class="container mt-4">
         <!-- User Table -->
         <div class="card">
           <div class="card-header">
-            <h1 class="card-title">Bayes Users</h1>
+            <h1 class="card-title">Nodes</h1>
           </div>
           <div class="card-body">
             <!-- Display user information in a table -->
@@ -83,7 +87,14 @@
             </table>
           </div>
         </div>
-
+        <div class="container mt-4">
+          <label for="trainingNamesSelect">Select Training Name:</label>
+          <select id="trainingNamesSelect" class="form-control">
+            <!-- Options will be dynamically added here -->
+          </select>
+          
+          <button class="btn btn-primary mt-2" onclick="submitForm()">Submit</button>
+        </div>
         <div class="container mt-4">
           <div class="row">
             <!-- Line Graph Container for Accuracy -->
@@ -111,22 +122,6 @@
             </div>
           </div>
 
-          <div class="row mt-4">
-            <!-- Line Graph Container for Validation Accuracy -->
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-header">
-                  <h6 class="card-title">Validation Accuracy Over Round</h6>
-                </div>
-                <div class="card-body">
-                  <canvas
-                    id="validationAccuracyChart"
-                    width="400"
-                    height="200"
-                  ></canvas>
-                </div>
-              </div>
-            </div>
 
             <!-- Add more col-md-6 containers for additional charts if needed -->
           </div>
@@ -182,7 +177,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
+    {% comment %} <script>
       async function fetchData() {
         try {
           const response = await fetch(
@@ -201,6 +196,7 @@
             case 'Admin':
               document.getElementById('adminContent').style.display = 'block'
               await fetchAdminData() // Fetch and render admin data
+             
               break
             case 'BackupAdmin':
               document.getElementById('backupAdminContent').style.display =
@@ -215,7 +211,31 @@
           console.error('API error:', error)
         }
       }
-
+      async function fetchTrainingNames() {
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/v1/get-unique-training-names/');
+          const data = await response.json();
+    
+          // Assuming data has a "data" property with an array of training names
+          const trainingNames = data.data;
+    
+          // Populate the dropdown with training names
+          const dropdown = document.getElementById('trainingNamesSelect');
+    
+          // Clear existing options
+          dropdown.innerHTML = '';
+    
+          // Add new options
+          trainingNames.forEach((trainingName) => {
+            const option = document.createElement('option');
+            option.value = trainingName;
+            option.text = trainingName;
+            dropdown.appendChild(option);
+          });
+        } catch (error) {
+          console.error('Error fetching training names:', error);
+        }
+      }
       async function fetchAdminData() {
         try {
           const response = await fetch(
@@ -227,7 +247,7 @@
 
           // Process the received data and update the table
           renderUserTable(adminData)
-
+          await fetchTrainingNames()
           // Plot the line graph using the accuracy/USA/ API
           await fetchAccuracyDataAndPlotGraph()
 
@@ -243,47 +263,33 @@
 
       async function fetchAccuracyDataAndPlotGraph() {
         try {
-          const response = await fetch(
-            'http://127.0.0.1:8000/api/v1/accuracy/USA/'
-          )
-          const accuracyData = await response.json()
-
-          console.log('Accuracy Data:', accuracyData)
-
+          const selectedTrainingName = getSelectedTrainingName(); // Assuming you have a function to get the selected training name
+          const accuracyApiUrl = `http://127.0.0.1:8000/api/v1/accuracy/${selectedTrainingName}/`;
+          const response = await fetch(accuracyApiUrl);
+          const accuracyData = await response.json();
+    
+          console.log('Accuracy Data:', accuracyData);
+    
           // Plot the line graph
-          plotLineGraph(accuracyData, 'accuracyChart')
+          plotLineGraph(accuracyData, 'accuracyChart');
         } catch (error) {
-          console.error('Error fetching accuracy data:', error)
+          console.error('Error fetching accuracy data:', error);
         }
       }
-
+    
       async function fetchLossDataAndPlotGraph() {
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/v1/loss/USA/')
-          const lossData = await response.json()
-
-          console.log('Loss Data:', lossData)
-
+          const selectedTrainingName = getSelectedTrainingName(); // Assuming you have a function to get the selected training name
+          const lossApiUrl = `http://127.0.0.1:8000/api/v1/loss/${selectedTrainingName}/`;
+          const response = await fetch(lossApiUrl);
+          const lossData = await response.json();
+    
+          console.log('Loss Data:', lossData);
+    
           // Plot the line graph
-          plotLineGraph(lossData, 'lossChart')
+          plotLineGraph(lossData, 'lossChart');
         } catch (error) {
-          console.error('Error fetching loss data:', error)
-        }
-      }
-
-      async function fetchValidationAccuracyDataAndPlotGraph() {
-        try {
-          const response = await fetch(
-            'http://127.0.0.1:8000/api/v1/validation_accuracy/USA/'
-          )
-          const validationAccuracyData = await response.json()
-
-          console.log('Validation Accuracy Data:', validationAccuracyData)
-
-          // Plot the line graph
-          plotLineGraph(validationAccuracyData, 'validationAccuracyChart')
-        } catch (error) {
-          console.error('Error fetching validation accuracy data:', error)
+          console.error('Error fetching loss data:', error);
         }
       }
 
@@ -313,59 +319,184 @@
 
       function renderUserTable(adminData) {
         const userTableBody = document.getElementById('user-table-body')
-
+      
         // Clear existing table content
         userTableBody.innerHTML = ''
-
+      
         // Check if adminData is an array, if not, wrap it in an array
         const dataArray = Array.isArray(adminData) ? adminData : [adminData]
-
+      
         // Loop through dataArray and append rows to the table
         dataArray.forEach((user) => {
           const row = userTableBody.insertRow()
-
-          // Assuming user object has properties like nodeId, userRole, trainingStatus, networkStatus
+      
+          // Assuming user object has properties like nodeId, userRole, trainingStatus, networkStatus, and operation_status
           const cell1 = row.insertCell(0)
           const cell2 = row.insertCell(1)
           const cell3 = row.insertCell(2)
           const cell4 = row.insertCell(3)
           const cell5 = row.insertCell(4) // Action column
-
+      
           cell1.textContent = user.node_id
           cell2.textContent = user.role // Assuming the user role is always 'Admin'
           cell3.textContent = user.training_status
           cell4.textContent = user.network_status
-
-          // Create "Stop" button
-          const stopButton = document.createElement('button')
-          stopButton.textContent = 'Stop'
-          stopButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mr-1')
-          stopButton.addEventListener('click', () => stopUser(user.node_id))
-          cell5.appendChild(stopButton)
-
-          // Create "Restart" button
-          const restartButton = document.createElement('button')
-          restartButton.textContent = 'Restart'
-          restartButton.classList.add('btn', 'btn-success', 'btn-sm')
-          restartButton.addEventListener('click', () =>
-            restartUser(user.node_id)
-          )
-          cell5.appendChild(restartButton)
+      
+          // Create "Toggle" button for Resume/Pause
+          const toggleButton = document.createElement('button')
+          toggleButton.classList.add('btn', 'btn-sm', 'mr-1')
+      
+          // Determine the label and action based on the user's operation_status
+          if (user.operation_status === 'pause') {
+            toggleButton.textContent = 'Resume';
+            toggleButton.classList.add('btn-success');
+            toggleButton.addEventListener('click', () => resumeUser(user.node_id));
+          } else if (user.operation_status === 'resume') {
+            toggleButton.textContent = 'Pause';
+            toggleButton.classList.add('btn-warning');
+            toggleButton.addEventListener('click', () => pauseUser(user.node_id));
+          } else if (user.operation_status === 'terminate') {
+            // Remove the "Pause" and "Resume" buttons for terminated users
+            cell5.innerHTML = ''; // Clear existing content
+          
+          }
+          
+          cell5.appendChild(toggleButton)
+      
+          // Create "Terminate" button
+          const terminateButton = document.createElement('button')
+          terminateButton.textContent = 'Terminate'
+          terminateButton.classList.add('btn', 'btn-danger', 'btn-sm')
+          terminateButton.addEventListener('click', () => terminateUser(user.node_id))
+          cell5.appendChild(terminateButton)
         })
       }
+      // Function to handle pausing a user
 
-      function stopUser(nodeId) {
-        // Logic to stop the user with the given nodeId
-        console.log(`Stopping user with Node ID ${nodeId}`)
-        // Add your API call or other logic here
+      function pauseUser(nodeId) {
+        console.log(`Pausing user with Node ID ${nodeId}`);
+        const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+
+        const requestData = {
+          node_id: nodeId,
+          operation_status: 'pause',
+        };
+
+        const fetchConfig = {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        };
+
+        fetch(apiUrl, fetchConfig)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('API Response:', data);
+            // Update the status dynamically without refreshing
+            updateStatus();
+          })
+          .catch(error => {
+            console.error('Fetch Error:', error);
+          });
       }
 
-      function restartUser(nodeId) {
-        // Logic to restart the user with the given nodeId
-        console.log(`Restarting user with Node ID ${nodeId}`)
-        // Add your API call or other logic here
+      // Function to handle resuming a user
+      function resumeUser(nodeId) {
+        console.log(`Resuming user with Node ID ${nodeId}`);
+        const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+
+        const requestData = {
+          node_id: nodeId,
+          operation_status: 'resume',
+        };
+
+        const fetchConfig = {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        };
+
+        fetch(apiUrl, fetchConfig)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('API Response:', data);
+            // Update the status dynamically without refreshing
+            updateStatus();
+          })
+          .catch(error => {
+            console.error('Fetch Error:', error);
+          });
+      }
+      // Function to handle terminating a user
+      function terminateUser(nodeId) {
+        console.log(`Terminating user with Node ID ${nodeId}`);
+        const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+
+        const requestData = {
+          node_id: nodeId,
+          operation_status: 'terminate',
+        };
+
+        const fetchConfig = {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        };
+
+        fetch(apiUrl, fetchConfig)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('API Response:', data);
+            // Update the status dynamically without refreshing
+            updateStatus();
+          })
+          .catch(error => {
+            console.error('Fetch Error:', error);
+          });
       }
 
+      function getSelectedTrainingName() {
+        // Assuming you have a dropdown with id 'trainingNamesSelect'
+        const dropdown = document.getElementById('trainingNamesSelect');
+        return dropdown.options[dropdown.selectedIndex].value;
+      }
+      function submitForm() {
+        const selectedTrainingName = getSelectedTrainingName();
+        console.log('Selected Training Name:', selectedTrainingName);
+                  // Plot the line graph using the accuracy/USA/ API
+        fetchAccuracyDataAndPlotGraph()
+
+                  // Plot the line graph for loss using the loss/USA/ API
+         fetchLossDataAndPlotGraph()
+        // Add additional logic here, such as making API requests with the selected training name
+      }
+
+      // Function to update the status dynamically
+      function updateStatus() {
+        fetchAdminData();
+        }
+    
       function plotLineGraph(data, chartId) {
         const chartCanvas = document.getElementById(chartId)
 
@@ -432,6 +563,335 @@
       }
 
       fetchData() // Call the main function
-    </script>
-  </body>
+      
+    </script> {% endcomment %}
+
+
+<script>
+  // Function to get the selected training name
+  function getSelectedTrainingName() {
+    const dropdown = document.getElementById('trainingNamesSelect');
+    return dropdown.options[dropdown.selectedIndex].value;
+  }
+  
+  // Function to fetch and populate training names
+  async function fetchTrainingNames() {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/get-unique-training-names/');
+      const data = await response.json();
+
+      const trainingNames = data.data;
+
+      const dropdown = document.getElementById('trainingNamesSelect');
+      dropdown.innerHTML = '';
+
+      trainingNames.forEach((trainingName) => {
+        const option = document.createElement('option');
+        option.value = trainingName;
+        option.text = trainingName;
+        dropdown.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error fetching training names:', error);
+    }
+  }
+
+  // Function to fetch accuracy data and plot graph
+  async function fetchAccuracyDataAndPlotGraph() {
+    try {
+      const selectedTrainingName = getSelectedTrainingName();
+      const accuracyApiUrl = `http://127.0.0.1:8000/api/v1/accuracy/${selectedTrainingName}/`;
+      const response = await fetch(accuracyApiUrl);
+      const accuracyData = await response.json();
+
+      console.log('Accuracy Data:', accuracyData);
+
+      // Plot the line graph
+      plotLineGraph(accuracyData, 'accuracyChart');
+    } catch (error) {
+      console.error('Error fetching accuracy data:', error);
+    }
+  }
+
+  // Function to fetch loss data and plot graph
+  async function fetchLossDataAndPlotGraph() {
+    try {
+      const selectedTrainingName = getSelectedTrainingName();
+      const lossApiUrl = `http://127.0.0.1:8000/api/v1/loss/${selectedTrainingName}/`;
+      const response = await fetch(lossApiUrl);
+      const lossData = await response.json();
+
+      console.log('Loss Data:', lossData);
+
+      // Plot the line graph
+      plotLineGraph(lossData, 'lossChart');
+    } catch (error) {
+      console.error('Error fetching loss data:', error);
+    }
+  }
+  function pauseUser(nodeId) {
+    console.log(`Pausing user with Node ID ${nodeId}`);
+    const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+
+    const requestData = {
+      node_id: nodeId,
+      operation_status: 'pause',
+    };
+
+    const fetchConfig = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    };
+
+    fetch(apiUrl, fetchConfig)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('API Response:', data);
+        // Update the status dynamically without refreshing
+        updateStatus();
+      })
+      .catch(error => {
+        console.error('Fetch Error:', error);
+      });
+  }
+
+  // Function to handle resuming a user
+  function resumeUser(nodeId) {
+    console.log(`Resuming user with Node ID ${nodeId}`);
+    const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+
+    const requestData = {
+      node_id: nodeId,
+      operation_status: 'resume',
+    };
+
+    const fetchConfig = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    };
+
+    fetch(apiUrl, fetchConfig)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('API Response:', data);
+        // Update the status dynamically without refreshing
+        updateStatus();
+      })
+      .catch(error => {
+        console.error('Fetch Error:', error);
+      });
+  }
+  // Function to handle terminating a user
+  function terminateUser(nodeId) {
+    console.log(`Terminating user with Node ID ${nodeId}`);
+    const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+
+    const requestData = {
+      node_id: nodeId,
+      operation_status: 'terminate',
+    };
+
+    const fetchConfig = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    };
+
+    fetch(apiUrl, fetchConfig)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('API Response:', data);
+        // Update the status dynamically without refreshing
+        updateStatus();
+      })
+      .catch(error => {
+        console.error('Fetch Error:', error);
+      });
+  }
+  function updateStatus() {
+    fetchAdminData();
+  }
+
+  // Function to render user table
+  function renderUserTable(adminData) {
+    const userTableBody = document.getElementById('user-table-body');
+
+    userTableBody.innerHTML = '';
+
+    const dataArray = Array.isArray(adminData) ? adminData : [adminData];
+
+    dataArray.forEach((user) => {
+      const row = userTableBody.insertRow();
+      const cell1 = row.insertCell(0);
+      const cell2 = row.insertCell(1);
+      const cell3 = row.insertCell(2);
+      const cell4 = row.insertCell(3);
+      const cell5 = row.insertCell(4);
+
+      cell1.textContent = user.node_id;
+      cell2.textContent = user.role;
+      cell3.textContent = user.training_status;
+      cell4.textContent = user.network_status;
+
+      const toggleButton = document.createElement('button');
+      toggleButton.classList.add('btn', 'btn-sm', 'mr-1');
+
+      if (user.operation_status === 'pause') {
+        toggleButton.textContent = 'Resume';
+        toggleButton.classList.add('btn-success');
+        toggleButton.addEventListener('click', () => resumeUser(user.node_id));
+      } else if (user.operation_status === 'resume') {
+        toggleButton.textContent = 'Pause';
+        toggleButton.classList.add('btn-warning');
+        toggleButton.addEventListener('click', () => pauseUser(user.node_id));
+      } else if (user.operation_status === 'terminate') {
+        cell5.innerHTML = '';
+      }
+
+      cell5.appendChild(toggleButton);
+
+      const terminateButton = document.createElement('button');
+      terminateButton.textContent = 'Terminate';
+      terminateButton.classList.add('btn', 'btn-danger', 'btn-sm');
+      terminateButton.addEventListener('click', () => terminateUser(user.node_id));
+      cell5.appendChild(terminateButton);
+    });
+  }
+
+  // Function to plot line graph
+  function plotLineGraph(data, chartId) {
+    const chartCanvas = document.getElementById(chartId);
+  
+    // Destroy existing chart if it exists
+    Chart.getChart(chartCanvas)?.destroy();
+  
+    const nodeIds = [...new Set(data.map((record) => record.node_id))];
+  
+    const datasets = nodeIds.map((nodeId, index) => {
+      const userRecords = data.find((record) => record.node_id === nodeId);
+      const dataPoints = userRecords.data.map((value, round) => ({
+        x: round + 1,
+        y: value,
+      }));
+  
+      return {
+        label: `User ${nodeId}`,
+        data: dataPoints,
+        borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`,
+        borderWidth: 1,
+        fill: false,
+      };
+    });
+  
+    new Chart(chartCanvas, {
+      type: 'line',
+      data: {
+        labels: Array.from({ length: datasets[0].data.length }, (_, i) => (i + 1).toString()),
+        datasets: datasets,
+      },
+      options: {
+        scales: {
+          x: {
+            type: 'linear',
+            position: 'bottom',
+            title: {
+              display: true,
+              text: 'Training Round',
+            },
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: chartId === 'accuracyChart' ? 'Accuracy' : chartId === 'lossChart' ? 'Loss' : 'Validation Accuracy',
+            },
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        },
+      },
+    });
+  }
+  // Function to fetch admin data and initialize the process
+  async function fetchData() {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/get-track-role/');
+      const data = await response.json();
+
+      const role = data.role;
+
+      switch (role) {
+        case 'User':
+          document.getElementById('userContent').style.display = 'block';
+          break;
+        case 'Admin':
+          document.getElementById('adminContent').style.display = 'block';
+          await fetchAdminData();
+          break;
+        case 'BackupAdmin':
+          document.getElementById('backupAdminContent').style.display = 'block';
+          break;
+        default:
+          console.error('Unknown role:', role);
+      }
+    } catch (error) {
+      console.error('API error:', error);
+    }
+  }
+  function submitForm() {
+    const selectedTrainingName = getSelectedTrainingName();
+    console.log('Selected Training Name:', selectedTrainingName);
+              // Plot the line graph using the accuracy/USA/ API
+    fetchAccuracyDataAndPlotGraph()
+
+              // Plot the line graph for loss using the loss/USA/ API
+     fetchLossDataAndPlotGraph()
+    // Add additional logic here, such as making API requests with the selected training name
+  }
+  // Function to fetch admin data and initialize the process
+  async function fetchAdminData() {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/get-admin-data/');
+      const adminData = await response.json();
+
+      console.log('Admin Data:', adminData);
+
+      renderUserTable(adminData);
+      await fetchTrainingNames();
+      await fetchAccuracyDataAndPlotGraph();
+      await fetchLossDataAndPlotGraph();
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+    }
+  }
+
+  fetchData(); // Initialize the process
+</script>
+</body>
 </html>
