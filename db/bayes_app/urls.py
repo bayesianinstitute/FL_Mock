@@ -1,12 +1,13 @@
 from django.urls import path
-from .views import dfl,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status,get_operation_status,get_unique_training_names
+from .views import dfl,dfladmin,training_information_choices,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status,get_operation_status,get_unique_training_names
 
 
 
 
 urlpatterns = [
     path('', dfl, name='dfl'),
-    path('api/v1/create-training-information/', create_training_information, name='create-training-information'),
+    path('config/', dfladmin, name='dfladmin'),
+    path('api/v1/create_training_information/', create_training_information, name='create-training-information'),
     path('api/v1/create_training_result/', create_training_result, name='create_training_result'),
     path('api/v1/get-training-results/', get_training_results, name='get-training-results'),
     path('api/v1/get-logs/', get_logs, name='get-logs'),
@@ -35,5 +36,6 @@ urlpatterns = [
     path('api/v1/update-operation-status/', update_operation_status, name='update_operation_status'),
     path('api/v1/get_operation_status/', get_operation_status, name='get_operation_status'),
     path('api/v1/get-unique-training-names/', get_unique_training_names, name='get-unique-training-names'),
+    path('api/v1/training-information-choices/', training_information_choices, name='training-information-choices'),
    
 ]

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bayes Admin Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="http://127.0.0.1:8000/">
+          <!-- Your Title/Logo Image or Text -->
+          Bayes Admin
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <!-- Navigation Links -->
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="http://127.0.0.1:8000/">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:8000/config/"
+                >Configuration</a
+              >
+            </li>
+            <!-- Add more navigation links as needed -->
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <div class="container mt-4">
+      <!-- Input Fields -->
+      <div class="card">
+        <div class="card-header">
+          <h1 class="card-title">Set Configuration</h1>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="model-name">Model Name:</label>
+            <select id="model-name" class="form-control"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="dataset-name">Dataset Name:</label>
+            <select id="dataset-name" class="form-control"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="optimizer">Optimizer:</label>
+            <select id="optimizer" class="form-control"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="training-info">Training Info:</label>
+            <input
+              type="text"
+              id="training-info"
+              class="form-control"
+              placeholder="Enter training topic name"
+            />
+          </div>
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-primary" onclick="saveConfiguration()">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include Bootstrap and other JavaScript libraries -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      async function fetchChoices() {
+        try {
+          const response = await fetch(
+            'http://127.0.0.1:8000/api/v1/training-information-choices/'
+          )
+          const choices = await response.json()
+
+          populateDropdown('model-name', choices.model_name_choices)
+          populateDropdown('dataset-name', choices.dataset_name_choices)
+          populateDropdown('optimizer', choices.optimizer_choices)
+        } catch (error) {
+          console.error('Error fetching choices:', error)
+        }
+      }
+
+      function populateDropdown(id, choices) {
+        const dropdown = document.getElementById(id)
+        choices.forEach((choice) => {
+          const option = document.createElement('option')
+          option.value = choice
+          option.text = choice
+          dropdown.appendChild(option)
+        })
+      }
+
+      async function saveConfiguration() {
+        const modelName = document.getElementById('model-name').value
+        const datasetName = document.getElementById('dataset-name').value
+        const optimizer = document.getElementById('optimizer').value
+        const trainingInfo = document.getElementById('training-info').value
+
+        // Validate if all fields are filled
+        if (!modelName || !datasetName || !optimizer || !trainingInfo) {
+          alert('Please fill in all fields.')
+          return
+        }
+
+        // Send the configuration to the server
+        const apiUrl =
+          'http://127.0.0.1:8000/api/v1/create_training_information/'
+        const requestData = {
+          model_name: modelName,
+          dataset_name: datasetName,
+          optimizer: optimizer,
+          training_name: trainingInfo,
+        }
+
+        const fetchConfig = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        }
+
+        try {
+          const response = await fetch(apiUrl, fetchConfig)
+          const result = await response.json()
+
+          if (response.ok) {
+            console.log('Save Configuration Result:', result)
+            alert('Configuration saved successfully!')
+          } else {
+            console.error('Error saving configuration:', result)
+            alert('Failed to save configuration. Please try again.')
+          }
+        } catch (error) {
+          console.error('Error saving configuration:', error)
+          alert('An unexpected error occurred. Please try again.')
+        }
+      }
+      // Fetch choices when the page loads
+      fetchChoices()
+    </script>
+  </body>
+</html>

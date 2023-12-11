@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -14,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
+
     <div id="userContent" style="display: none">
       <!-- User-specific content goes here -->
       <div class="container mt-4">
@@ -48,6 +48,10 @@
             >
               Show Logs
             </button>
+            <!-- Add a button to launch another URL -->
+            <button onclick="launchURL()" class="btn btn-info">
+              View Model Tracking
+            </button>
           </div>
         </div>
       </div>
@@ -57,9 +61,33 @@
       <!-- Admin-specific content goes here -->
       <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <a class="navbar-brand" href="#">
-            Bayes Admin Dashboard
+          <a class="navbar-brand" href="http://127.0.0.1:8000/">
+            <!-- Your Title/Logo Image or Text -->
+           Bayes Admin
           </a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Navigation Links -->
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item active">
+                <a class="nav-link" href="http://127.0.0.1:8000/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="http://127.0.0.1:8000/config/">Configuration</a>
+              </li>
+              <!-- Add more navigation links as needed -->
+            </ul>
+          </div>
         </nav>
       </header>
       
@@ -568,6 +596,11 @@
 
 
 <script>
+  function launchURL() {
+    // Open http://127.0.0.1:5000 in a new tab
+    window.open("http://127.0.0.1:5000", "_blank");
+  }
+  
   // Function to get the selected training name
   function getSelectedTrainingName() {
     const dropdown = document.getElementById('trainingNamesSelect');

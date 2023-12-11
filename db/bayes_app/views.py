@@ -12,16 +12,18 @@ from django.shortcuts import get_object_or_404
 
 def dfl(request):
     return render(request, 'dfl/index.html')
+def dfladmin(request):
+    return render(request, 'dfl/config.html')
 
 @api_view(['POST'])
 def create_training_information(request):
-    if request.method == 'POST':
-        serializer = TrainingInformationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = TrainingInformationSerializer(data=request.data)
     
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
 def get_training_results(request):
@@ -284,3 +286,17 @@ def get_unique_training_names(request):
         training_names_list = [entry['training_name'] for entry in unique_training_names]
         response_data = {"data": training_names_list}
         return Response(response_data, status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+def training_information_choices(request):
+    model_name_choices = [choice[0] for choice in TrainingInformation.model_name_choices]
+    dataset_name_choices = [choice[0] for choice in TrainingInformation.dataset_name_choices]
+    optimizer_choices = [choice[0] for choice in TrainingInformation.optimizer_choices]
+
+    choices_data = {
+        'model_name_choices': model_name_choices,
+        'dataset_name_choices': dataset_name_choices,
+        'optimizer_choices': optimizer_choices,
+    }
+
+    return Response(choices_data)
