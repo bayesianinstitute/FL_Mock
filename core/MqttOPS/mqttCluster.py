@@ -17,9 +17,7 @@ class MQTTCluster:
         self.id = f"{self.cluster_name}_Client_{id}"
         self.terimate_status = False
         self.received_admin_data_queue = queue.Queue()
-        self.prev_admin_data = None
         self.received_user_data_queue=queue.Queue()
-        self.prev_user_data = None
 
 
     def on_connect(self,client, userdata, flags, rc):
@@ -60,26 +58,14 @@ class MQTTCluster:
 
 
             # Check if the receiver is admin
-            
             if json_data.get("receiver") == 'Admin':
                 self.logger.warning("The receiver is an admin.")
-                                # Check if the data is the same as the previous one
-                if data != self.prev_admin_data:
-                    self.received_admin_data_queue.put(data)
-                    self.prev_admin_data = data
-                else:
-                    pass
-                    # self.logger.info("Skipping redundant admin data")
+                self.received_admin_data_queue.put(data)
 
                 # This is in mqtt.py file and   Need to transfer json data to admin.py file
             elif json_data.get("receiver") == 'User' :
-                if data != self.prev_user_data:
-                        self.received_admin_data_queue.put(data)
-                        self.prev_user_data = data
-                else:
-                    pass
-                    # self.logger.info("Skipping redundant admin data")
-
+                self.logger.critical("The receiver is User")
+                self.received_user_data_queue.put(data)
 
             
             # # Check for the terminate message
@@ -168,4 +154,3 @@ if __name__ == "__main__":
 
     # Create and connect MQTT clients
     cluster.connect_clients()
-

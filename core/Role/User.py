@@ -45,13 +45,13 @@ class User:
         
     def update_network_status(self):
         try:
-            connected_status = self.apiClient.put_request(network_connected_endpoint)
+            # connected_status = self.apiClient.put_request(network_connected_endpoint)
 
-            if connected_status.status_code == 200:
-                self.logger.info(f"PUT network_status Request Successful: {connected_status.text}")
-                return json.loads(connected_status.text)
-            else:
-                self.logger.info(f"PUT Request Failed: {connected_status.status_code, connected_status.text}")
+            # if connected_status.status_code == 200:
+            #     self.logger.info(f"PUT network_status Request Successful: {connected_status.text}")
+            #     return json.loads(connected_status.text)
+            # else:
+            #     self.logger.info(f"PUT Request Failed: {connected_status.status_code, connected_status.text}")
                 return None
 
         except Exception as e:
@@ -75,13 +75,13 @@ class User:
 
     def update_training_status(self):
         try:
-            training_status = self.apiClient.put_request(toggle_training_status_endpoint)
+            # training_status = self.apiClient.put_request(toggle_training_status_endpoint)
 
-            if training_status.status_code == 200:
-                self.logger.info(f"PUT training_status Request Successful: {training_status.text}")
-                return json.loads(training_status.text)
-            else:
-                self.logger.error(f"PUT Request Failed: {training_status.status_code, training_status.text}")
+            # if training_status.status_code == 200:
+            #     self.logger.info(f"PUT training_status Request Successful: {training_status.text}")
+            #     return json.loads(training_status.text)
+            # else:
+            #     self.logger.error(f"PUT Request Failed: {training_status.status_code, training_status.text}")
                 return None
 
         except Exception as e:
