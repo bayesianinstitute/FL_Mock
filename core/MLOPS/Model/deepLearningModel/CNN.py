@@ -75,7 +75,6 @@ class CNNMnist:
         test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
         mlflow.log_metric("test_loss", test_loss)
         mlflow.log_metric("test_accuracy", test_accuracy)
-        mlflow.end_run()
         return test_loss, test_accuracy
 
     def save_model(self, model_filename):
@@ -83,16 +82,18 @@ class CNNMnist:
             # Save the model to a file and log as an artifact
             model_path = f"mlruns/models/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}/{model_filename}"  # Specify a subdirectory for models
             mlflow.keras.save_model(self.model, model_path)
-            # self.model.save(model_filename)
-            # print(f"Model saved to {model_filename}")
+            self.model.save(model_filename)
+            print(f"Model saved to {model_filename}")
 
             # Save model summary to a text file
             summary_path = f"mlruns/models/{model_filename}_summary.txt"
             with open(summary_path, "w") as f:
                 self.model.summary(print_fn=lambda x: f.write(x + '\n'))
 
-            # mlflow.log_artifact(model_path)
-            # mlflow.log_artifact(summary_path)
+            mlflow.log_artifact(model_path)
+            mlflow.log_artifact(summary_path)
+            mlflow.end_run()
+
 
             print(f"Model and summary saved as artifacts: {model_filename}")
         except Exception as e:
