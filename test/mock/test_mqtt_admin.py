@@ -42,6 +42,7 @@ def send_model_to_internal_cluster():
         "model_hash": "Faijan hahs",
         "accuracy": "500000",
         "loss": "3",
+        "training_round":2,
     })
     return message_json
 

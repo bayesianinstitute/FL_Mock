@@ -83,19 +83,21 @@ class Admin:
             msg_type = message_data.get("msg")
             role = message_data.get("role")
             node_id = message_data.get("node_id")
-            training_status = message_data.get("training_status")
-            network_status = message_data.get("network_status")
-            accuracy = message_data.get("accuracy")
-           
-            loss = message_data.get("loss")
-            model_hash = message_data.get("model_hash")
+
             
             if msg_type == SEND_NETWORK_STATUS:
+                network_status = message_data.get("network_status")
                 self.handle_network_status(node_id,role, network_status)                
             elif msg_type == SEND_TRAINING_STATUS:
+                training_status = message_data.get("training_status")
+
                 self.handle_training_status(node_id,role, training_status)
             elif msg_type == RECEIVE_MODEL_INFO:
-                self.handle_receive_model_info(node_id, accuracy,loss,model_hash)
+                accuracy = message_data.get("accuracy")
+                loss = message_data.get("loss")
+                model_hash = message_data.get("model_hash")
+                training_round=message_data.get("training_round")
+                self.handle_receive_model_info(node_id, accuracy,loss,model_hash,training_round)
 
 
 
@@ -144,13 +146,14 @@ class Admin:
     #         mqtt_obj.send_internal_messages(message_data)
     #         self.logger.info("Sent global model to users")
 
-    def handle_receive_model_info(self,node_id, accuracy,loss,model_hash):
+    def handle_receive_model_info(self,node_id, accuracy,loss,model_hash,training_round):
         data = {
             "training_info":1,
             "node_id": node_id,
             "accuracy": accuracy,
             "loss":loss,
             "model_hash":model_hash,
+            "training_round":training_round,
         }
         status = self.update_receive_model_info(data)
         if status:

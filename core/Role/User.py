@@ -15,7 +15,7 @@ class User:
         self.pause_training = False
         
     def user_logic(self,mqtt_obj):
-       
+        rounds=0
         try:
             while True:
                 user_status = self.update_network_status()
@@ -27,13 +27,14 @@ class User:
                     self.process_received_message(received_message,mqtt_obj)
 
                 if not self.pause_training:
+                    rounds=rounds+1
                     
                     user_status = self.update_training_status() 
                     self.send_training_status(user_status,mqtt_obj) 
 
                     hash, accuracy, loss = self.ml_operations.train_machine_learning_model()
                     self.logger.info(f"Model hash: {hash}")
-                    self.send_model_to_internal_cluster(user_status, hash, accuracy, loss, mqtt_obj)
+                    self.send_model_to_internal_cluster(user_status, hash, accuracy, loss, mqtt_obj,rounds)
                     time.sleep(1)
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
@@ -61,7 +62,7 @@ class User:
                     "receiver": 'Admin',
                     "role": 'User',
                     "msg": SEND_NETWORK_STATUS,
-                    "node_id": user_status['id'],
+                    "node_id": mqtt_obj.id,
                     "network_status": user_status['network_status']
                 })
                 mqtt_obj.send_internal_messages(message_json)
@@ -91,7 +92,7 @@ class User:
                     "receiver": 'Admin',
                     "role": 'User',
                     "msg": SEND_TRAINING_STATUS,
-                    "node_id": user_status['id'],
+                    "node_id": mqtt_obj.id,
                     "training_status": user_status['training_status'],
                 })
                 mqtt_obj.send_internal_messages(message_json)
@@ -99,17 +100,18 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in send_training_status: {str(e)}")
 
-    def send_model_to_internal_cluster(self, user_status, hash, accuracy, loss,mqtt_obj):
+    def send_model_to_internal_cluster(self, user_status, hash, accuracy, loss,mqtt_obj,rounds):
         
         try:
             if user_status:
                 message_json = json.dumps({
                     "receiver": 'Admin',
                     "msg": RECEIVE_MODEL_INFO,
-                    "node_id": user_status['id'],
+                    "node_id": mqtt_obj.id,
                     "model_hash": hash,
                     "accuracy": accuracy,
                     "loss": loss,
+                    "training_round":rounds
                 })
                 mqtt_obj.send_internal_messages(message_json)
 

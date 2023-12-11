@@ -25,16 +25,18 @@ class MQTTCluster:
         self.logger.warning(f"Connected with result code {rc}")
         self.client.subscribe(self.internal_cluster_topic,qos=2) 
 
-    def connect_clients(self):
+    def connect_clients(self,role,receiver):
         self.client = mqtt.Client(self.id)
         self.client.on_connect = self.on_connect
 
         self.client.on_message = self.on_message
         self.client.on_publish=self.on_publish
         will_set_msg=json.dumps({
-                    "receiver": 'Admin',
-                    "msg": "Disconnected-Node",
-                    "id": self.id,})
+                    "receiver": receiver,
+                    "role": role,
+                    "msg": "SendNetworkStatus",
+                    "node_id": self.id,
+                    "network_status": "disconnected"})
         
         self.client.will_set(self.internal_cluster_topic,will_set_msg , qos=2,)
         self.client.connect(self.broker_address, 1883)

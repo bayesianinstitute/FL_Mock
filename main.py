@@ -92,7 +92,7 @@ class DFLWorkflow:
                                             self.is_admin,
                                             self.id)
         # Start, initialize, and get MQTT communication object
-        mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt()
+        mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt(role_data['role'])
         # while True:
             # TODO:  Need api to update training rounds 
         Round_Counter = Round_Counter + 1
