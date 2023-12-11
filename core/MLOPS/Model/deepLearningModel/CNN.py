@@ -2,23 +2,30 @@ from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.datasets import mnist
-from keras.callbacks import TensorBoard
-import subprocess
-import datetime
+import os
+from datetime import datetime
+import mlflow
+import mlflow.keras
+import mlflow.tensorflow
 import warnings
 
-
-
 class CNNMnist:
-    def __init__(self, optimizer='adam',log='custom_CNNMnist_logs'):
+    def __init__(self, optimizer='adam', experiment_name='custom_CNNMnist_experiment'):
         self.optimizer = optimizer
         self.model = self.build_model()
         self.x_train, self.y_train, self.x_test, self.y_test = self.load_and_preprocess_data()
-                # Create a log directory with a timestamp
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        self.log_dir = f"{log}/fit/{timestamp}"
 
-        self.tensorboard_callback = TensorBoard(log_dir=self.log_dir, histogram_freq=1)
+        # Start MLflow experiment
+        self.name = "CNN_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.config_mlflow(experiment_name)
+
+    def config_mlflow(self,experiment_name):
+        try:
+            mlflow.set_tracking_uri("http://localhost:5000")  
+            mlflow.set_experiment(experiment_name)
+            mlflow.start_run(run_name=self.name)
+        except Exception as e:
+            print(f"Error configuring MLflow: {e}")
 
     def build_model(self):
         # Build a simple CNN model
@@ -32,15 +39,13 @@ class CNNMnist:
         model.add(Dense(10, activation='softmax'))
 
         model.compile(optimizer=self.optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-
-
         return model
 
-    def load_and_preprocess_data(self,subset_size=1000):
+    def load_and_preprocess_data(self, subset_size=1000):
         # Load MNIST dataset
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-            # Select a smaller subset of the data
+        # Select a smaller subset of the data
         x_train = x_train[:subset_size]
         y_train = y_train[:subset_size]
         x_test = x_test[:subset_size]
@@ -54,45 +59,51 @@ class CNNMnist:
 
         return x_train, y_train, x_test, y_test
 
-    def train_model(self, epochs=10, batch_size=32,):
-        # Train the model with TensorBoard callback
-        self.model.fit(
-            self.x_train, self.y_train,
-            epochs=epochs, batch_size=batch_size,
-            validation_data=(self.x_test, self.y_test),
-            callbacks=[self.tensorboard_callback]
-        )
+    def train_model(self, epochs=10, batch_size=32):
+        try:
+            # Train the model and log metrics using MLflow
+            self.model.fit(
+                self.x_train, self.y_train,
+                epochs=epochs, batch_size=batch_size,
+                validation_data=(self.x_test, self.y_test)
+            )
+        except Exception as e:
+            print(f"Error training the model: {e}")
 
-    def evaluate_model(self,):
+    def evaluate_model(self):
         # Evaluate the model on the test data
         test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
+        mlflow.log_metric("test_loss", test_loss)
+        mlflow.log_metric("test_accuracy", test_accuracy)
+        mlflow.end_run()
         return test_loss, test_accuracy
-    
-    def save_model(self, model_filename):
-        # Save the model to a file
-        self.model.save(model_filename)
-        print(f"Model saved to {model_filename}")
-    
-    def set_weights(self, weights):
-        self.model.set_weights(weights)
-        return self.model
-        
 
-    def run_tensorboard(self):
+    def save_model(self, model_filename):
         try:
-            log_dir = f"custom_CNNMnist_logs/fit"  # Specify the log directory
-            tensorboard_callback = TensorBoard(log_dir=log_dir, write_graph=True)
-            subprocess.Popen(["cmd.exe", "/k", "tensorboard", "--logdir", log_dir])
+            # Save the model to a file and log as an artifact
+            model_path = f"mlruns/models/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}/{model_filename}"  # Specify a subdirectory for models
+            mlflow.keras.save_model(self.model, model_path)
+            # self.model.save(model_filename)
+            # print(f"Model saved to {model_filename}")
+
+            # Save model summary to a text file
+            summary_path = f"mlruns/models/{model_filename}_summary.txt"
+            with open(summary_path, "w") as f:
+                self.model.summary(print_fn=lambda x: f.write(x + '\n'))
+
+            # mlflow.log_artifact(model_path)
+            # mlflow.log_artifact(summary_path)
+
+            print(f"Model and summary saved as artifacts: {model_filename}")
         except Exception as e:
-            print(f"Error running TensorBoard: {e}")
+            print(f"Error saving the model: {e}")
+
+  
 
 if __name__ == '__main__':
     mnist_model = CNNMnist('adam')
     mnist_model.train_model(epochs=5, batch_size=32)
     test_loss, test_accuracy = mnist_model.evaluate_model()
     print(f'Test loss: {test_loss:.4f}, Test accuracy: {test_accuracy:.4f}')
-
-    # Run TensorBoard in the background
-    mnist_model.run_tensorboard()  # Use the same log directory specified in the TensorBoard callback
-
+    mnist_model.save_model("saved_model.h5")
     print("Completed training")
