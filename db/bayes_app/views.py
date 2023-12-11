@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
-from .serializers import TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
+from .serializers import TrainingInformationSerializer,TrainingUniqueInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
 from django.shortcuts import render
 import random
 from itertools import groupby
@@ -10,16 +10,9 @@ from django.db.models import F
 from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import get_object_or_404
 
-def dfluser(request):
-    return render(request, 'dfl/user.html')
-
-def dfladmin(request):
-    return render(request, 'dfl/admin.html')
-
 def dfl(request):
     return render(request, 'dfl/index.html')
 
-# Create your views here.
 @api_view(['POST'])
 def create_training_information(request):
     if request.method == 'POST':
@@ -56,10 +49,8 @@ def get_logs(request):
 
 @api_view(['PUT'])
 def update_admin_role(request):
-    # Get or create the single instance
     track = Track.objects.get_or_create_single_instance()
-
-    # Update the role to Admin
+    
     serializer = TrackSerializer(track, data={'role': 'Admin'}, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -90,7 +81,6 @@ def update_user_role(request):
 def update_network_status(request, new_status):
     node_status = NodeStatus.objects.get_or_create_single_instance()
 
-    # Ensure the provided status is valid
     if new_status not in ['connected', 'disconnected', 'idle']:
         return Response({'error': 'Invalid network status'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -105,8 +95,7 @@ def update_network_status(request, new_status):
 @api_view(['PUT'])
 def toggle_training_status(request):
     node_status = NodeStatus.objects.get_or_create_single_instance()
-
-    # Toggle the training_status
+    
     new_training_status = 'in_progress' if node_status.training_status != 'in_progress' else 'not_in_progress'
 
     serializer = NodeStatusSerializer(node_status, data={'training_status': new_training_status}, partial=True)
@@ -120,13 +109,9 @@ def toggle_training_status(request):
 @api_view(['POST'])
 def create_or_update_status(request):
     try:
-        # Try to get the existing Admin instance based on node_id
         admin_instance = Admin.objects.get(node_id=request.data['node_id'])
-
-        # If the instance exists, update the data with the provided data
         serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
     except Admin.DoesNotExist:
-        # If no instance exists, create a new one
         serializer = AdminSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -139,12 +124,10 @@ def create_or_update_status(request):
 @api_view(['GET'])
 def get_admin_data(request):
     try:
-        # Fetch all entries ordered by timestamp
         admin_instances = Admin.objects.order_by('-timestamp')
 
         if not admin_instances.exists():
             return Response({'error': 'Admin data not found'}, status=status.HTTP_404_NOT_FOUND)
-
         serializer = AdminSerializer(admin_instances, many=True)
         return Response(serializer.data)
     except Admin.DoesNotExist:
@@ -180,25 +163,20 @@ def get_track_role(request):
 @api_view(['GET'])
 def get_all_users_metrics(request, metric_name, training_name):
     try:
-        # Ensure that the metric_name is one of the allowed metrics
         allowed_metrics = ['accuracy', 'loss']
         if metric_name not in allowed_metrics:
             return Response({'error': f"Invalid metric parameter. Allowed values: {', '.join(allowed_metrics)}"}, status=400)
-
-        # Use F expressions to dynamically select the desired metric field
         metric_field = F(metric_name)
 
-        # Query the database with the selected metric field
         metric_records = TrainingResultAdmin.objects.filter(
             training_info__training_name=training_name
         ).order_by('node_id').values('node_id', metric=metric_field)
 
         grouped_data = []
         for node_id, records in groupby(metric_records, key=lambda x: x['node_id']):
-            # Convert the group of records into a list of metric values
+            
             data = [record['metric'] for record in records]
 
-            # Append the data to the result list
             grouped_data.append({
                 'node_id': node_id,
                 'data': data
@@ -211,13 +189,9 @@ def get_all_users_metrics(request, metric_name, training_name):
 @api_view(['GET'])
 def get_logs(request):
     try:
-        # Fetch all logs ordered by timestamp
+       
         logs = Logs.objects.all().order_by('-timestamp')
-        
-        # Serialize the logs data
         serializer = LogsSerializer(logs, many=True)
-        
-        # Return the serialized data as a JSON response
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -227,7 +201,6 @@ def add_nodes(request):
     if request.method == 'POST':
         node_id = request.data.get('node_id')
         
-        # Check if a record with the same node_id already exists
         if Admin.objects.filter(node_id=node_id).exists():
             return Response({'error': 'Record with the same node_id already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -240,29 +213,20 @@ def add_nodes(request):
 @api_view(['GET'])
 def unique_node_id_count(request):
     if request.method == 'GET':
-        # Get the count of unique node_id values using Django ORM
         unique_node_id_count = Admin.objects.values('node_id').distinct().count()
-
-        # Return the count as a JSON response
         return Response({'count': unique_node_id_count})
     
 @api_view(['POST'])
 def add_global_model_hash(request):
     if request.method == 'POST':
-        # Assuming the new global model hash is sent in the request data
         new_global_model_hash = request.data.get('global_model_hash')
-
-        # Create a new GlobalModelHash entry with the new global model hash
         global_model_hash_instance = GlobalModelHash.objects.create(
             global_model_hash=new_global_model_hash
         )
-
-        # Return a response indicating success
         return Response({'message': 'Global model hash added successfully'})
     
 @api_view(['POST'])
 def add_training_result(request):
-    # Always create a new instance
     serializer = TrainingResultAdminSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -311,3 +275,12 @@ def get_operation_status(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Admin.DoesNotExist:
         return Response({"status": "error", "message": "Admin with the specified node_id does not exist"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['GET'])
+def get_unique_training_names(request):
+    if request.method == 'GET':
+        unique_training_names = TrainingInformation.objects.values('training_name').distinct()
+        training_names_list = [entry['training_name'] for entry in unique_training_names]
+        response_data = {"data": training_names_list}
+        return Response(response_data, status=status.HTTP_200_OK)

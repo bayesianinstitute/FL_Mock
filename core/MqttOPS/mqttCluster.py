@@ -18,7 +18,6 @@ class MQTTCluster:
         self.terimate_status = False
         self.received_admin_data_queue = queue.Queue()
         self.received_user_data_queue=queue.Queue()
-                # Keep track of the last received user data
         self.last_received_user_data = None
 
 
@@ -32,7 +31,6 @@ class MQTTCluster:
 
         self.client.on_message = self.on_message
         self.client.on_publish=self.on_publish
-        # self.client.on_subscribe=self.on_subscribe
         will_set_msg=json.dumps({
                     "receiver": 'Admin',
                     "msg": "Disconnected-Node",
@@ -59,12 +57,10 @@ class MQTTCluster:
             json_data = json.loads(data)
 
 
-            # Check if the receiver is admin
             if json_data.get("receiver") == 'Admin':
                 self.logger.warning("The receiver is an admin.")
                 self.received_admin_data_queue.put(data)
 
-                # This is in mqtt.py file and   Need to transfer json data to admin.py file
             elif json_data.get("receiver") == 'User' :
                 self.logger.critical("The receiver is User")
                 if self.received_user_data_queue.empty():
@@ -74,24 +70,18 @@ class MQTTCluster:
                     last_element = self.received_user_data_queue.queue[-1]
 
 
-                    # Check if the last value put is different from the front element
                     if last_element != data:
                         self.received_user_data_queue.put(self.received_user_data_queue)
 
                         self.logger.warning("Last value put is the different as the front element.")
 
-                        # my_queue.get()
                     else:
                         self.logger.info("Last value put is the same as the front element.")
 
 
             
-            # # Check for the terminate message
-            # if 'terimate_msg' in json_data:
-            #     self.handle_terminate_message(client_id, cluster_id)
-
         except json.JSONDecodeError as e:
-            pass  # Handle JSON decoding errors
+            pass  
 
     def handle_admin_data(self):
         try:
@@ -117,7 +107,6 @@ class MQTTCluster:
             self.logger.error(f"Error during disconnection: {str(e)}")
 
     def handle_terminate_message(self, client_id, cluster_id):
-    # Handle the termination message here
         self.logger.warning(f"Received terminate message from {client_id} in cluster {cluster_id}")
 
         self.terimate_status= True
@@ -125,7 +114,6 @@ class MQTTCluster:
 
         self.logger.warning(f"ALL Should Disconnected message from client : {client_id}")
     
-    # Send the termination message
     def send_terminate_message(self, t_msg):
         message = {
             "client_id": self.id,
@@ -141,7 +129,6 @@ class MQTTCluster:
     def send_internal_messages(self,message_json):
 
         self.client.publish(self.internal_cluster_topic,message_json)
-        # self.logger.info(f" topic : {self.internal_cluster_topic} Here is in {self.cluster_name} from {client._client_id.decode('utf-8')} is training")
 
     def on_publish(self,client, userdata, mid):
         self.logger.debug(f"Message Ack Published for client id : {client._client_id.decode('utf-8')} and  (mid={mid})")
@@ -151,24 +138,19 @@ class MQTTCluster:
 
 
     def switch_broker(self, new_broker_address):
-        # Disconnect existing clients
         
         self.client.loop_stop()    
         self.client.disconnect()
 
-        # Update the broker address
         self.broker_address = new_broker_address
 
         self.logger.info(f"New broker address : {new_broker_address}")
 
-        # Re-create clients with the new broker address
         self.connect_clients()
         self.logger.info(f"Successfully Switch : {new_broker_address}")
     
 
 if __name__ == "__main__":
-    # Instantiate an MQTT cluster
     cluster = MQTTCluster("mqtt.broker.com", 5, "MyCluster", "global_topic", "internal_topic", True, 1)
 
-    # Create and connect MQTT clients
     cluster.connect_clients()

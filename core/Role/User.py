@@ -17,22 +17,9 @@ class User:
     def user_logic(self,mqtt_obj):
        
         try:
-            last_update_time = time.time()
-
-            # send for first time
-            user_status = self.update_network_status()
-            self.send_network_status(user_status, mqtt_obj)
-
             while True:
-                current_time = time.time()
-
-                # Check if 60 seconds have passed since the last update
-                if current_time - last_update_time >= 10:
-                    user_status = self.update_network_status()
-                    self.send_network_status(user_status, mqtt_obj)
-
-                    # Update the last update time
-                    last_update_time = current_time
+                user_status = self.update_network_status()
+                self.send_network_status(user_status,mqtt_obj)
 
                 received_message = mqtt_obj.handle_user_data()
 
@@ -41,17 +28,13 @@ class User:
 
                 if not self.pause_training:
                     
-                    user_status = self.update_training_status() # Update training status
-                    self.send_training_status(user_status,mqtt_obj) # Send training status to admin using MQTT
+                    user_status = self.update_training_status() 
+                    self.send_training_status(user_status,mqtt_obj) 
 
                     hash, accuracy, loss = self.ml_operations.train_machine_learning_model()
                     self.logger.info(f"Model hash: {hash}")
                     self.send_model_to_internal_cluster(user_status, hash, accuracy, loss, mqtt_obj)
                     time.sleep(1)
-
-
-                
-
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
         
@@ -111,9 +94,7 @@ class User:
                     "node_id": user_status['id'],
                     "training_status": user_status['training_status'],
                 })
-
                 mqtt_obj.send_internal_messages(message_json)
-                self.logger.warning(f"sending training infor {message_json}")
 
         except Exception as e:
             self.logger.error(f"Error in send_training_status: {str(e)}")
@@ -125,13 +106,12 @@ class User:
                 message_json = json.dumps({
                     "receiver": 'Admin',
                     "msg": RECEIVE_MODEL_INFO,
-                    "node_id": 67,
+                    "node_id": user_status['id'],
                     "model_hash": hash,
                     "accuracy": accuracy,
                     "loss": loss,
                 })
                 mqtt_obj.send_internal_messages(message_json)
-                self.logger.warning(f"message : {message_json}")
 
         except Exception as e:
             self.logger.error(f"Error in send_model_to_internal_cluster: {str(e)}")
@@ -140,14 +120,9 @@ class User:
 
         try:
             message_data = json.loads(data)
-
-            self.logger.debug(f"Incoming receive : {message_data}")
-
-            # Extract relevant information from the message
             msg_type = message_data.get("msg")
             global_model = message_data.get("global_hash")
 
-            # Process based on the message type
             if msg_type == SEND_GLOBAL_MODEL_HASH:
                 self.handle_global_model( global_model)                
             elif msg_type == PAUSE_API:
