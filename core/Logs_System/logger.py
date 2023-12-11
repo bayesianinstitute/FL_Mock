@@ -2,10 +2,9 @@ import logging
 import colorlog
 
 class Logger:
-    _loggers = {}  # Class variable to store instances
+    _loggers = {}  
 
     def __new__(cls, name='default_logger'):
-        # Check if an instance with the given name already exists
         if name not in cls._loggers:
             instance = super(Logger, cls).__new__(cls)
             cls._loggers[name] = instance
@@ -14,7 +13,6 @@ class Logger:
             return cls._loggers[name]
 
     def __init__(self, name='default_logger'):
-        # If the logger already exists, do not reconfigure it
         if not hasattr(self, 'logger'):
             self.logger = logging.getLogger(name)
             self.logger.setLevel(logging.DEBUG)
@@ -38,7 +36,6 @@ class Logger:
     def get_logger(self):
         return self.logger
 
-# Example usage:
 
 if __name__ == '__main__':
     logger = Logger(name='my_logger').get_logger()

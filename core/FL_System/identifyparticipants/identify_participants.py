@@ -16,13 +16,11 @@ class IdentifyParticipant:
         self.client.on_message = self.on_message
         self.client.connect(self.broker, 1883)
         self.client.loop_start()
-        self.aggregator = False  # Initialize as non-aggregator
+        self.aggregator = False 
         self.ram_topic=ram_topic
         self.aggregator_topic=aggregator_topic
         self.minimum_participate=minimum_participate
         
-
-    # Get  performance infor
     def get_computer_info(self):
         try:
             ram = psutil.virtual_memory()
@@ -37,7 +35,7 @@ class IdentifyParticipant:
             return {"ram": available_ram}
         except Exception as e:
             self.logger.error(f"Error fetching computer info: {e}")
-            return {"ram": 0}  # Return a default value
+            return {"ram": 0} 
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:

@@ -9,7 +9,6 @@ def extract_endpoints(api_json):
             for item in api_json['item']:
                 if 'request' in item and 'url' in item['request']:
                     raw_url = item['request']['url']['raw']
-                    # Find the index of 'v1' in the URL and extract the substring after it
                     v1_index = raw_url.find('/v1/')
                     if v1_index != -1:
                         path = raw_url[v1_index + 4:]

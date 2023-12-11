@@ -6,7 +6,6 @@ import json
 from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
-# admin_module.py
 import time
 class Admin:
     def __init__(self, training_type, optimizer):
@@ -23,13 +22,12 @@ class Admin:
             self.logger.info("I am Admin ")
 
             while True:
-                # Receive messages using MQTT
                 received_message = mqtt_obj.handle_admin_data()
 
                 if received_message:
-                    # Process received messages
+                  
                     self.logger.debug(f"incoming received message:   {received_message}")
-                    # mqtt_obj.current_data.clear()
+                   
 
 
                     self.process_received_message(received_message,mqtt_obj)   
@@ -58,7 +56,6 @@ class Admin:
  
     def  handle_node_operation(self,mqtt_obj):
     
-        # Get all Node operations
         node_id=67
         data={
             "node_id":67,
@@ -82,10 +79,7 @@ class Admin:
  
     def process_received_message(self, message,mqtt_obj):
         try:
-            # Parse the received JSON message
             message_data = json.loads(message)
-            
-            # Extract relevant information from the message
             msg_type = message_data.get("msg")
             role = message_data.get("role")
             node_id = message_data.get("node_id")
@@ -96,8 +90,6 @@ class Admin:
             loss = message_data.get("loss")
             model_hash = message_data.get("model_hash")
             
-
-            # Process based on the message type
             if msg_type == SEND_NETWORK_STATUS:
                 self.handle_network_status(node_id,role, network_status)                
             elif msg_type == SEND_TRAINING_STATUS:
@@ -112,9 +104,7 @@ class Admin:
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {str(e)}")
 
-    def handle_network_status(self, node_id,role, network_status):
-        # Handle network status logic
-        
+    def handle_network_status(self, node_id,role, network_status):        
         data = {
             "role": role,
             "node_id": node_id,
@@ -127,14 +117,7 @@ class Admin:
         else:
             self.logger.error("Network status not updated")
             
-        # self.logger.critical(f"Network status:{message_data}")
-        # self.db.add_network_status(user_id, network_status)
-        # self.logger.info(f"Received network status from user {user_id}: {network_status}")
-
     def handle_training_status(self, node_id,role, training_status):
-        # Handle training status logic
-        # Update database with training status
-        # self.db.add_training_status(user_id, message_data)
         data = {
             "role": role,
             "node_id": node_id,
@@ -162,9 +145,6 @@ class Admin:
     #         self.logger.info("Sent global model to users")
 
     def handle_receive_model_info(self,node_id, accuracy,loss,model_hash):
-        # Handle received model information logic
-        # Update database with received model information
-        # self.db.add_received_model_info(user_id, message_data)
         data = {
             "training_info":1,
             "node_id": node_id,
@@ -188,8 +168,6 @@ class Admin:
     
         
         self.logger.info(f"Terminated API for user {user_id}")
-
-        # Send acknowledge termination to the user
         mqtt_obj.send_internal_messages(message_json)
 
     def handle_pause_api(self, user_id,mqtt_obj):
@@ -201,7 +179,6 @@ class Admin:
         "msg": PAUSE_API,
        })
         self.logger.info(f"Paused API for user {user_id}")
-        # Send acknowledge pause to the user
 
         mqtt_obj.send_internal_messages(message_json)
 
@@ -216,8 +193,6 @@ class Admin:
         "msg": RESUME_API,
        })
         self.logger.info(f"Resume API for user {user_id}")
-
-        # Send acknowledge pause to the user
         mqtt_obj.send_internal_messages(message_json)
 
 
@@ -275,7 +250,6 @@ class Admin:
             return None    
         
     def handle_Disconnect_node_api(self,node_id):
-        #TODO : Match the node_id and update network status to Disconnect
         self.logger.warning(f"Disconnected {node_id}")
         pass
     

@@ -29,6 +29,7 @@ class TrainingInformation(models.Model):
     
 class TrainingResult(models.Model):
     training_info = models.ForeignKey(TrainingInformation, on_delete=models.CASCADE, related_name='training_results',null=True, blank=True)
+    training_round = models.IntegerField()
     accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -48,6 +49,7 @@ class TrainingResultAdmin(models.Model):
         blank=True
     )
     node_id = models.IntegerField()
+    training_round = models.IntegerField()
     accuracy = models.FloatField()
     loss = models.FloatField()
     model_hash = models.CharField(max_length=255, blank=True, null=True) 
