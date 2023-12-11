@@ -125,6 +125,8 @@ class User:
         try:
             message_data = json.loads(data)
 
+            self.logger.debug(f"Incoming receive : {message_data}")
+
             # Extract relevant information from the message
             msg_type = message_data.get("msg")
             global_model = message_data.get("global_hash")

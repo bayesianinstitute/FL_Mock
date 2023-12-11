@@ -18,6 +18,8 @@ class MQTTCluster:
         self.terimate_status = False
         self.received_admin_data_queue = queue.Queue()
         self.received_user_data_queue=queue.Queue()
+                # Keep track of the last received user data
+        self.last_received_user_data = None
 
 
     def on_connect(self,client, userdata, flags, rc):
@@ -65,7 +67,23 @@ class MQTTCluster:
                 # This is in mqtt.py file and   Need to transfer json data to admin.py file
             elif json_data.get("receiver") == 'User' :
                 self.logger.critical("The receiver is User")
-                self.received_user_data_queue.put(data)
+                if self.received_user_data_queue.empty():
+                    self.received_user_data_queue.put(data)
+
+                else:
+                    last_element = self.received_user_data_queue.queue[-1]
+
+
+                    # Check if the last value put is different from the front element
+                    if last_element != data:
+                        self.received_user_data_queue.put(self.received_user_data_queue)
+
+                        self.logger.warning("Last value put is the different as the front element.")
+
+                        # my_queue.get()
+                    else:
+                        self.logger.info("Last value put is the same as the front element.")
+
 
             
             # # Check for the terminate message
