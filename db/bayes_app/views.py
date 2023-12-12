@@ -378,3 +378,20 @@ def update_node_status(request, status, new_status):
 
     # Return a response
     return Response({'message': f'Successfully updated {status} status to {new_status}'}, status=drf_status.HTTP_200_OK)
+
+
+@api_view(['PUT'])
+def update_model_hash(request):
+    try:
+        node_status = NodeStatus.objects.get()
+        serializer = NodeStatusSerializer(node_status, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except NodeStatus.DoesNotExist:
+        serializer = NodeStatusSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

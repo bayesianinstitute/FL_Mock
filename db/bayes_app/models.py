@@ -173,7 +173,7 @@ class NodeStatus(models.Model):
         choices=NETWORK_STATUS_CHOICES,
         default='idle'
     )    
-    
+    model_hash = models.CharField(max_length=255, blank=True, null=True) 
     objects = NodeStatusManager()
     def __str__(self):
         return f"{self.operation_status} - {self.training_status} - {self.network_status}"
