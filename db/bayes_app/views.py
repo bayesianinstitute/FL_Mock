@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse
+from rest_framework import status as drf_status
 
 def dfl(request):
     return render(request, 'dfl/index.html')
@@ -376,4 +377,4 @@ def update_node_status(request, status, new_status):
     node_status.save()
 
     # Return a response
-    return Response({'message': f'Successfully updated {status} status to {new_status}'}, status=status.HTTP_200_OK)
+    return Response({'message': f'Successfully updated {status} status to {new_status}'}, status=drf_status.HTTP_200_OK)

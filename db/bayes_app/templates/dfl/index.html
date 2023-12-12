@@ -17,9 +17,11 @@
     <div id="userContent" style="display: none">
       <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <img src='https://bayesian.global/wp-content/uploads/2023/08/cropped-%E8%B4%9D%E5%8F%B6%E6%96%AFlogo.png' alt="Logo">
           <a class="navbar-brand" href="http://127.0.0.1:8000/">
             <!-- Your Title/Logo Image or Text -->
-           Bayes User
+            <span>User</span>
+
           </a>
           <button
             class="navbar-toggler"
@@ -100,7 +102,8 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
           <a class="navbar-brand" href="http://127.0.0.1:8000/">
             <!-- Your Title/Logo Image or Text -->
-           Bayes Admin
+            <img src='https://bayesian.global/wp-content/uploads/2023/08/cropped-%E8%B4%9D%E5%8F%B6%E6%96%AFlogo.png' alt="Logo">
+            <span>Admin</span>
           </a>
           <button
             class="navbar-toggler"
@@ -240,15 +243,47 @@
     fetchLogs();
   });
 
-  function launchURL() {
-    // Open http://127.0.0.1:5000 in a new tab
-    window.open("http://127.0.0.1:5000", "_blank");
-  }
+
   
   // Function to get the selected training name
   function getSelectedTrainingName() {
     const dropdown = document.getElementById('trainingNamesSelect');
     return dropdown.options[dropdown.selectedIndex].value;
+  }
+  async function startTraining() {
+    try {
+      // Make an API call to start training
+      const response = await fetch('http://127.0.0.1:8000/api/v1/update_status/operation/resume/', {
+        method: 'PUT', // Assuming it's a PUT request
+      });
+
+      if (response.ok) {
+        console.log('Training started successfully');
+        // Add any additional logic you need after starting training
+      } else {
+        console.error('Failed to start training:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error starting training:', error);
+    }
+  }
+
+  async function stopTraining() {
+    try {
+      // Make an API call to stop training
+      const response = await fetch('http://127.0.0.1:8000/api/v1/update_status/operation/terminate/', {
+        method: 'PUT', // Assuming it's a PUT request
+      });
+
+      if (response.ok) {
+        console.log('Training stopped successfully');
+        // Add any additional logic you need after stopping training
+      } else {
+        console.error('Failed to stop training:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error stopping training:', error);
+    }
   }
   async function fetchLogs() {
     try {
