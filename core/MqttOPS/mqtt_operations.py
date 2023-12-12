@@ -14,11 +14,17 @@ class MqttOperations:
 
     
 
-    def start_dfl_using_mqtt(self):
+    def start_dfl_using_mqtt(self,role):
         try:
             self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name,
                                        self.internal_cluster_topic, self.status, self.id)
-            self.cluster.connect_clients()
+            
+            receiver=None
+            if role=='Admin':
+                receiver='User'
+            elif role=='User':
+                receiver='Admin'    
+            self.cluster.connect_clients(role,receiver)
             self.logger.info(f'Check head node {self.status}')
             self.logger.info("Started DFL Process")
             return self.cluster

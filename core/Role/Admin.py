@@ -8,21 +8,23 @@ from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
 import time
 class Admin:
-    def __init__(self, training_type, optimizer):
+    def __init__(self,training_name, training_type, optimizer,mqtt_operations,role='Admin',):
         self.apiClient=ApiClient()
-        self.ml_operations = MLOperations(training_type, optimizer)
+        self.ml_operations = MLOperations(training_type, optimizer,training_name=f'Admin-{training_name}')
 
         self.logger = Logger(name='admin-role').get_logger()
 
         self.model_list = []
+                # Start, initialize, and get MQTT communication object
+        self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
 
-    def admin_logic(self,  mqtt_obj,id):
+    def admin_logic(self,  id):
         try:
             self.is_admin = True
             self.logger.info("I am Admin ")
 
             while True:
-                received_message = mqtt_obj.handle_admin_data()
+                received_message = self.mqtt_obj.handle_admin_data()
 
                 if received_message:
                   
@@ -30,10 +32,10 @@ class Admin:
                    
 
 
-                    self.process_received_message(received_message,mqtt_obj)   
+                    self.process_received_message(received_message,)   
 
                 time.sleep(1) 
-                self.handle_node_operation(mqtt_obj)
+                self.handle_node_operation()
              
     
         except Exception as e:
@@ -54,11 +56,11 @@ class Admin:
             return None
  
  
-    def  handle_node_operation(self,mqtt_obj):
+    def  handle_node_operation(self,):
     
-        node_id=67
+        node_id=1
         data={
-            "node_id":67,
+            "node_id":1,
         }
         operation=self.get_operation_status(data)
         operation_status = operation.get('operation_status')
@@ -66,36 +68,38 @@ class Admin:
 
         
         if operation_status == 'terminate':
-                self.handle_terminate_api(node_id,mqtt_obj)
+                self.handle_terminate_api(node_id,)
         elif operation_status == 'pause':
-                self.handle_pause_api(node_id,mqtt_obj)
+                self.handle_pause_api(node_id,)
         elif operation_status == 'resume':
-                self.handle_resume_api(node_id,mqtt_obj)
+                self.handle_resume_api(node_id)
         
         time.sleep(1) 
         
 
 
  
-    def process_received_message(self, message,mqtt_obj):
+    def process_received_message(self, message,):
         try:
             message_data = json.loads(message)
             msg_type = message_data.get("msg")
             role = message_data.get("role")
             node_id = message_data.get("node_id")
-            training_status = message_data.get("training_status")
-            network_status = message_data.get("network_status")
-            accuracy = message_data.get("accuracy")
-           
-            loss = message_data.get("loss")
-            model_hash = message_data.get("model_hash")
+
             
             if msg_type == SEND_NETWORK_STATUS:
+                network_status = message_data.get("network_status")
                 self.handle_network_status(node_id,role, network_status)                
             elif msg_type == SEND_TRAINING_STATUS:
+                training_status = message_data.get("training_status")
+
                 self.handle_training_status(node_id,role, training_status)
             elif msg_type == RECEIVE_MODEL_INFO:
-                self.handle_receive_model_info(node_id, accuracy,loss,model_hash)
+                accuracy = message_data.get("accuracy")
+                loss = message_data.get("loss")
+                model_hash = message_data.get("model_hash")
+                training_round=message_data.get("training_round")
+                self.handle_receive_model_info(node_id, accuracy,loss,model_hash,training_round)
 
 
 
@@ -130,7 +134,7 @@ class Admin:
         else:
             self.logger.error("Training status not updated")
 
-    # def handle_train_model(self, user_id, message_data,mqtt_obj):
+    # def handle_train_model(self, user_id, message_data,self.mqtt_obj):
     #     # Handle train model logic
     #     # Update database with model training information
     #     # self.db.add_model_training_info(user_id, message_data)
@@ -141,16 +145,17 @@ class Admin:
     #         # Aggregate and send global model through MQTT
     #         # global_model = self.db.aggregate_global_model()
     #         message_data=self.send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB')
-    #         mqtt_obj.send_internal_messages(message_data)
+    #         self.mqtt_obj.send_internal_messages(message_data)
     #         self.logger.info("Sent global model to users")
 
-    def handle_receive_model_info(self,node_id, accuracy,loss,model_hash):
+    def handle_receive_model_info(self,node_id, accuracy,loss,model_hash,training_round):
         data = {
             "training_info":1,
             "node_id": node_id,
             "accuracy": accuracy,
             "loss":loss,
             "model_hash":model_hash,
+            "training_round":training_round,
         }
         status = self.update_receive_model_info(data)
         if status:
@@ -158,7 +163,7 @@ class Admin:
         else:
             self.logger.error("Not Received Model Information")
 
-    def handle_terminate_api(self, user_id,mqtt_obj):
+    def handle_terminate_api(self, user_id,):
         message_json = json.dumps({
                 "receiver": 'User',
                 "role": 'Admin',
@@ -168,9 +173,9 @@ class Admin:
     
         
         self.logger.info(f"Terminated API for user {user_id}")
-        mqtt_obj.send_internal_messages(message_json)
+        self.mqtt_obj.send_internal_messages(message_json)
 
-    def handle_pause_api(self, user_id,mqtt_obj):
+    def handle_pause_api(self, user_id):
 
         message_json = json.dumps({
         "receiver": 'User',
@@ -180,11 +185,11 @@ class Admin:
        })
         self.logger.info(f"Paused API for user {user_id}")
 
-        mqtt_obj.send_internal_messages(message_json)
+        self.mqtt_obj.send_internal_messages(message_json)
 
 
 
-    def handle_resume_api(self, user_id,mqtt_obj):
+    def handle_resume_api(self, user_id,):
         self.logger.info(f"Inside Handle Resume API")
         message_json = json.dumps({
         "receiver": 'User',
@@ -193,7 +198,7 @@ class Admin:
         "msg": RESUME_API,
        })
         self.logger.info(f"Resume API for user {user_id}")
-        mqtt_obj.send_internal_messages(message_json)
+        self.mqtt_obj.send_internal_messages(message_json)
 
 
     def send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'):

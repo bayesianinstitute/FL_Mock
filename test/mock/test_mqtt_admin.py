@@ -42,6 +42,7 @@ def send_model_to_internal_cluster():
         "model_hash": "Faijan hahs",
         "accuracy": "500000",
         "loss": "3",
+        "training_round":2,
     })
     return message_json
 
@@ -87,7 +88,7 @@ if __name__ == "__main__":
             client.publish(topics, send_model_to_internal_cluster(), qos=2)
 
             print("Successfully sent messages to admin")
-            time.sleep(id)
+            time.sleep(10)
 
         except KeyboardInterrupt:
             client.disconnect()

@@ -90,27 +90,26 @@ if __name__ == "__main__":
         try:
             # Call your message-sending methods and publish the resulting JSON
 
-            # time.sleep(9)
 
-            # client.publish(topics, send_global_model(), qos=2)
-            # print("Successfully sent Global Model to User")
+            client.publish(topics, send_global_model(), qos=2)
+            print("Successfully sent Global Model to User")
 
             time.sleep(4)
 
             client.publish(topics, send_pause_message(), qos=2)
             print("Successfully sent Pause to User")
 
-            # time.sleep(4)
+            time.sleep(15)
 
 
-            # client.publish(topics, send_resume_message(), qos=2)
-            # print("Successfully sent Resume to User")
+            client.publish(topics, send_resume_message(), qos=2)
+            print("Successfully sent Resume to User")
 
-            # time.sleep(15)
+            # time.sleep(9)
 
             # client.publish(topics, send_terminate_message(), qos=2)
             # print("Successfully sent Terimate to User")
-            # break
+            # # break
 
 
             
