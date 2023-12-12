@@ -34,7 +34,7 @@ class AdminSerializer(serializers.ModelSerializer):
 class GlobalModelHashSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlobalModelHash
-        fields = '__all__'
+        fields = ['global_model_hash']
 
 class TrainingResultAdminSerializer(serializers.ModelSerializer):
     class Meta:

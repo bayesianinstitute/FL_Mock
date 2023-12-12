@@ -150,11 +150,11 @@ def post_global_model_hash(request):
 @api_view(['GET'])
 def get_global_model_hash(request):
     try:
-        global_model_hash_instance = GlobalModelHash.objects.latest('timestamp')
-        serializer = GlobalModelHashSerializer(global_model_hash_instance)
+        latest_hash = GlobalModelHash.objects.latest('timestamp')
+        serializer = GlobalModelHashSerializer(latest_hash)
         return Response(serializer.data)
     except GlobalModelHash.DoesNotExist:
-        return Response({'error': 'Global Model Hash data not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "No global model hash found"}, status=404)
     
 @api_view(['GET'])
 def get_track_role(request):
@@ -315,26 +315,28 @@ def get_model_hashes(request):
 @api_view(['PUT'])
 def update_logs(request):
     try:
-        # Retrieve the existing log entry (assuming you have a single log entry in this example)
+
         log_entry = Logs.objects.first()
 
-        # Get the new log message from the request
         new_log_message = request.data.get('logs', '')
 
         if log_entry is not None:
-            # If a log entry exists, append a new line to the existing message
             log_entry.message += f"\n{new_log_message}"
         else:
-            # If no log entry exists, create a new log entry with the provided message
             log_entry = Logs.objects.create(message=new_log_message)
-
-        # Save the updated or new log entry
         log_entry.save()
-
-        # Serialize the data
         serializer = LogsSerializer(log_entry)
 
         return Response({'logs': serializer.data['message']})
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@api_view(['GET'])
+def get_latest_global_model_hash(request):
+    try:
+        latest_hash = GlobalModelHash.objects.latest('timestamp')
+        serializer = GlobalModelHashSerializer(latest_hash)
+        return Response(serializer.data)
+    except GlobalModelHash.DoesNotExist:
+        return Response({"error": "No global model hash found"}, status=404)

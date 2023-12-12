@@ -20,7 +20,7 @@ urlpatterns = [
     
     path('api/v1/get-admin-data/', get_admin_data, name='get_admin_data'),
     path('api/v1/post-global-model-hash/', post_global_model_hash, name='post_global_model_hash'),
-    path('api/v1/get-global-model-hash/', get_global_model_hash, name='get_global_model_hash'),
+   
     path('api/v1/get-track-role/', get_track_role, name='get_track_role'),
    
     path('api/v1/<str:metric_name>/<str:training_name>/', get_all_users_metrics, name='metrics-api-all'),
@@ -39,5 +39,6 @@ urlpatterns = [
     path('api/v1/get_model_hashes/', get_model_hashes, name='get_model_hashes'),
     path('api/v1/logs/', get_logs, name='get_logs'),
     path('api/v1/update_logs/', update_logs, name='update_logs'),
+    path('api/v1/get-global-model-hash/', get_global_model_hash, name='get_global_model_hash'),
     
 ]

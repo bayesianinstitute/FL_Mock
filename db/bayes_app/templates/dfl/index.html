@@ -15,12 +15,45 @@
   <body>
 
     <div id="userContent" style="display: none">
+      <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <a class="navbar-brand" href="http://127.0.0.1:8000/">
+            <!-- Your Title/Logo Image or Text -->
+           Bayes User
+          </a>
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Navigation Links -->
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item active">
+                <a class="nav-link" href="http://127.0.0.1:8000/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="http://127.0.0.1:5000/" target="_blank">View Model Tracking</a>
+
+              </li>
+              <!-- Add more navigation links as needed -->
+            </ul>
+          </div>
+        </nav>
+      </header>
+      
       <!-- User-specific content goes here -->
       <div class="container mt-4">
         <!-- Input Fields -->
         <div class="card">
           <div class="card-header">
-            <h1 class="card-title">Configuration</h1>
+            <h1 class="card-title">Join the training</h1>
           </div>
           <div class="card-body">
             <div class="form-group">
@@ -48,10 +81,14 @@
             >
               Show Logs
             </button>
+              <!-- Display global_model_hash with a customized background -->
+            <div class="mt-3 p-3" style="background-color: #2c3e50; color: #ecf0f1; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <h5 class="font-weight-bold">Global Model Hash: <span id="globalModelHash" class="lead"></span></h5>
+            </div>
             <!-- Add a button to launch another URL -->
-            <button onclick="launchURL()" class="btn btn-info">
+            {% comment %} <button onclick="launchURL()" class="btn btn-info">
               View Model Tracking
-            </button>
+            </button> {% endcomment %}
           </div>
         </div>
       </div>
@@ -115,14 +152,25 @@
             </table>
           </div>
         </div>
+        <!-- Display global_model_hash with a customized background -->
+      <div class="mt-3 p-3" style="background-color: #2c3e50; color: #ecf0f1; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <h5 class="font-weight-bold">Global Model Hash: <span id="globalModelHash" class="lead"></span></h5>
+      </div>
+
         <div class="container mt-4">
-          <label for="trainingNamesSelect">Select Training Name:</label>
-          <select id="trainingNamesSelect" class="form-control">
-            <!-- Options will be dynamically added here -->
-          </select>
-          
-          <button class="btn btn-primary mt-2" onclick="submitForm()">Submit</button>
+          <div class="d-flex align-items-end">
+            <div class="mr-2">
+              <label for="trainingNamesSelect">Select Training Name:</label>
+              <select id="trainingNamesSelect" class="form-control">
+                <!-- Options will be dynamically added here -->
+              </select>
+            </div>
+            <button class="btn btn-primary mt-2 mr-2" onclick="submitForm()">Submit</button>
+            <button class="btn btn-danger  mt-2" onclick="showLogs()" data-toggle="modal"
+            data-target="#logsModal">Show logs</button>
+          </div>
         </div>
+
         <div class="container mt-4">
           <div class="row">
             <!-- Line Graph Container for Accuracy -->
@@ -161,441 +209,37 @@
       <h1>Backup Admin</h1>
     </div>
 
-    <!-- Logs Modal -->
-    <div
-      class="modal fade"
-      id="logsModal"
-      tabindex="-1"
-      role="dialog"
-      aria-labelledby="logsModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" role="document">
-        <div
-          class="modal-content"
-          style="background-color: black; color: white"
-        >
+    <div class="modal fade" id="logsModal" tabindex="-1" role="dialog" aria-labelledby="logsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" style="background-color: #343a40; color: #0FFF50">
           <div class="modal-header">
             <h5 class="modal-title" id="logsModalLabel">Logs</h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            <ul id="logsList"></ul>
+            <div id="logsListContainer"></div>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              Close
-            </button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
 
+
+
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    {% comment %} <script>
-      async function fetchData() {
-        try {
-          const response = await fetch(
-            'http://127.0.0.1:8000/api/v1/get-track-role/'
-          )
-          const data = await response.json()
-
-          // Identify the role
-          const role = data.role
-
-          // Switch UI based on the role
-          switch (role) {
-            case 'User':
-              document.getElementById('userContent').style.display = 'block'
-              break
-            case 'Admin':
-              document.getElementById('adminContent').style.display = 'block'
-              await fetchAdminData() // Fetch and render admin data
-             
-              break
-            case 'BackupAdmin':
-              document.getElementById('backupAdminContent').style.display =
-                'block'
-              break
-            default:
-              // Handle unknown roles or errors
-              console.error('Unknown role:', role)
-          }
-        } catch (error) {
-          // Handle API fetch errors
-          console.error('API error:', error)
-        }
-      }
-      async function fetchTrainingNames() {
-        try {
-          const response = await fetch('http://127.0.0.1:8000/api/v1/get-unique-training-names/');
-          const data = await response.json();
-    
-          // Assuming data has a "data" property with an array of training names
-          const trainingNames = data.data;
-    
-          // Populate the dropdown with training names
-          const dropdown = document.getElementById('trainingNamesSelect');
-    
-          // Clear existing options
-          dropdown.innerHTML = '';
-    
-          // Add new options
-          trainingNames.forEach((trainingName) => {
-            const option = document.createElement('option');
-            option.value = trainingName;
-            option.text = trainingName;
-            dropdown.appendChild(option);
-          });
-        } catch (error) {
-          console.error('Error fetching training names:', error);
-        }
-      }
-      async function fetchAdminData() {
-        try {
-          const response = await fetch(
-            'http://127.0.0.1:8000/api/v1/get-admin-data/'
-          )
-          const adminData = await response.json()
-
-          console.log('Admin Data:', adminData)
-
-          // Process the received data and update the table
-          renderUserTable(adminData)
-          await fetchTrainingNames()
-          // Plot the line graph using the accuracy/USA/ API
-          await fetchAccuracyDataAndPlotGraph()
-
-          // Plot the line graph for loss using the loss/USA/ API
-          await fetchLossDataAndPlotGraph()
-
-          // Plot the line graph for validation accuracy using the validation_accuracy/USA/ API
-          await fetchValidationAccuracyDataAndPlotGraph()
-        } catch (error) {
-          console.error('Error fetching admin data:', error)
-        }
-      }
-
-      async function fetchAccuracyDataAndPlotGraph() {
-        try {
-          const selectedTrainingName = getSelectedTrainingName(); // Assuming you have a function to get the selected training name
-          const accuracyApiUrl = `http://127.0.0.1:8000/api/v1/accuracy/${selectedTrainingName}/`;
-          const response = await fetch(accuracyApiUrl);
-          const accuracyData = await response.json();
-    
-          console.log('Accuracy Data:', accuracyData);
-    
-          // Plot the line graph
-          plotLineGraph(accuracyData, 'accuracyChart');
-        } catch (error) {
-          console.error('Error fetching accuracy data:', error);
-        }
-      }
-    
-      async function fetchLossDataAndPlotGraph() {
-        try {
-          const selectedTrainingName = getSelectedTrainingName(); // Assuming you have a function to get the selected training name
-          const lossApiUrl = `http://127.0.0.1:8000/api/v1/loss/${selectedTrainingName}/`;
-          const response = await fetch(lossApiUrl);
-          const lossData = await response.json();
-    
-          console.log('Loss Data:', lossData);
-    
-          // Plot the line graph
-          plotLineGraph(lossData, 'lossChart');
-        } catch (error) {
-          console.error('Error fetching loss data:', error);
-        }
-      }
-
-      async function showLogs() {
-        try {
-          const response = await fetch('http://127.0.0.1:8000/api/v1/logs/')
-          const logsData = await response.json()
-
-          console.log('Logs Data:', logsData)
-
-          // Display logs in the modal
-          const logsList = document.getElementById('logsList')
-          logsList.innerHTML = '' // Clear existing logs
-
-          logsData.forEach((log) => {
-            const listItem = document.createElement('li')
-            listItem.textContent = log.message
-            logsList.appendChild(listItem)
-          })
-
-          // Show the logs modal
-          $('#logsModal').modal('show')
-        } catch (error) {
-          console.error('Error fetching logs:', error)
-        }
-      }
-
-      function renderUserTable(adminData) {
-        const userTableBody = document.getElementById('user-table-body')
-      
-        // Clear existing table content
-        userTableBody.innerHTML = ''
-      
-        // Check if adminData is an array, if not, wrap it in an array
-        const dataArray = Array.isArray(adminData) ? adminData : [adminData]
-      
-        // Loop through dataArray and append rows to the table
-        dataArray.forEach((user) => {
-          const row = userTableBody.insertRow()
-      
-          // Assuming user object has properties like nodeId, userRole, trainingStatus, networkStatus, and operation_status
-          const cell1 = row.insertCell(0)
-          const cell2 = row.insertCell(1)
-          const cell3 = row.insertCell(2)
-          const cell4 = row.insertCell(3)
-          const cell5 = row.insertCell(4) // Action column
-      
-          cell1.textContent = user.node_id
-          cell2.textContent = user.role // Assuming the user role is always 'Admin'
-          cell3.textContent = user.training_status
-          cell4.textContent = user.network_status
-      
-          // Create "Toggle" button for Resume/Pause
-          const toggleButton = document.createElement('button')
-          toggleButton.classList.add('btn', 'btn-sm', 'mr-1')
-      
-          // Determine the label and action based on the user's operation_status
-          if (user.operation_status === 'pause') {
-            toggleButton.textContent = 'Resume';
-            toggleButton.classList.add('btn-success');
-            toggleButton.addEventListener('click', () => resumeUser(user.node_id));
-          } else if (user.operation_status === 'resume') {
-            toggleButton.textContent = 'Pause';
-            toggleButton.classList.add('btn-warning');
-            toggleButton.addEventListener('click', () => pauseUser(user.node_id));
-          } else if (user.operation_status === 'terminate') {
-            // Remove the "Pause" and "Resume" buttons for terminated users
-            cell5.innerHTML = ''; // Clear existing content
-          
-          }
-          
-          cell5.appendChild(toggleButton)
-      
-          // Create "Terminate" button
-          const terminateButton = document.createElement('button')
-          terminateButton.textContent = 'Terminate'
-          terminateButton.classList.add('btn', 'btn-danger', 'btn-sm')
-          terminateButton.addEventListener('click', () => terminateUser(user.node_id))
-          cell5.appendChild(terminateButton)
-        })
-      }
-      // Function to handle pausing a user
-
-      function pauseUser(nodeId) {
-        console.log(`Pausing user with Node ID ${nodeId}`);
-        const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
-
-        const requestData = {
-          node_id: nodeId,
-          operation_status: 'pause',
-        };
-
-        const fetchConfig = {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestData),
-        };
-
-        fetch(apiUrl, fetchConfig)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('API Response:', data);
-            // Update the status dynamically without refreshing
-            updateStatus();
-          })
-          .catch(error => {
-            console.error('Fetch Error:', error);
-          });
-      }
-
-      // Function to handle resuming a user
-      function resumeUser(nodeId) {
-        console.log(`Resuming user with Node ID ${nodeId}`);
-        const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
-
-        const requestData = {
-          node_id: nodeId,
-          operation_status: 'resume',
-        };
-
-        const fetchConfig = {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestData),
-        };
-
-        fetch(apiUrl, fetchConfig)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('API Response:', data);
-            // Update the status dynamically without refreshing
-            updateStatus();
-          })
-          .catch(error => {
-            console.error('Fetch Error:', error);
-          });
-      }
-      // Function to handle terminating a user
-      function terminateUser(nodeId) {
-        console.log(`Terminating user with Node ID ${nodeId}`);
-        const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
-
-        const requestData = {
-          node_id: nodeId,
-          operation_status: 'terminate',
-        };
-
-        const fetchConfig = {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestData),
-        };
-
-        fetch(apiUrl, fetchConfig)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('API Response:', data);
-            // Update the status dynamically without refreshing
-            updateStatus();
-          })
-          .catch(error => {
-            console.error('Fetch Error:', error);
-          });
-      }
-
-      function getSelectedTrainingName() {
-        // Assuming you have a dropdown with id 'trainingNamesSelect'
-        const dropdown = document.getElementById('trainingNamesSelect');
-        return dropdown.options[dropdown.selectedIndex].value;
-      }
-      function submitForm() {
-        const selectedTrainingName = getSelectedTrainingName();
-        console.log('Selected Training Name:', selectedTrainingName);
-                  // Plot the line graph using the accuracy/USA/ API
-        fetchAccuracyDataAndPlotGraph()
-
-                  // Plot the line graph for loss using the loss/USA/ API
-         fetchLossDataAndPlotGraph()
-        // Add additional logic here, such as making API requests with the selected training name
-      }
-
-      // Function to update the status dynamically
-      function updateStatus() {
-        fetchAdminData();
-        }
-    
-      function plotLineGraph(data, chartId) {
-        const chartCanvas = document.getElementById(chartId)
-
-        // Extract unique node_ids
-        const nodeIds = [...new Set(data.map((record) => record.node_id))]
-
-        // Prepare datasets for each user
-        const datasets = nodeIds.map((nodeId, index) => {
-          const userRecords = data.find((record) => record.node_id === nodeId)
-          const dataPoints = userRecords.data.map((value, round) => ({
-            x: round + 1, // Start the training round from 1
-            y: value,
-          }))
-
-          return {
-            label: `User ${nodeId}`,
-            data: dataPoints,
-            borderColor: `rgba(${Math.random() * 255}, ${
-              Math.random() * 255
-            }, ${Math.random() * 255}, 1)`,
-            borderWidth: 1,
-            fill: false,
-          }
-        })
-
-        new Chart(chartCanvas, {
-          type: 'line',
-          data: {
-            labels: Array.from({ length: datasets[0].data.length }, (_, i) =>
-              (i + 1).toString()
-            ), // Start the x-axis labels from 1
-            datasets: datasets,
-          },
-          options: {
-            scales: {
-              x: {
-                type: 'linear',
-                position: 'bottom',
-                title: {
-                  display: true,
-                  text: 'Training Round',
-                },
-                ticks: {
-                  beginAtZero: true,
-                },
-              },
-              y: {
-                title: {
-                  display: true,
-                  text:
-                    chartId === 'accuracyChart'
-                      ? 'Accuracy'
-                      : chartId === 'lossChart'
-                      ? 'Loss'
-                      : 'Validation Accuracy',
-                },
-                ticks: {
-                  beginAtZero: true,
-                },
-              },
-            },
-          },
-        })
-      }
-
-      fetchData() // Call the main function
-      
-    </script> {% endcomment %}
-
 
 <script>
+  $('#logsModal').on('show.bs.modal', function (e) {
+    fetchLogs();
+  });
+
   function launchURL() {
     // Open http://127.0.0.1:5000 in a new tab
     window.open("http://127.0.0.1:5000", "_blank");
@@ -606,6 +250,67 @@
     const dropdown = document.getElementById('trainingNamesSelect');
     return dropdown.options[dropdown.selectedIndex].value;
   }
+  async function fetchLogs() {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/logs/');
+      const data = await response.json();
+  
+      if (Array.isArray(data)) {
+        const logs = data;
+  
+        const logsContainer = document.getElementById('logsListContainer');
+        logsContainer.innerHTML = '';
+  
+        logs.forEach((log) => {
+          const logItem = document.createElement('div');
+          logItem.innerHTML = `<p>${log.message.replace(/\n/g, '<br>')}</p>`;
+          logsContainer.appendChild(logItem);
+        });
+      } else {
+        console.error('Error: Logs data is not in the expected format', data);
+      }
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+    }
+  }
+
+  // Polling function to fetch logs every 5 seconds
+function startLogPolling() {
+  setInterval(fetchLogs, 2000); // Adjust the interval as needed (e.g., 5000 milliseconds = 5 seconds)
+}
+
+// Start polling when the page is loaded
+window.addEventListener('load', startLogPolling);
+  
+async function fetchGlobalModelHash() {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/v1/get-global-model-hash/');
+    const data = await response.json();
+
+    const globalModelHashElement = document.getElementById('globalModelHash');
+
+    if (data.global_model_hash) {
+      globalModelHashElement.textContent = data.global_model_hash;
+    } else {
+      globalModelHashElement.textContent = 'No Global Model Hash available.';
+    }
+  } catch (error) {
+    console.error('Error fetching global model hash:', error);
+  }
+}
+
+// Polling function to fetch global model hash every 5 seconds
+function startGlobalModelHashPolling() {
+  setInterval(fetchGlobalModelHash, 1000); // Adjust the interval as needed (e.g., 5000 milliseconds = 5 seconds)
+}
+
+// Start polling when the page is loaded
+window.addEventListener('load', startGlobalModelHashPolling);
+
+  
+  
+  
+  
   
   // Function to fetch and populate training names
   async function fetchTrainingNames() {

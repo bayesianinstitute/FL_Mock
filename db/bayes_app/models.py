@@ -5,13 +5,11 @@ from django.utils import timezone
 # Create your models here.
 class TrainingInformation(models.Model):
     model_name_choices = [
-        ('ANN', 'Artificial Neural Network'),
         ('CNN', 'Convolutional Neural Network'),
     ]
 
     dataset_name_choices = [
         ('Mnist', 'MNIST'),
-        ('FashionMNIST', 'FashionMNIST'),
     ]
 
     optimizer_choices = [
@@ -24,7 +22,8 @@ class TrainingInformation(models.Model):
     training_name = models.CharField(max_length=200, unique=True)
 
     def __str__(self):
-        return f"{self.training_name}"
+        return f"{self.training_name} -{self.model_name} -{self.dataset_name} -{self.optimizer}"
+
     class Meta:
         verbose_name_plural="Training Information"
     
@@ -42,7 +41,7 @@ class TrainingResult(models.Model):
         return f"{self.training_info.model_name} - {self.training_info.dataset_name} - {self.training_info.optimizer} - {self.timestamp}"
 
     class Meta:
-        verbose_name_plural="Training Result"
+        verbose_name_plural="User Training Result"
     
 class TrainingResultAdmin(models.Model):
     training_info = models.ForeignKey(
@@ -129,11 +128,11 @@ class Admin(models.Model):
         self.timestamp = timezone.now()
         super().save(*args, **kwargs)
     def __str__(self):
-        return f"{self.node_id}"
+        return f"{self.role}-{self.node_id}-{self.operation_status} - {self.training_status} - {self.model_hash}"
     
     
     class Meta:
-        verbose_name_plural="Admin"
+        verbose_name_plural="AdminNodes"
     
 class NodeStatusManager(models.Manager):
     def get_or_create_single_instance(self):
@@ -175,8 +174,11 @@ class NodeStatus(models.Model):
     )    
     
     objects = NodeStatusManager()
+    def __str__(self):
+        return f"{self.operation_status} - {self.training_status} - {self.network_status}"
+   
     class Meta:
-        verbose_name_plural="Node Status"
+        verbose_name_plural="User Node Status"
     
 class GlobalModelHash(models.Model):
     global_model_hash = models.CharField(max_length=255)
@@ -184,6 +186,7 @@ class GlobalModelHash(models.Model):
     def save(self, *args, **kwargs):
         self.timestamp = timezone.now()
         super().save(*args, **kwargs)
+    
     class Meta:
         verbose_name_plural="GlobalModelHash"
  
@@ -206,6 +209,9 @@ class Track(models.Model):
         default='User'
     )
     objects = TrackManager()
+    def __str__(self):
+        return f"{self.role}"
+   
     class Meta:
         verbose_name_plural="Track"
         
