@@ -29,7 +29,7 @@ class User:
                 current_time = time.time()
 
                 # Check if 60 seconds have passed since the last update
-                if current_time - last_update_time >= 10:
+                if current_time - last_update_time >= 30:
                     user_status = self.update_network_status()
                     self.send_network_status(user_status, )
 

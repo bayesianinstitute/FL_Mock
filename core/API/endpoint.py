@@ -22,6 +22,8 @@ post_global_model_hash="post-global-model-hash/"
 get_global_model_hash="get-global-model-hash/"
 get_track_role="get-track-role/"
 node_id_count="node_id_count/"
+
+get_model_hashes="get_model_hashes/"
 #POST 
 add_nodes="add_nodes/"
 create_or_update_status="create_or_update_status/"

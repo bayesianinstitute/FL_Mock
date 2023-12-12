@@ -7,6 +7,7 @@ from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
 import time
+import ast
 class Admin:
     def __init__(self,training_name, training_type, optimizer,mqtt_operations,role='Admin',):
         self.apiClient=ApiClient()
@@ -15,23 +16,33 @@ class Admin:
         self.logger = Logger(name='admin-role').get_logger()
 
         self.model_list = []
-                # Start, initialize, and get MQTT communication object
+        # Start, initialize, and get MQTT communication object
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
 
-    def admin_logic(self,  id):
+    def admin_logic(self,id  ):
         try:
+            last_update_time = time.time()
+
             self.is_admin = True
             self.logger.info("I am Admin ")
 
             while True:
+
+                current_time = time.time()
+
+                if current_time - last_update_time >= 10:
+
+                    self.handle_aggregate_model()
+
+                    # Update the last update time
+                    last_update_time = current_time
+
+
                 received_message = self.mqtt_obj.handle_admin_data()
 
-                if received_message:
-                  
+
+                if received_message:                 
                     self.logger.debug(f"incoming received message:   {received_message}")
-                   
-
-
                     self.process_received_message(received_message,)   
 
                 time.sleep(1) 
@@ -102,9 +113,6 @@ class Admin:
                 self.handle_receive_model_info(node_id, accuracy,loss,model_hash,training_round)
 
 
-
-
-
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {str(e)}")
 
@@ -134,19 +142,45 @@ class Admin:
         else:
             self.logger.error("Training status not updated")
 
-    # def handle_train_model(self, user_id, message_data,self.mqtt_obj):
-    #     # Handle train model logic
-    #     # Update database with model training information
-    #     # self.db.add_model_training_info(user_id, message_data)
-    #     # self.logger.info(f"Received model training info from user {user_id}: {message_data}")
+    def get_all_model_hash(self):
+        get_role=self.apiClient.get_request(get_model_hashes)
 
-    #     # # Check if global model is sent
-    #     # if self.db.check_global_model_received(mq):
-    #         # Aggregate and send global model through MQTT
-    #         # global_model = self.db.aggregate_global_model()
-    #         message_data=self.send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB')
-    #         self.mqtt_obj.send_internal_messages(message_data)
-    #         self.logger.info("Sent global model to users")
+        if get_role.status_code == 200:
+            self.logger.info(f"Get Request Successful: {get_role.text}" )
+            data = json.loads(get_role.text)
+            output_list = eval(data['model_hash'])
+
+            return   output_list          
+        else:
+            self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
+        pass
+
+    def handle_aggregate_model(self):
+        self.logger.debug("Getting handle_aggregate_model")
+        model_hashes = self.get_all_model_hash()
+
+
+        
+        if len(model_hashes) ==0:
+            self.logger.debug("Model hashes are None. Returning from handle_aggregate_model. {model_hashes}")
+            return None
+
+        self.logger.debug(f"Modeling handle_aggregate_model {model_hashes}")
+
+        global_model_hash = self.ml_operations.aggregate_models(model_hashes)
+
+        message_json = json.dumps({
+            "receiver": 'User',
+            "role": 'Admin',
+            "msg": SEND_GLOBAL_MODEL_HASH,
+            "Admin": 1,
+            "global_hash": global_model_hash
+        })
+        
+        self.mqtt_obj.send_internal_messages(message_json)
+        self.logger.info("Sent global model to users")
+
+
 
     def handle_receive_model_info(self,node_id, accuracy,loss,model_hash,training_round):
         data = {

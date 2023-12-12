@@ -102,10 +102,10 @@ class MLOperations:
         
     def aggregate_models(self,get_model_list:list):
         try:
+            if get_model_list is None:
+                    # Handle the case where models_list is None
+                return None
             data=get_model_list
-
-            self.logger.info(f"listing models {data}")
-
 
 
             models = []
