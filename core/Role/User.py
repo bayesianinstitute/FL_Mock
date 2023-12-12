@@ -8,7 +8,7 @@ from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
 class User:
-    def __init__(self,training_name,training_type, optimizer,mqtt_operations,role='User'):
+    def __init__(self,training_name,mqtt_operations,role='User'):
         self.apiClient=ApiClient()
         self.training_name=training_name
         self.ml_operations = None
@@ -18,16 +18,111 @@ class User:
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
         self.grant_received = False
 
+
+
+    def user_logic(self):
+        rounds = 0
+        self.join_training_network()
+
+        try:
+            last_update_time = time.time()
+
+            while not self.grant_received:
+                initial_received_message = self.mqtt_obj.handle_user_data()
+                if initial_received_message:
+                    self.process_initial_message(initial_received_message)
+
+            user_status = self.update_network_status()
+            self.send_network_status(user_status)
+
+
+
+            while True:
+                current_time = time.time()
+
+                # Check if 60 seconds have passed since the last update
+                if current_time - last_update_time >= 30:
+                    # check local database then send update 
+
+                    user_status = self.update_network_status()
+                    self.send_network_status(user_status)
+
+                    time.sleep(16)
+
+                    # Update the last update time
+                    last_update_time = current_time
+
+                received_message = self.mqtt_obj.handle_user_data()
+                if received_message:
+                    self.process_received_message(received_message)
+                self.logger.debug(f'{self.ml_operations}')
+                if not self.pause_training:
+                    rounds = rounds + 1
+
+                    user_status = self.update_training_status()
+                    self.send_training_status(user_status)
+
+                    hash, final_accuracy, final_loss, val_acc, _ = self.ml_operations.train_machine_learning_model(
+                        rounds=rounds, epochs=5, batch_size=32
+                    )
+                    self.logger.info(f"Model hash: {hash}")
+                    # data={
+                    #     "accuracy": final_accuracy,
+                    #     "training_accuracy": val_acc,
+                    #     "loss": final_loss,
+                    #     "training_info_name": self.training_name,
+                    #     }
+
+                    # self.store_user_data(data,create_training_result)
+
+                    db_model={
+                        "model_hash": hash
+                    }
+
+                    self.update_model_status(db_model)
+
+                    self.send_model_to_internal_cluster(
+                        user_status, hash, final_accuracy, final_loss, rounds
+                    )
+                    time.sleep(1)
+
+        except Exception as e:
+            self.logger.error(f"Error in user_logic: {str(e)}")
+        
+    def store_user_data(self, data,endpoint=None):
+        try:
+            response = self.apiClient.post_request(endpoint, data)
+
+            if response and response.status_code == 200:
+                self.logger.info(f"POST create user Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None
+
     def handle_config(self,data):
-        Model_type=data.get('Model_name')
-        optimizer=data.get('Optimizer')
-        dataset=data.get('Dataset_name')
+        # Use the get function to retrieve values
 
-        self.logger.info(f"model_type {Model_type} , optimizer {optimizer} dataset : {dataset}")
+        training_name = data.get("training_name")
+        model_name = data.get("model_name")
+        dataset_name = data.get("dataset_name")
+        optimizer = data.get("optimizer")
 
+        db_data={
+            "model_name": model_name,
+            "dataset_name": dataset_name,
+            "optimizer": optimizer,
+            "training_name": training_name
+        }
+
+        self.logger.info(f"model_type {model_name} , optimizer {optimizer} dataset : {dataset_name}")
         # add configuration in database
+        self.store_user_data(db_data,create_training_information)
 
-        self.ml_operations = MLOperations(Model_type, optimizer,training_name=f'{self.training_name}_client')
+        self.ml_operations = MLOperations(model_name, optimizer,training_name=f'{self.training_name}_client')
 
 
     def process_initial_message(self, data):
@@ -66,56 +161,21 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in send_network_status: {str(e)}")
 
-    def user_logic(self):
-        rounds = 0
-        self.join_training_network()
 
+    def update_model_status(self, data):
         try:
-            last_update_time = time.time()
+            response = self.apiClient.post_request(update_model_hash, data)
 
-            while not self.grant_received:
-                initial_received_message = self.mqtt_obj.handle_user_data()
-                if initial_received_message:
-                    self.process_initial_message(initial_received_message)
-
-
-            user_status = self.update_network_status()
-            self.send_network_status(user_status)
-
-            while True:
-                current_time = time.time()
-
-                # Check if 60 seconds have passed since the last update
-                if current_time - last_update_time >= 30:
-                    user_status = self.update_network_status()
-                    self.send_network_status(user_status)
-
-                    # Update the last update time
-                    last_update_time = current_time
-
-                received_message = self.mqtt_obj.handle_user_data()
-                if received_message:
-                    self.process_received_message(received_message)
-
-                if not self.pause_training:
-                    rounds = rounds + 1
-
-                    user_status = self.update_training_status()
-                    self.send_training_status(user_status)
-
-                    hash, final_accuracy, final_loss, _, _ = self.ml_operations.train_machine_learning_model(
-                        rounds=rounds, epochs=5, batch_size=32
-                    )
-                    self.logger.info(f"Model hash: {hash}")
-                    self.send_model_to_internal_cluster(
-                        user_status, hash, final_accuracy, final_loss, rounds
-                    )
-                    time.sleep(1)
-
+            if response and response.status_code == 200:
+                self.logger.info(f"POST update_network_status Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
         except Exception as e:
-            self.logger.error(f"Error in user_logic: {str(e)}")
-        
-        
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None
+
     def update_network_status(self):
         try:
             connected_status = self.apiClient.put_request(network_connected_endpoint)
@@ -227,6 +287,10 @@ class User:
     def handle_global_model( self,global_model) :
         
         self.logger.info(f" got global model hash: {global_model}")
+        db_data={
+            "global_model_hash": global_model
+        }
+        self.store_user_data(db_data,post_global_model_hash)
         self.ml_operations.is_global_model_hash(global_model)
         self.logger.debug("Successfully Set global model hash")
         pass

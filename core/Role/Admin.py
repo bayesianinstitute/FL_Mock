@@ -119,15 +119,31 @@ class Admin:
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {str(e)}")
 
+    def store_user_data(self, data):
+        try:
+            response = self.apiClient.post_request(create_training_information, data)
+
+            if response and response.status_code == 200:
+                self.logger.info(f"POST create user Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None
+
     def handle_join(self,data):
+        # store data
 
         message_json=json.dumps({
             "receiver": 'User',
             "role": 'Admin',
             "msg": GRANTED_JOIN,
-            "Model_name": "CNN",
-            "Dataset_name": "Mnist",
-            "Optimizer": "adam",})
+            "training_name": "USA",
+            "model_name": "CNN",
+            "dataset_name": "Mnist",
+            "optimizer": "Adam"})
         
         self.mqtt_obj.send_internal_messages(message_json)
         self.logger.info("Sent Grant user to join network")

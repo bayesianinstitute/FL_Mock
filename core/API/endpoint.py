@@ -30,3 +30,6 @@ create_or_update_status="create_or_update_status/"
 add_global_model_hash="add_global_model_hash/"
 add_training_result="add_training_result/"
 get_operation_status="get_operation_status/"
+
+
+create_training_information="create_training_information/"

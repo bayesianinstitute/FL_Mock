@@ -31,9 +31,11 @@ def handle_join(data):
         "receiver": 'User',
         "role": 'Admin',
         "msg": GRANTED_JOIN,
-        "Model_name": "CNN",
-        "Dataset_name": "Mnist",
-        "Optimizer": "adam",})
+        "model_name": "CNN",
+        "dataset_name": "Mnist",
+        "optimizer": "Adam",
+        "training_name":topics
+        })
     
     client.publish(topics,data,qos=2)
 

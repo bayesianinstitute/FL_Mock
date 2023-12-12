@@ -59,12 +59,12 @@ class DFLWorkflow:
         
         print(data)
 
-        post_response=self.apiClient.post_request(create_training_information_endpoint,data)
+        # post_response=self.apiClient.post_request(create_training_information_endpoint,data)
 
-        if post_response.status_code == 201:
-            self.logger.info(f"POST Request Successful: {post_response.text}" )
-        else:
-            self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
+        # if post_response.status_code == 201:
+        #     self.logger.info(f"POST Request Successful: {post_response.text}" )
+        # else:
+        #     self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
 
         self.logger.debug(self.internal_cluster_topic)
         self.logger.debug(self.id)
@@ -105,7 +105,7 @@ class DFLWorkflow:
             from core.Role.User import User
 
             self.logger.info(f"User")
-            user = User( self.internal_cluster_topic,self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'] )
+            user = User( self.internal_cluster_topic,self.mqtt_operations,role=role_data['role'] )
             # call  shell mlflow on this FL_Mock\core\MLOPS\Model> mlflow ui
             user.user_logic()
         else:

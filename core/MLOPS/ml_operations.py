@@ -27,6 +27,7 @@ class MLOperations:
         try:
 
             if self.training_type=='CNN':
+                self.logger.info("Loading training model CCN")
                 
                 from core.MLOPS.Model.deepLearningModel.CNN import CNNMnist
 
@@ -54,7 +55,11 @@ class MLOperations:
             elif self.training_type=='RNN-(TimeSeries)':
                 from core.MLOPS.Model.timeSeriesModel.RNN import TimeSeriesRNN
                 self.current_model=TimeSeriesRNN(optimizer=self.optimizer)
-            
+            else:
+                self.logger.warning("Unknown training and loading CNN Default Training")
+                from core.MLOPS.Model.deepLearningModel.CNN import CNNMnist
+
+                self.current_model=CNNMnist(self.optimizer,experiment_name=self.training_name)
             return self.current_model
         except Exception as e:
             self.logger.error(f"Error in get_model: {e}")

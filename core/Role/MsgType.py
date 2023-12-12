@@ -16,3 +16,12 @@ Disconnect="Disconnected-Node"
 JOIN_OPERATION = "JoinOperation"
 
 GRANTED_JOIN = "Granted_JOIN"
+
+create_training_information="create_training_information/"
+
+create_training_result="create_training_result/"
+
+post_global_model_hash="post-global-model-hash/"
+
+
+update_model_hash='update_model_hash/'
