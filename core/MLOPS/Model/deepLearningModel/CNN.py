@@ -23,7 +23,6 @@ class CNNMnist:
         try:
             mlflow.set_tracking_uri("http://localhost:5000")  
             mlflow.set_experiment(experiment_name)
-            mlflow.start_run(run_name=self.name)
         except Exception as e:
             print(f"Error configuring MLflow: {e}")
 
@@ -77,8 +76,10 @@ class CNNMnist:
     #     except Exception as e:
     #         print(f"Error training the model: {e}")
 
-    def train_model(self, epochs=10, batch_size=32):
+    def train_model(self,rounds=None, epochs=10, batch_size=32 ):
         try:
+            mlflow.start_run(run_name=f'{self.name}_Rounds:{rounds}')
+
             # Train the model and log metrics using MLflow
             mlflow.tensorflow.autolog()
             history = self.model.fit(

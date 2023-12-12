@@ -8,9 +8,9 @@ from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
 class User:
-    def __init__(self,training_type, optimizer,mqtt_operations,role='User'):
+    def __init__(self,training_name,training_type, optimizer,mqtt_operations,role='User'):
         self.apiClient=ApiClient()
-        self.ml_operations = MLOperations(training_type, optimizer)
+        self.ml_operations = MLOperations(training_type, optimizer,training_name=f'{training_name}_client')
         self.logger = Logger(name='user-role').get_logger()
         self.pause_training = False
                         # Start, initialize, and get MQTT communication object
@@ -46,7 +46,7 @@ class User:
                     user_status = self.update_training_status() 
                     self.send_training_status(user_status,) 
 
-                    hash,final_accuracy, final_loss,  _,_= self.ml_operations.train_machine_learning_model(epochs=10,batch_size=32)
+                    hash,final_accuracy, final_loss,  _,_= self.ml_operations.train_machine_learning_model(rounds=rounds,epochs=5,batch_size=32)
                     self.logger.info(f"Model hash: {hash}")
                     self.send_model_to_internal_cluster(user_status, hash, final_accuracy, final_loss,rounds)
                     time.sleep(1)

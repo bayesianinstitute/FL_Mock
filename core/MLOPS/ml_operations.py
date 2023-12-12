@@ -3,7 +3,7 @@ from core.IPFS.ipfs import IPFS
 from core.Logs_System.logger import Logger
 
 class MLOperations:
-    def __init__(self,training_type,optimizer):
+    def __init__(self,training_type,optimizer,training_name='ML_training_name'):
         self.logger=Logger(name='MLOPS_Logger').get_logger()
         self.ipfs=IPFS()
         self.path_model="saved_model.h5"
@@ -12,6 +12,7 @@ class MLOperations:
         self.current_model=None
         self.training_type=training_type
         self.optimizer=optimizer
+        self.training_name=training_name
         self.get_weights=None
         pass
 
@@ -29,7 +30,7 @@ class MLOperations:
                 
                 from core.MLOPS.Model.deepLearningModel.CNN import CNNMnist
 
-                self.current_model=CNNMnist(self.optimizer)
+                self.current_model=CNNMnist(self.optimizer,experiment_name=self.training_name)
 
 
             elif self.training_type=='ANN-Regression':
@@ -59,7 +60,7 @@ class MLOperations:
             self.logger.error(f"Error in get_model: {e}")
             return None
 
-    def train_machine_learning_model(self,epochs=10,batch_size=32):
+    def train_machine_learning_model(self,rounds=None,epochs=10,batch_size=32):
         try:
 
             if self.global_model_hash:
@@ -77,7 +78,7 @@ class MLOperations:
                 import time
                 time.sleep(5)
             
-            final_loss, final_accuracy, final_val_loss, final_val_accuracy=self.current_model.train_model(epochs,batch_size)
+            final_loss, final_accuracy, final_val_loss, final_val_accuracy=self.current_model.train_model(rounds,epochs,batch_size)
 
             self.current_model.save_model(self.path_model)
 

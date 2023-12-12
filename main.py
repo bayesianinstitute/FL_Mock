@@ -98,14 +98,14 @@ class DFLWorkflow:
 
             self.logger.info(f"Admin")
 
-            admin = Admin( self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'] )
+            admin = Admin(self.internal_cluster_topic , self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'],)
             admin.admin_logic(self.id)
         # User
         elif role_data['role'] == "User":
             from core.Role.User import User
 
             self.logger.info(f"User")
-            user = User( self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'] )
+            user = User( self.internal_cluster_topic,self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'] )
             user.user_logic()
         else:
              pass
