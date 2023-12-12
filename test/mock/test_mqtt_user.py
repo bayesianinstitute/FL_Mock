@@ -11,6 +11,11 @@ PAUSE_API = "PauseAPI"
 RESUME_API = "ResumeAPI"
 SEND_GLOBAL_MODEL_HASH = "SendGlobalModelHASH"
 
+
+JOIN_OPERATION = "JoinOperation"
+
+GRANTED_JOIN = "Granted_JOIN"
+
 topics = 'internal_cluster_topic'
 import random
 
@@ -20,48 +25,65 @@ def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
     client.subscribe(topics, qos=2)
 
+
+def handle_join(data):
+    data=json.dumps({
+        "receiver": 'User',
+        "role": 'Admin',
+        "msg": GRANTED_JOIN,
+        "Model_name": "CNN",
+        "Dataset_name": "Mnist",
+        "Optimizer": "adam",})
+    
+    client.publish(topics,data,qos=2)
+
+
 def on_message(client, userdata, msg):
     print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
+    message_data = json.loads(msg.payload.decode())
+    msg_type = message_data.get("msg")
+    if msg_type == JOIN_OPERATION:
+        handle_join(message_data)
     # Add logic to handle pause and resume messages if needed
 
-def send_global_model():
-    message_json = json.dumps({
-        "receiver": 'User',
-        "role": 'Admin',
-        "msg": SEND_GLOBAL_MODEL_HASH,
-        "Admin": id,
-        "global_hash": 'QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'
-    })
-    return message_json
+# def send_global_model():
+#     message_json = json.dumps({
+#         "receiver": 'User',
+#         "role": 'Admin',
+#         "msg": SEND_GLOBAL_MODEL_HASH,
+#         "Admin": id,
+#         "global_hash": 'QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'
+#     })
+#     return message_json
 
-def send_terminate_message():
-    message_json = json.dumps({
-        "receiver": 'User',
-        "role": 'Admin',
+# def send_terminate_message():
+#     message_json = json.dumps({
+#         "receiver": 'User',
+#         "role": 'Admin',
 
-        "msg": TERMINATE_API,
-        "Admin": id
-    })
-    return message_json
+#         "msg": TERMINATE_API,
+#         "Admin": id
+#     })
+#     return message_json
 
-def send_pause_message():
-    message_json = json.dumps({
-        "receiver": 'User',
-        "role": 'Admin',
+# def send_pause_message():
+#     message_json = json.dumps({
+#         "receiver": 'User',
+#         "role": 'Admin',
 
-        "msg": PAUSE_API,
-        "Admin": id
-    })
-    return message_json
+#         "msg": PAUSE_API,
+#         "Admin": id
+#     })
+#     return message_json
 
-def send_resume_message():
-    message_json = json.dumps({
-        "receiver": 'User',
-        "role": 'Admin',
-        "msg": RESUME_API,
-        "Admin": id
-    })
-    return message_json
+# def send_resume_message():
+#     message_json = json.dumps({
+#         "receiver": 'User',
+#         "role": 'Admin',
+#         "msg": RESUME_API,
+#         "Admin": id
+#     })
+#     return message_json
 
 
 
@@ -91,19 +113,20 @@ if __name__ == "__main__":
             # Call your message-sending methods and publish the resulting JSON
 
 
-            client.publish(topics, send_global_model(), qos=2)
-            print("Successfully sent Global Model to User")
-
-            time.sleep(4)
-
-            client.publish(topics, send_pause_message(), qos=2)
-            print("Successfully sent Pause to User")
-
             time.sleep(15)
+            # client.publish(topics, send_global_model(), qos=2)
+            # print("Successfully sent Global Model to User")
+
+            # time.sleep(4)
+
+            # client.publish(topics, send_pause_message(), qos=2)
+            # print("Successfully sent Pause to User")
+
+            # time.sleep(15)
 
 
-            client.publish(topics, send_resume_message(), qos=2)
-            print("Successfully sent Resume to User")
+            # client.publish(topics, send_resume_message(), qos=2)
+            # print("Successfully sent Resume to User")
 
             # time.sleep(9)
 

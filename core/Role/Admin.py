@@ -100,7 +100,10 @@ class Admin:
             
             if msg_type == SEND_NETWORK_STATUS:
                 network_status = message_data.get("network_status")
-                self.handle_network_status(node_id,role, network_status)                
+                self.handle_network_status(node_id,role, network_status)   
+            elif msg_type == JOIN_OPERATION:
+                self.handle_join(message_data)          
+
             elif msg_type == SEND_TRAINING_STATUS:
                 training_status = message_data.get("training_status")
 
@@ -115,6 +118,19 @@ class Admin:
 
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON message: {str(e)}")
+
+    def handle_join(self,data):
+
+        message_json=json.dumps({
+            "receiver": 'User',
+            "role": 'Admin',
+            "msg": GRANTED_JOIN,
+            "Model_name": "CNN",
+            "Dataset_name": "Mnist",
+            "Optimizer": "adam",})
+        
+        self.mqtt_obj.send_internal_messages(message_json)
+        self.logger.info("Sent Grant user to join network")
 
     def handle_network_status(self, node_id,role, network_status):        
         data = {
@@ -158,8 +174,6 @@ class Admin:
     def handle_aggregate_model(self):
         self.logger.debug("Getting handle_aggregate_model")
         model_hashes = self.get_all_model_hash()
-
-
         
         if len(model_hashes) ==0:
             self.logger.debug("Model hashes are None. Returning from handle_aggregate_model. {model_hashes}")
@@ -168,6 +182,12 @@ class Admin:
         self.logger.debug(f"Modeling handle_aggregate_model {model_hashes}")
 
         global_model_hash = self.ml_operations.aggregate_models(model_hashes)
+
+        data = {
+            "global_model_hash": global_model_hash,
+        }
+
+        self.update_global_model(data)
 
         message_json = json.dumps({
             "receiver": 'User',
@@ -259,10 +279,25 @@ class Admin:
         except Exception as e:
             self.logger.error(f"Error in add_admin: {str(e)}")
             return None
+        
+    
+    def update_global_model(self, data):
+        try:
+            response = self.apiClient.post_request(post_global_model_hash, data)
+
+            if response and response.status_code == 201:
+                self.logger.info(f"POST Global model Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Global model Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in update global model: {str(e)}")
+            return None
     
     def update_training_status(self, data):
         try:
-            response = self.apiClient.post_request(create_or_update_status, data)
+            response = self.apiClient.post_request(post_global_model_hash, data)
 
             if response and response.status_code == 201:
                 self.logger.info(f"POST update_training_status Request Successful: {response.text}")

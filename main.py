@@ -106,6 +106,7 @@ class DFLWorkflow:
 
             self.logger.info(f"User")
             user = User( self.internal_cluster_topic,self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'] )
+            # call  shell mlflow on this FL_Mock\core\MLOPS\Model> mlflow ui
             user.user_logic()
         else:
              pass

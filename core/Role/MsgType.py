@@ -12,3 +12,7 @@ PAUSE_API = "PauseAPI"
 RESUME_API = "ResumeAPI"
 
 Disconnect="Disconnected-Node"
+
+JOIN_OPERATION = "JoinOperation"
+
+GRANTED_JOIN = "Granted_JOIN"

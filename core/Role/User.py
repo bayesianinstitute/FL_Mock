@@ -10,20 +10,77 @@ from core.Logs_System.logger import Logger
 class User:
     def __init__(self,training_name,training_type, optimizer,mqtt_operations,role='User'):
         self.apiClient=ApiClient()
-        self.ml_operations = MLOperations(training_type, optimizer,training_name=f'{training_name}_client')
+        self.training_name=training_name
+        self.ml_operations = None
         self.logger = Logger(name='user-role').get_logger()
         self.pause_training = False
                         # Start, initialize, and get MQTT communication object
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
-        
-    def user_logic(self,):
-        rounds=0
+        self.grant_received = False
+
+    def handle_config(self,data):
+        Model_type=data.get('Model_name')
+        optimizer=data.get('Optimizer')
+        dataset=data.get('Dataset_name')
+
+        self.logger.info(f"model_type {Model_type} , optimizer {optimizer} dataset : {dataset}")
+
+        # add configuration in database
+
+        self.ml_operations = MLOperations(Model_type, optimizer,training_name=f'{self.training_name}_client')
+
+
+    def process_initial_message(self, data):
+        try:
+            if isinstance(data, str):
+                message_data = json.loads(data)
+            elif isinstance(data, bytes):
+                message_data = json.loads(data.decode('utf-8'))
+            else:
+                message_data = data.get()
+
+            msg_type = message_data.get("msg")
+
+            if msg_type == GRANTED_JOIN:
+                self.handle_config(message_data)
+                self.grant_received = True
+
+
+        except json.JSONDecodeError as e:
+            self.logger.error(f"Error decoding JSON: {e}")
+        except Exception as e:
+            self.logger.error(f"Error in process_received_message: {str(e)}")
+            time.sleep(10)
+
+    def join_training_network(self, ):
+        try:
+                message_json = json.dumps({
+                    "receiver": 'Admin',
+                    "role": 'User',
+                    "training_name": self.training_name,
+                    "msg": JOIN_OPERATION,
+                    "node_id": self.mqtt_obj.id,
+                })
+                self.mqtt_obj.send_internal_messages(message_json)
+
+        except Exception as e:
+            self.logger.error(f"Error in send_network_status: {str(e)}")
+
+    def user_logic(self):
+        rounds = 0
+        self.join_training_network()
+
         try:
             last_update_time = time.time()
 
-            # send for first time
+            while not self.grant_received:
+                initial_received_message = self.mqtt_obj.handle_user_data()
+                if initial_received_message:
+                    self.process_initial_message(initial_received_message)
+
+
             user_status = self.update_network_status()
-            self.send_network_status(user_status, )
+            self.send_network_status(user_status)
 
             while True:
                 current_time = time.time()
@@ -31,7 +88,7 @@ class User:
                 # Check if 60 seconds have passed since the last update
                 if current_time - last_update_time >= 30:
                     user_status = self.update_network_status()
-                    self.send_network_status(user_status, )
+                    self.send_network_status(user_status)
 
                     # Update the last update time
                     last_update_time = current_time
@@ -41,15 +98,20 @@ class User:
                     self.process_received_message(received_message)
 
                 if not self.pause_training:
-                    rounds=rounds+1
-                    
-                    user_status = self.update_training_status() 
-                    self.send_training_status(user_status,) 
+                    rounds = rounds + 1
 
-                    hash,final_accuracy, final_loss,  _,_= self.ml_operations.train_machine_learning_model(rounds=rounds,epochs=5,batch_size=32)
+                    user_status = self.update_training_status()
+                    self.send_training_status(user_status)
+
+                    hash, final_accuracy, final_loss, _, _ = self.ml_operations.train_machine_learning_model(
+                        rounds=rounds, epochs=5, batch_size=32
+                    )
                     self.logger.info(f"Model hash: {hash}")
-                    self.send_model_to_internal_cluster(user_status, hash, final_accuracy, final_loss,rounds)
+                    self.send_model_to_internal_cluster(
+                        user_status, hash, final_accuracy, final_loss, rounds
+                    )
                     time.sleep(1)
+
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
         
@@ -68,6 +130,7 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in update_network_status: {str(e)}")
             return None
+
 
     def send_network_status(self, user_status,):
         try:
