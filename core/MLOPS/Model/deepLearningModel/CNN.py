@@ -6,10 +6,11 @@ import mlflow
 import mlflow.keras
 import mlflow.tensorflow
 import warnings
+import os
+
 
 class CNNMnist:
     def __init__(self, optimizer='adam', experiment_name='custom_CNNMnist_experiment'):
-        import os
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
         warnings.filterwarnings("ignore", category=UserWarning, message=".*Setuptools is replacing distutils.*")
      

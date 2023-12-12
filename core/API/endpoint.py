@@ -1,5 +1,3 @@
-create_training_information_endpoint = "create-training-information/"
-
 create_training_result_endpoint = "create_training_result/"
 update_admin_endpoint = "update-admin/"
 update_backup_admin_endpoint = "update-backup-admin/"
@@ -33,3 +31,4 @@ get_operation_status="get_operation_status/"
 
 
 create_training_information="create_training_information/"
+

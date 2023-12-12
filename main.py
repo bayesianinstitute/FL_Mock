@@ -1,6 +1,5 @@
 import sys
 from core.MqttOPS.mqtt_operations import MqttOperations
-from core.MLOPS.ml_operations import MLOperations
 import argparse
 
 # from core.FL_System.identifyparticipants.identify_participants import IdentifyParticipant
@@ -51,20 +50,7 @@ class DFLWorkflow:
     # Main function to run the federated learning workflow
     def run(self):
 
-        data={
-        "Model name:": self.training_type,
-        "Dataset name": "Mnist",
-        "Optimizer": self.optimizer,
-        "Training name": self.cluster_name }    
-        
-        print(data)
 
-        # post_response=self.apiClient.post_request(create_training_information_endpoint,data)
-
-        # if post_response.status_code == 201:
-        #     self.logger.info(f"POST Request Successful: {post_response.text}" )
-        # else:
-        #     self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
 
         self.logger.debug(self.internal_cluster_topic)
         self.logger.debug(self.id)
@@ -97,6 +83,22 @@ class DFLWorkflow:
             from core.Role.Admin import Admin
 
             self.logger.info(f"Admin")
+
+
+            data={
+                    "model_name": self.training_type,
+                    "dataset_name": "Mnist",
+                    "optimizer": self.optimizer,
+                    "training_name": self.cluster_name }    
+            
+            self.logger.warning(data)
+
+            post_response=self.apiClient.post_request(create_training_information,data)
+
+            if post_response.status_code == 201:
+                self.logger.info(f"POST Request Successful: {post_response.text}" )
+            else:
+                self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
 
             admin = Admin(self.internal_cluster_topic , self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'],)
             admin.admin_logic(self.id)
