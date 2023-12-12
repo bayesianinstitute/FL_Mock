@@ -1,8 +1,6 @@
-from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.datasets import mnist
-import os
 from datetime import datetime
 import mlflow
 import mlflow.keras
@@ -11,6 +9,11 @@ import warnings
 
 class CNNMnist:
     def __init__(self, optimizer='adam', experiment_name='custom_CNNMnist_experiment'):
+        import os
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+        warnings.filterwarnings("ignore", category=UserWarning, message=".*Setuptools is replacing distutils.*")
+     
+
         self.optimizer = optimizer
         self.model = self.build_model()
         self.x_train, self.y_train, self.x_test, self.y_test = self.load_and_preprocess_data()
@@ -116,6 +119,8 @@ class CNNMnist:
   
 
 if __name__ == '__main__':
+        # Suppress TensorFlow informational messages
+
     mnist_model = CNNMnist('adam')
     final_loss, final_accuracy, final_val_loss, final_val_accuracy = mnist_model.train_model(epochs=5, batch_size=32)
 
