@@ -68,3 +68,9 @@ class TrainingUniqueInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingInformation
         fields = ['training_name']
+
+
+class AdminModelHashSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Admin
+        fields = ['model_hash']

@@ -2,13 +2,15 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
-from .serializers import TrainingInformationSerializer,TrainingUniqueInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
+from .serializers import AdminModelHashSerializer,TrainingInformationSerializer,TrainingUniqueInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
 from django.shortcuts import render
 import random
 from itertools import groupby
 from django.db.models import F
 from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from datetime import timedelta
 
 def dfl(request):
     return render(request, 'dfl/index.html')
@@ -300,3 +302,11 @@ def training_information_choices(request):
     }
 
     return Response(choices_data)
+
+
+@api_view(['GET'])
+def get_model_hashes(request):
+    threshold_time = timezone.now() - timedelta(minutes=2)
+    model_hashes = Admin.objects.filter(timestamp__gte=threshold_time).values_list('model_hash', flat=True)
+    serializer = AdminModelHashSerializer({'model_hash': list(model_hashes)}, many=False)
+    return Response(serializer.data)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dfl,dfladmin,training_information_choices,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status,get_operation_status,get_unique_training_names
+from .views import dfl,dfladmin,get_model_hashes,training_information_choices,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status,get_operation_status,get_unique_training_names
 
 
 
@@ -37,5 +37,5 @@ urlpatterns = [
     path('api/v1/get_operation_status/', get_operation_status, name='get_operation_status'),
     path('api/v1/get-unique-training-names/', get_unique_training_names, name='get-unique-training-names'),
     path('api/v1/training-information-choices/', training_information_choices, name='training-information-choices'),
-   
+    path('api/v1/get_model_hashes/', get_model_hashes, name='get_model_hashes'),
 ]

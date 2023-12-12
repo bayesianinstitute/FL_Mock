@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -52,7 +53,7 @@ class TrainingResultAdmin(models.Model):
     training_round = models.IntegerField()
     accuracy = models.FloatField()
     loss = models.FloatField()
-    model_hash = models.CharField(max_length=255, blank=True, null=True) 
+  
     timestamp = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -111,11 +112,15 @@ class Admin(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     node_id = models.IntegerField()
+    model_hash = models.CharField(max_length=255, blank=True, null=True) 
     network_status = models.CharField(
         max_length=15,
         choices=NETWORK_STATUS_CHOICES,
         default='idle'
     )
+    def save(self, *args, **kwargs):
+        self.timestamp = timezone.now()
+        super().save(*args, **kwargs)
     def __str__(self):
         return f"{self.node_id}"
     
