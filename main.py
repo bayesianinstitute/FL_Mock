@@ -11,8 +11,6 @@ from core.API.ClientAPI import ApiClient
 from core.API.endpoint import *
 import json
 
-from core.Role.Admin import Admin
-from core.Role.User import User
 
 
 # Define a class for the Federated Learning Workflow
@@ -44,8 +42,6 @@ class DFLWorkflow:
         self.updated_broker = updated_broker
 
         self.apiClient=ApiClient()
-        self.admin = Admin( self.training_type, self.optimizer)
-        self.user = User( self.training_type, self.optimizer)
 
     # Function to terminate the program
     def terminate_program(self):
@@ -56,10 +52,10 @@ class DFLWorkflow:
     def run(self):
 
         data={
-        "model_name": self.training_type,
-        "dataset_name": "Mnist",
-        "optimizer": self.optimizer,
-        "training_name": self.cluster_name }    
+        "Model name:": self.training_type,
+        "Dataset name": "Mnist",
+        "Optimizer": self.optimizer,
+        "Training name": self.cluster_name }    
         
         print(data)
 
@@ -91,20 +87,26 @@ class DFLWorkflow:
                                             self.min_node,
                                             self.is_admin,
                                             self.id)
-        # Start, initialize, and get MQTT communication object
-        mqtt_obj = self.mqtt_operations.start_dfl_using_mqtt(role_data['role'])
-        # while True:
+
+        # while True:n
             # TODO:  Need api to update training rounds 
         Round_Counter = Round_Counter + 1
         self.logger.info(f"Round_Counter: {Round_Counter}")
         # Admin
         if role_data['role'] == "Admin":
+            from core.Role.Admin import Admin
+
             self.logger.info(f"Admin")
-            self.admin.admin_logic(mqtt_obj,self.id)
+
+            admin = Admin( self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'] )
+            admin.admin_logic(self.id)
         # User
         elif role_data['role'] == "User":
+            from core.Role.User import User
+
             self.logger.info(f"User")
-            self.user.user_logic(mqtt_obj)
+            user = User( self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'] )
+            user.user_logic()
         else:
              pass
                 # Temporary to close the program

@@ -59,7 +59,7 @@ class MLOperations:
             self.logger.error(f"Error in get_model: {e}")
             return None
 
-    def train_machine_learning_model(self):
+    def train_machine_learning_model(self,epochs=10,batch_size=32):
         try:
 
             if self.global_model_hash:
@@ -77,18 +77,17 @@ class MLOperations:
                 import time
                 time.sleep(5)
             
-            self.current_model.train_model(epochs=1,batch_size=32)
-
-
-            test_loss, test_acc = self.current_model.evaluate_model()
+            final_loss, final_accuracy, final_val_loss, final_val_accuracy=self.current_model.train_model(epochs,batch_size)
 
             self.current_model.save_model(self.path_model)
 
-            self.logger.info(f"Machine learning model trained on MNIST dataset with test accuracy: {test_acc:.2f}. Model saved as {self.path_model}.")
-
+            self.logger.info(f'Final Training Loss: {final_loss:.4f}')
+            self.logger.info(f'Final Training Accuracy: {final_accuracy:.4f}')
+            self.logger.info(f'Final Validation Loss: {final_val_loss:.4f}')
+            self.logger.info(f'Final Validation Accuracy: {final_val_accuracy:.4f}')
             hash=self.send_model_to_ipfs(self.path_model)
 
-            return hash,test_acc,test_loss
+            return hash,final_accuracy, final_loss,  final_val_accuracy,final_val_loss
         except Exception as e:
             self.logger.error(f"Error in train_machine_learning_model: {e}")
             return None

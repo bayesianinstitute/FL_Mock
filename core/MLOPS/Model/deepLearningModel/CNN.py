@@ -59,23 +59,49 @@ class CNNMnist:
 
         return x_train, y_train, x_test, y_test
 
+
+    # def train_model(self, epochs=10, batch_size=32):
+    #     try:
+    #         # Train the model and log metrics using MLflow
+    #         history = self.model.fit(
+    #             self.x_train, self.y_train,
+    #             epochs=epochs, batch_size=batch_size,
+    #             validation_data=(self.x_test, self.y_test)
+    #         )
+
+    #         # Log training metrics
+    #         for metric_name, values in history.history.items():
+    #             for epoch, value in enumerate(values, start=1):
+    #                 mlflow.log_metric(f"train_{metric_name}", value, step=epoch)
+
+    #     except Exception as e:
+    #         print(f"Error training the model: {e}")
+
     def train_model(self, epochs=10, batch_size=32):
         try:
             # Train the model and log metrics using MLflow
-            self.model.fit(
+            mlflow.tensorflow.autolog()
+            history = self.model.fit(
                 self.x_train, self.y_train,
                 epochs=epochs, batch_size=batch_size,
                 validation_data=(self.x_test, self.y_test)
             )
+
+            # Extract final values
+            final_loss = history.history['loss'][-1]
+            final_accuracy = history.history['accuracy'][-1]
+            final_val_loss = history.history['val_loss'][-1]
+            final_val_accuracy = history.history['val_accuracy'][-1]
+
+
+            return final_loss, final_accuracy, final_val_loss, final_val_accuracy
+
         except Exception as e:
             print(f"Error training the model: {e}")
-
-    def evaluate_model(self):
-        # Evaluate the model on the test data
-        test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
-        mlflow.log_metric("test_loss", test_loss)
-        mlflow.log_metric("test_accuracy", test_accuracy)
-        return test_loss, test_accuracy
+    
+    def set_weights(self, weights):
+        self.model.set_weights(weights)
+        return self.model
 
     def save_model(self, model_filename):
         try:
@@ -103,8 +129,11 @@ class CNNMnist:
 
 if __name__ == '__main__':
     mnist_model = CNNMnist('adam')
-    mnist_model.train_model(epochs=5, batch_size=32)
-    test_loss, test_accuracy = mnist_model.evaluate_model()
-    print(f'Test loss: {test_loss:.4f}, Test accuracy: {test_accuracy:.4f}')
+    final_loss, final_accuracy, final_val_loss, final_val_accuracy = mnist_model.train_model(epochs=5, batch_size=32)
+
+    # print(f'Final Training Loss: {final_loss:.4f}')
+    # print(f'Final Training Accuracy: {final_accuracy:.4f}')
+    # print(f'Final Validation Loss: {final_val_loss:.4f}')
+    # print(f'Final Validation Accuracy: {final_val_accuracy:.4f}')
     mnist_model.save_model("saved_model.h5")
     print("Completed training")
