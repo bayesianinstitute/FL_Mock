@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
+from django.http import JsonResponse
 
 def dfl(request):
     return render(request, 'dfl/index.html')
@@ -310,3 +311,30 @@ def get_model_hashes(request):
     model_hashes = Admin.objects.filter(timestamp__gte=threshold_time).values_list('model_hash', flat=True)
     serializer = AdminModelHashSerializer({'model_hash': list(model_hashes)}, many=False)
     return Response(serializer.data)
+
+@api_view(['PUT'])
+def update_logs(request):
+    try:
+        # Retrieve the existing log entry (assuming you have a single log entry in this example)
+        log_entry = Logs.objects.first()
+
+        # Get the new log message from the request
+        new_log_message = request.data.get('logs', '')
+
+        if log_entry is not None:
+            # If a log entry exists, append a new line to the existing message
+            log_entry.message += f"\n{new_log_message}"
+        else:
+            # If no log entry exists, create a new log entry with the provided message
+            log_entry = Logs.objects.create(message=new_log_message)
+
+        # Save the updated or new log entry
+        log_entry.save()
+
+        # Serialize the data
+        serializer = LogsSerializer(log_entry)
+
+        return Response({'logs': serializer.data['message']})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

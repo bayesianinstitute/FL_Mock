@@ -34,10 +34,13 @@ class TrainingResult(models.Model):
     accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    
+
+    def save(self, *args, **kwargs):
+        self.timestamp = timezone.now()
+        super().save(*args, **kwargs)    
     def __str__(self):
         return f"{self.training_info.model_name} - {self.training_info.dataset_name} - {self.training_info.optimizer} - {self.timestamp}"
-   
+
     class Meta:
         verbose_name_plural="Training Result"
     
@@ -55,10 +58,12 @@ class TrainingResultAdmin(models.Model):
     loss = models.FloatField()
   
     timestamp = models.DateTimeField(auto_now_add=True)
-    
+    def save(self, *args, **kwargs):
+        self.timestamp = timezone.now()
+        super().save(*args, **kwargs)
     def __str__(self):
         return f"{self.training_info.model_name} - {self.training_info.dataset_name} - {self.training_info.optimizer} - {self.timestamp}"
-   
+    
     class Meta:
         verbose_name_plural = "Admin Training Result"
 
@@ -67,9 +72,11 @@ class Logs(models.Model):
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        self.timestamp = timezone.now()
+        super().save(*args, **kwargs)
     def __str__(self):
         return f"{self.timestamp}"
-    
     class Meta:
         verbose_name_plural="Logs"
         
@@ -174,6 +181,9 @@ class NodeStatus(models.Model):
 class GlobalModelHash(models.Model):
     global_model_hash = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True) 
+    def save(self, *args, **kwargs):
+        self.timestamp = timezone.now()
+        super().save(*args, **kwargs)
     class Meta:
         verbose_name_plural="GlobalModelHash"
  
