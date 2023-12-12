@@ -29,7 +29,7 @@ class TrainingInformation(models.Model):
     
 class TrainingResult(models.Model):
     training_info = models.ForeignKey(TrainingInformation, on_delete=models.CASCADE, related_name='training_results',null=True, blank=True)
-    training_round = models.IntegerField()
+    training_round = models.IntegerField(blank=True, null=True)
     accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -173,7 +173,7 @@ class NodeStatus(models.Model):
         choices=NETWORK_STATUS_CHOICES,
         default='idle'
     )    
-    
+    model_hash = models.CharField(max_length=255, blank=True, null=True) 
     objects = NodeStatusManager()
     def __str__(self):
         return f"{self.operation_status} - {self.training_status} - {self.network_status}"

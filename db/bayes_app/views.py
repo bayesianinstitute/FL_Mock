@@ -39,12 +39,24 @@ def get_training_results(request):
 @api_view(['POST'])
 def create_training_result(request):
     if request.method == 'POST':
+        # Extract training_info_name from the request data
+        training_info_name = request.data.get('training_info_name')
+
+        # Retrieve the TrainingInformation instance based on the name
+        try:
+            training_info = TrainingInformation.objects.get(training_name=training_info_name)
+        except TrainingInformation.DoesNotExist:
+            return Response({'error': f'TrainingInformation with name {training_info_name} does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update the request data with the TrainingInformation instance
+        request.data['training_info'] = training_info.id
+
+        # Use the serializer to validate and save the data
         serializer = TrainingResultSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
     
 @api_view(['GET'])
 def get_logs(request):
@@ -378,3 +390,20 @@ def update_node_status(request, status, new_status):
 
     # Return a response
     return Response({'message': f'Successfully updated {status} status to {new_status}'}, status=drf_status.HTTP_200_OK)
+
+
+@api_view(['PUT'])
+def update_model_hash(request):
+    try:
+        node_status = NodeStatus.objects.get()
+        serializer = NodeStatusSerializer(node_status, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except NodeStatus.DoesNotExist:
+        serializer = NodeStatusSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
