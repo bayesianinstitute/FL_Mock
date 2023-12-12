@@ -152,6 +152,7 @@ class NodeStatus(models.Model):
         ('idle', 'Idle'),
     ]
     OPERATION_CHOICES = [
+        ('idle', 'idle'),
         ('resume', 'resume'),
         ('pause', 'pause'),
         ('terminate', 'terminate'),
@@ -159,7 +160,7 @@ class NodeStatus(models.Model):
     operation_status = models.CharField(
         max_length=20,
         choices=OPERATION_CHOICES,
-        default='resume'
+        default='idle'
     )
 
     training_status = models.CharField(

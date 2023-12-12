@@ -315,15 +315,15 @@ def get_model_hashes(request):
 @api_view(['PUT'])
 def update_logs(request):
     try:
-
-        log_entry = Logs.objects.first()
-
         new_log_message = request.data.get('logs', '')
-
+        
+        # Retrieve the latest log entry or create a new one if none exists
+        log_entry = Logs.objects.first()
         if log_entry is not None:
-            log_entry.message += f"\n{new_log_message}"
+            log_entry.message = f"{new_log_message}\n{log_entry.message}"
         else:
             log_entry = Logs.objects.create(message=new_log_message)
+
         log_entry.save()
         serializer = LogsSerializer(log_entry)
 
@@ -340,3 +340,40 @@ def get_latest_global_model_hash(request):
         return Response(serializer.data)
     except GlobalModelHash.DoesNotExist:
         return Response({"error": "No global model hash found"}, status=404)
+    
+    
+@api_view(['PUT'])
+def update_node_status(request, status, new_status):
+    # Validate the input status
+    valid_statuses = ['operation', 'training', 'network']
+    if status not in valid_statuses:
+        return Response({'error': f'Invalid status type: {status}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate the new_status
+    valid_operation_statuses = [choice[0] for choice in NodeStatus.OPERATION_CHOICES]
+    valid_training_statuses = [choice[0] for choice in NodeStatus.TRAINING_STATUS_CHOICES]
+    valid_network_statuses = [choice[0] for choice in NodeStatus.NETWORK_STATUS_CHOICES]
+
+    if status == 'operation' and new_status not in valid_operation_statuses:
+        return Response({'error': f'Invalid operation status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
+    elif status == 'training' and new_status not in valid_training_statuses:
+        return Response({'error': f'Invalid training status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
+    elif status == 'network' and new_status not in valid_network_statuses:
+        return Response({'error': f'Invalid network status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Try to get an existing NodeStatus instance
+    node_status, created = NodeStatus.objects.get_or_create()
+
+    # Update the appropriate status field
+    if status == 'operation':
+        node_status.operation_status = new_status
+    elif status == 'training':
+        node_status.training_status = new_status
+    elif status == 'network':
+        node_status.network_status = new_status
+
+    # Save the changes
+    node_status.save()
+
+    # Return a response
+    return Response({'message': f'Successfully updated {status} status to {new_status}'}, status=status.HTTP_200_OK)

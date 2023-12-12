@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dfl,dfladmin,get_model_hashes,update_logs,training_information_choices,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status,get_operation_status,get_unique_training_names
+from .views import dfl,dfladmin,update_node_status,get_model_hashes,update_logs,training_information_choices,create_training_information,create_training_result,get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status,toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role,dfl,get_all_users_metrics,get_logs,add_nodes,unique_node_id_count,add_global_model_hash,add_training_result,update_operation_status,get_operation_status,get_unique_training_names
 
 
 
@@ -19,7 +19,7 @@ urlpatterns = [
     path('api/v1/create_or_update_status/', create_or_update_status, name='create_or_update_status'),
     
     path('api/v1/get-admin-data/', get_admin_data, name='get_admin_data'),
-    path('api/v1/post-global-model-hash/', post_global_model_hash, name='post_global_model_hash'),
+   
    
     path('api/v1/get-track-role/', get_track_role, name='get_track_role'),
    
@@ -40,5 +40,6 @@ urlpatterns = [
     path('api/v1/logs/', get_logs, name='get_logs'),
     path('api/v1/update_logs/', update_logs, name='update_logs'),
     path('api/v1/get-global-model-hash/', get_global_model_hash, name='get_global_model_hash'),
-    
+    path('api/v1/post-global-model-hash/', post_global_model_hash, name='post_global_model_hash'),
+    path('api/v1/update_status/<str:status>/<str:new_status>/', update_node_status, name='update_node_status'),
 ]
