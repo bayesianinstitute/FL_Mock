@@ -29,7 +29,7 @@ class TrainingInformation(models.Model):
     
 class TrainingResult(models.Model):
     training_info = models.ForeignKey(TrainingInformation, on_delete=models.CASCADE, related_name='training_results',null=True, blank=True)
-    training_round = models.IntegerField()
+    training_round = models.IntegerField(blank=True, null=True)
     accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
