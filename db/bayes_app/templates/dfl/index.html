@@ -319,7 +319,7 @@ window.addEventListener('load', startLogPolling);
   
 async function fetchGlobalModelHash() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/get-global-model-hash/');
+    const response = await fetch('http://127.0.0.1:8000/api/v1/get_global_model_hash/');
     const data = await response.json();
 
     const globalModelHashElement = document.getElementById('globalModelHash');
@@ -350,7 +350,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
   // Function to fetch and populate training names
   async function fetchTrainingNames() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/get-unique-training-names/');
+      const response = await fetch('http://127.0.0.1:8000/api/v1/get_unique_training_names/');
       const data = await response.json();
 
       const trainingNames = data.data;
@@ -404,7 +404,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
   }
   function pauseUser(nodeId) {
     console.log(`Pausing user with Node ID ${nodeId}`);
-    const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+    const apiUrl = 'http://127.0.0.1:8000/api/v1/update_operation_status/';
 
     const requestData = {
       node_id: nodeId,
@@ -439,7 +439,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
   // Function to handle resuming a user
   function resumeUser(nodeId) {
     console.log(`Resuming user with Node ID ${nodeId}`);
-    const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+    const apiUrl = 'http://127.0.0.1:8000/api/v1/update_operation_status/';
 
     const requestData = {
       node_id: nodeId,
@@ -473,7 +473,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
   // Function to handle terminating a user
   function terminateUser(nodeId) {
     console.log(`Terminating user with Node ID ${nodeId}`);
-    const apiUrl = 'http://127.0.0.1:8000/api/v1/update-operation-status/';
+    const apiUrl = 'http://127.0.0.1:8000/api/v1/update_operation_status/';
 
     const requestData = {
       node_id: nodeId,
@@ -614,7 +614,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
   // Function to fetch admin data and initialize the process
   async function fetchData() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/get-track-role/');
+      const response = await fetch('http://127.0.0.1:8000/api/v1/get_track_role/');
       const data = await response.json();
 
       const role = data.role;
@@ -650,7 +650,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
   // Function to fetch admin data and initialize the process
   async function fetchAdminData() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/get-admin-data/');
+      const response = await fetch('http://127.0.0.1:8000/api/v1/get_admin_data/');
       const adminData = await response.json();
 
       console.log('Admin Data:', adminData);
