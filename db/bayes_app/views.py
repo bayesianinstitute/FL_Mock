@@ -7,12 +7,15 @@ from django.shortcuts import render
 import random
 from itertools import groupby
 from django.db.models import F
-from django.views.decorators.csrf import csrf_protect
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse
 from rest_framework import status as drf_status
+from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
+
+
 
 def dfl(request):
     return render(request, 'dfl/index.html')
@@ -409,8 +412,12 @@ def update_model_hash(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
 @api_view(['GET'])
-def get_all_training_information(request):
-    training_information = TrainingInformation.objects.all()
-    serializer = TrainingInformationSerializer(training_information, many=True)
-    return Response(serializer.data)
+def get_training_information_by_name(request, training_name):
+    try:
+        training_info = TrainingInformation.objects.get(training_name=training_name)
+        serializer = TrainingInformationSerializer(training_info)
+        return Response(serializer.data)
+    except TrainingInformation.DoesNotExist:
+        return Response({"detail": "Training information not found"}, status=404)
