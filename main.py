@@ -64,7 +64,7 @@ class DFLWorkflow:
                     "model_name": self.training_type,
                     "dataset_name": "Mnist",
                     "optimizer": self.optimizer,
-                    "training_name": self.cluster_name }    
+                    "training_name": self.internal_cluster_topic }    
             
             self.logger.warning(data)
 

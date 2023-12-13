@@ -60,17 +60,7 @@ class MQTTCluster:
 
             if json_data.get("receiver") == 'Admin':
                 self.logger.warning("The receiver is an admin.")
-                if self.received_user_data_queue.empty():
-                    self.received_admin_data_queue.put(data)
-                else:
-                        last_element = self.received_admin_data_queue.queue[-1]
-                        if last_element != data:
-                            self.received_user_data_queue.put(self.received_admin_data_queue)
-
-                            self.logger.warning("Last value put is the different as the front element.")
-
-                        else:
-                            self.logger.info("Last value put is the same as the front element.")
+                self.received_admin_data_queue.put(data)
 
             elif json_data.get("receiver") == 'User' :
                 if self.id==json_data.get("node_id") :
