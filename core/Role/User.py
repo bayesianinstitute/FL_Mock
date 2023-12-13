@@ -155,7 +155,7 @@ class User:
                     "role": 'User',
                     "msg": JOIN_OPERATION,
                     "training_name": self.training_name,
-                    "node_id": self.id,
+                    "node_id": self.id
                 })
                 self.mqtt_obj.send_internal_messages(message_json)
 
@@ -231,7 +231,7 @@ class User:
                     "role": 'User',
                     "msg": SEND_TRAINING_STATUS,
                     "node_id": self.id,
-                    "training_status": user_status['training_status'],
+                    "training_status": user_status['training_status']
                 })
                 self.mqtt_obj.send_internal_messages(message_json)
 
@@ -248,7 +248,7 @@ class User:
                     "node_id": self.id,
                     "model_hash": hash,
                     "accuracy": accuracy,
-                    "loss": loss,
+                    "loss": loss
 
                 })
                 self.mqtt_obj.send_internal_messages(message_json)

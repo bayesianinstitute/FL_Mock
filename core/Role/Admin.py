@@ -44,10 +44,11 @@ class Admin:
                     self.logger.debug(f"incoming received message:   {received_message}")
                     self.process_received_message(received_message,)    
                     
-                    #TODO ALmost done
-
-                time.sleep(1) 
+                
+                #TODO GET METHOD NEED TO CHECK Wther data is available or not
                 self.handle_node_operation()
+
+                time.sleep(10)
              
     
         except Exception as e:
@@ -60,9 +61,9 @@ class Admin:
         if get_role.status_code == 200:
             self.logger.info(f"Get Request Successful: {get_role.text}" )
             data = json.loads(get_role.text)
-            # output_list = eval(data['model_hash'])
-
-            return   data          
+            return   data
+        elif get_role.status_code ==404:
+            return None          
         else:
             self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
         try:
@@ -82,7 +83,8 @@ class Admin:
     def handle_node_operation(self):
         try:
             data = self.get_operation_status()
-
+            if data is None:
+                return None
             for item in data:
                 operation_status = item.get('operation_status')
                 node_id = item.get('node_id')
@@ -98,7 +100,6 @@ class Admin:
         except Exception as e:
             self.logger.error(f"An error occurred during node operation handling: {str(e)}")
         
-        time.sleep(1) 
         
  
     def process_received_message(self, message,):
@@ -336,7 +337,7 @@ class Admin:
                 self.logger.info(f"POST update_network_status Request Successful: {response.text}")
                 return json.loads(response.text)
             else:
-                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                self.logger.error(f"POST Request Failed: {response.status_code}")
                 return None
         except Exception as e:
             self.logger.error(f"Error in add_admin: {str(e)}")
