@@ -362,19 +362,16 @@ def get_latest_global_model_hash(request):
 @api_view(['PUT'])
 def update_node_status(request, status, new_status):
     # Validate the input status
-    valid_statuses = ['operation', 'training', 'network']
+    valid_statuses = ['operation', 'network']
     if status not in valid_statuses:
         return Response({'error': f'Invalid status type: {status}'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Validate the new_status
     valid_operation_statuses = [choice[0] for choice in NodeStatus.OPERATION_CHOICES]
-    valid_training_statuses = [choice[0] for choice in NodeStatus.TRAINING_STATUS_CHOICES]
     valid_network_statuses = [choice[0] for choice in NodeStatus.NETWORK_STATUS_CHOICES]
 
     if status == 'operation' and new_status not in valid_operation_statuses:
         return Response({'error': f'Invalid operation status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
-    elif status == 'training' and new_status not in valid_training_statuses:
-        return Response({'error': f'Invalid training status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
     elif status == 'network' and new_status not in valid_network_statuses:
         return Response({'error': f'Invalid network status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -384,8 +381,6 @@ def update_node_status(request, status, new_status):
     # Update the appropriate status field
     if status == 'operation':
         node_status.operation_status = new_status
-    elif status == 'training':
-        node_status.training_status = new_status
     elif status == 'network':
         node_status.network_status = new_status
 
