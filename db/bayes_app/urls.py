@@ -18,7 +18,7 @@ urlpatterns = [
     # path('api/v1/toggle-training-status/', toggle_training_status, name='toggle_training_status'),
     # path('api/v1/create_or_update_status/', create_or_update_status, name='create_or_update_status'),
     
-    # path('api/v1/get-admin-data/', get_admin_data, name='get_admin_data'),
+
    
    
     # path('api/v1/get-track-role/', get_track_role, name='get_track_role'),
@@ -46,4 +46,5 @@ urlpatterns = [
     path('api/v1/create_training_result/', create_training_result, name='create_training_result'),
     path('api/v1/update_model_hash/', update_model_hash, name='update_model_hash'),
     path('api/v1/get_training_info/<str:training_name>/', get_training_information_by_name, name='get_training_info'),
+    path('api/v1/get_admin_data/', get_admin_data, name='get_admin_data'),
 ]
