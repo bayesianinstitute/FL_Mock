@@ -17,6 +17,9 @@ class User:
                         # Start, initialize, and get MQTT communication object
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
         self.grant_received = False
+        self.id= self.mqtt_obj.id
+
+     
 
 
 
@@ -58,8 +61,6 @@ class User:
                 if not self.pause_training:
                     rounds = rounds + 1
 
-                    user_status = self.update_training_status()
-                    self.send_training_status(user_status)
 
                     hash, final_accuracy, final_loss, val_acc, _ = self.ml_operations.train_machine_learning_model(
                         rounds=rounds, epochs=5, batch_size=32
@@ -81,7 +82,7 @@ class User:
                     self.update_model_status(db_model)
 
                     self.send_model_to_internal_cluster(
-                        user_status, hash, final_accuracy, final_loss, rounds
+                        user_status, hash, final_accuracy, final_loss
                     )
                     time.sleep(1)
 
@@ -151,9 +152,9 @@ class User:
                 message_json = json.dumps({
                     "receiver": 'Admin',
                     "role": 'User',
-                    "training_name": self.training_name,
                     "msg": JOIN_OPERATION,
-                    "node_id": self.mqtt_obj.id,
+                    "training_name": self.training_name,
+                    "node_id": self.id,
                 })
                 self.mqtt_obj.send_internal_messages(message_json)
 
@@ -177,7 +178,7 @@ class User:
 
     def update_network_status(self):
         try:
-            connected_status = self.apiClient.put_request(network_connected_endpoint)
+            connected_status = self.apiClient.put_request(update_network_status_connected)
 
             if connected_status.status_code == 200:
                 self.logger.info(f"PUT network_status Request Successful: {connected_status.text}")
@@ -198,7 +199,7 @@ class User:
                     "receiver": 'Admin',
                     "role": 'User',
                     "msg": SEND_NETWORK_STATUS,
-                    "node_id": self.mqtt_obj.id,
+                    "node_id": self.id,
                     "network_status": user_status['network_status']
                 })
                 self.mqtt_obj.send_internal_messages(message_json)
@@ -208,7 +209,7 @@ class User:
 
     def update_training_status(self):
         try:
-            training_status = self.apiClient.put_request(toggle_training_status_endpoint)
+            training_status = self.apiClient.put_request(toggle_training_status)
 
             if training_status.status_code == 200:
                 self.logger.info(f"PUT training_status Request Successful: {training_status.text}")
@@ -228,7 +229,7 @@ class User:
                     "receiver": 'Admin',
                     "role": 'User',
                     "msg": SEND_TRAINING_STATUS,
-                    "node_id": self.mqtt_obj.id,
+                    "node_id": self.id,
                     "training_status": user_status['training_status'],
                 })
                 self.mqtt_obj.send_internal_messages(message_json)
@@ -236,18 +237,18 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in send_training_status: {str(e)}")
 
-    def send_model_to_internal_cluster(self, user_status, hash, accuracy, loss,rounds):
+    def send_model_to_internal_cluster(self, user_status, hash, accuracy, loss):
         
         try:
             if user_status:
                 message_json = json.dumps({
                     "receiver": 'Admin',
                     "msg": RECEIVE_MODEL_INFO,
-                    "node_id": self.mqtt_obj.id,
+                    "node_id": self.id,
                     "model_hash": hash,
                     "accuracy": accuracy,
                     "loss": loss,
-                    "training_round":rounds
+
                 })
                 self.mqtt_obj.send_internal_messages(message_json)
 
@@ -295,23 +296,32 @@ class User:
         pass
 
     def handle_pause_training(self,message_data):
-        self.pause_training = True
-        self.logger.debug(f" got pause training command: {message_data} and paused: {self.pause_training}")
+        node_id=message_data.get("node_id")
+        if node_id==self.id:
+            self.pause_training = True
+            self.logger.debug(f" got pause training command: {message_data} and paused: {self.pause_training}")
         pass
 
     def handle_resume_training(self,message_data ):
-        self.pause_training = False
+        node_id=message_data.get("node_id")
 
-        self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
+        if node_id==self.id:
+
+            self.pause_training = False
+
+            self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
         pass
 
     def handle_terminate(self,message_data):
-        self.logger.debug(f" got pause terimate command: {message_data}")
-        self.mqtt_obj.terimate_connection()
-        self.logger.debug("Terminate Successfully!!!!!")
-        import sys
+        node_id=message_data.get("node_id")
 
-        sys.exit(0)
+        if node_id==self.id:
+            self.logger.debug(f" got pause terimate command: {message_data}")
+            self.mqtt_obj.terimate_connection()
+            self.logger.debug("Terminate Successfully!!!!!")
+            import sys
+
+            sys.exit(0)     
 
        
         pass

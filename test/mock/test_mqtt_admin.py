@@ -21,18 +21,23 @@ topics=f'{cluster_name}_topic'
 
 import random
 
-id = random.randint(0,100)
-
+id = 5
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
     client.subscribe(topics, qos=2)
 
 def on_message(client, userdata, msg):
-    print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
     message_data = json.loads(msg.payload.decode())
-    msg_type = message_data.get("msg")
-    if msg_type == GRANTED_JOIN:
-        handle_config(message_data)
+    nodeid=message_data.get("node_id")
+
+    if nodeid==id:
+        print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
+
+
+
+        msg_type = message_data.get("msg")
+        if msg_type == GRANTED_JOIN:
+            handle_config(message_data)
 
 
 def send_network_status():
@@ -86,9 +91,9 @@ def join_training_network( ):
     message_json = json.dumps({
                     "receiver": 'Admin',
                     "role": 'User',
-                    "training_name": topics,
+                    "training_name": cluster_name,
                     "msg": JOIN_OPERATION,
-                    "node_id": 5,
+                    "node_id": id,
                 })
     
     return message_json
