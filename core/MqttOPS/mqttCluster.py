@@ -63,7 +63,9 @@ class MQTTCluster:
                 self.received_admin_data_queue.put(data)
 
             elif json_data.get("receiver") == 'User' :
-                if self.id==json_data.get("node_id") :
+                nodeId=json_data.get("node_id") 
+                self.logger.warning(f"Node with ID {nodeId}")
+                if self.id==nodeId:
                     self.logger.critical("The receiver is User")
                     if self.received_user_data_queue.empty():
                         self.received_user_data_queue.put(data)

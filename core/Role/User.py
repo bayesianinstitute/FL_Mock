@@ -289,9 +289,9 @@ class User:
         
         self.logger.info(f" got global model hash: {global_model}")
         db_data={
-            "global_model_hash": global_model
+            "model_hash": global_model
         }
-        self.store_user_data(db_data,post_global_model_hash)
+        self.store_user_data(db_data,update_model_hash)
         self.ml_operations.is_global_model_hash(global_model)
         self.logger.debug("Successfully Set global model hash")
         pass
@@ -301,6 +301,8 @@ class User:
         if node_id==self.id:
             self.pause_training = True
             self.logger.debug(f" got pause training command: {message_data} and paused: {self.pause_training}")
+        else :
+            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
         pass
 
     def handle_resume_training(self,message_data ):
@@ -311,6 +313,8 @@ class User:
             self.pause_training = False
 
             self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
+        else :
+            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
         pass
 
     def handle_terminate(self,message_data):
@@ -323,6 +327,7 @@ class User:
             import sys
 
             sys.exit(0)     
-
+        else :
+            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
        
         pass
