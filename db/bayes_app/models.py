@@ -50,7 +50,7 @@ class TrainingResultAdmin(models.Model):
         null=True,
         blank=True
     )
-    node_id = models.IntegerField()
+    node_id = models.CharField(max_length=100)
     accuracy = models.FloatField()
     loss = models.FloatField()
   
@@ -107,7 +107,7 @@ class Admin(models.Model):
         default='User'
     )
     timestamp = models.DateTimeField(auto_now_add=True)
-    node_id = models.IntegerField()
+    node_id = models.CharField(max_length=100)
     model_hash = models.CharField(max_length=255, blank=True, null=True) 
     network_status = models.CharField(
         max_length=15,
