@@ -40,21 +40,22 @@ def on_message(client, userdata, msg):
             handle_config(message_data)
 
 
+
 def send_network_status():
     message_json = json.dumps({
         "receiver": 'Admin',
         "role": 'User',
         "msg": SEND_NETWORK_STATUS,
-        "node_id": 1,
+        "node_id": id,
         "network_status": "connected",
     })
 
     return message_json
 
 def handle_config(data):
-    Model_type=data.get('Model_name')
-    optimizer=data.get('Optimizer')
-    dataset=data.get('Dataset_name')
+    Model_type=data.get('model_name')
+    optimizer=data.get('optimizer')
+    dataset=data.get('dataset_name')
     print(Model_type)
     print(dataset)
     print(optimizer)
@@ -107,20 +108,10 @@ def send_model_to_internal_cluster():
         "model_hash": "'QmeckrNjvpqGfWywVtdt6RW1eQAamxFf1UZ8QBh8dsbADf",
         "accuracy": "500000",
         "loss": "3",
-        "training_round":2,
     })
     return message_json
 
-def send_training_status():
-    message_json = json.dumps({
-        "receiver": 'Admin',
-        "role": 'User',
-        "msg": SEND_TRAINING_STATUS,
-        "training_status": 'in_progress',
-        "node_id": id,
 
-    })
-    return message_json
 if __name__ == "__main__":
     client = mqtt.Client()
     client.on_connect = on_connect
@@ -146,14 +137,17 @@ if __name__ == "__main__":
         try:
             # Call your message-sending methods and publish the resulting JSON
             client.publish(topics, join_training_network(), qos=2)
-            # client.publish(topics, send_training_status(), qos=2)
 
-            time.sleep(15)   
+            time.sleep(6)
 
-            # client.publish(topics, send_model_to_internal_cluster(), qos=2)
+            client.publish(topics,send_network_status(),qos=2)   
+            time.sleep(4)
+
+
+            client.publish(topics, send_model_to_internal_cluster(), qos=2)
 
             # print("Successfully sent messages to admin")
-            # time.sleep(10)
+            time.sleep(10)
 
         except KeyboardInterrupt:
             client.disconnect()

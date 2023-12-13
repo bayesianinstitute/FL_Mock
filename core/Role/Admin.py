@@ -29,7 +29,7 @@ class Admin:
 
                 current_time = time.time()
 
-                if current_time - last_update_time >= 50:
+                if current_time - last_update_time >= 20:
 
                     self.handle_aggregate_model()
 
@@ -171,19 +171,18 @@ class Admin:
             # TODO: Get traning information by traning name and send to user
             config_json=self.get_configuration(training_name)
 
-            GRANTED_JOIN = "Granted_JOIN"
+            # GRANTED_JOIN = "Granted_JOIN"
             # New JSON data to be added
             mess_format = {
                 "receiver": "User",
                 "role": "Admin",
-                "msg": GRANTED_JOIN
+                "msg": GRANTED_JOIN,
+                "node_id":node_id,
+
             }
 
             # Merge the two JSON objects
             merged_data = {**mess_format, **config_json}
-
-
-            self.logger.warning(f"Merged JSON data {merged_data}")
 
             # Convert the merged data to JSON format
             message_json = json.dumps(merged_data, indent=2)
@@ -247,21 +246,22 @@ class Admin:
         global_model_hash = self.ml_operations.aggregate_models(model_hashes)
 
         data = {
-            "global_model_hash": global_model_hash,
+            "global_model_hash": global_model_hash
         }
 
-        self.update_global_model(data)
-
-        message_json = json.dumps({
-            "receiver": 'User',
-            "role": 'Admin',
-            "msg": SEND_GLOBAL_MODEL_HASH,
-            "Admin": 1,
-            "global_hash": global_model_hash
-        })
+        respose= self.update_global_model(data)
+        if respose:
+            message_json = json.dumps({
+                "receiver": 'User',
+                "role": 'Admin',
+                "msg": SEND_GLOBAL_MODEL_HASH,
+                "Admin": 1,
+                "global_hash": global_model_hash
+            })
+            
+            self.mqtt_obj.send_internal_messages(message_json)
+            self.logger.info("Sent global model to users")
         
-        self.mqtt_obj.send_internal_messages(message_json)
-        self.logger.info("Sent global model to users")
 
 
 
@@ -373,7 +373,7 @@ class Admin:
     
     def update_receive_model_info(self, data):
         try:
-            response = self.apiClient.post_request(add_training_result, data)
+            response = self.apiClient.post_request(create_or_update_status, data)
 
             if response and response.status_code == 201:
                 self.logger.info(f"POST update_receive_model_info Request Successful: {response.text}")

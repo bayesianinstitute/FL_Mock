@@ -14,7 +14,7 @@ class User:
         self.ml_operations = None
         self.logger = Logger(name='user-role').get_logger()
         self.pause_training = False
-                        # Start, initialize, and get MQTT communication object
+        # Start, initialize, and get MQTT communication object
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
         self.grant_received = False
         self.id= self.mqtt_obj.id
@@ -57,7 +57,8 @@ class User:
                 received_message = self.mqtt_obj.handle_user_data()
                 if received_message:
                     self.process_received_message(received_message)
-                self.logger.debug(f'{self.ml_operations}')
+
+
                 if not self.pause_training:
                     rounds = rounds + 1
 
@@ -66,14 +67,14 @@ class User:
                         rounds=rounds, epochs=5, batch_size=32
                     )
                     self.logger.info(f"Model hash: {hash}")
-                    # data={
-                    #     "accuracy": final_accuracy,
-                    #     "training_accuracy": val_acc,
-                    #     "loss": final_loss,
-                    #     "training_info_name": self.training_name,
-                    #     }
+                    data={
+                        "accuracy": final_accuracy,
+                        "training_accuracy": val_acc,
+                        "loss": final_loss,
+                        "training_info_name": self.training_name,
+                        }
 
-                    # self.store_user_data(data,create_training_result)
+                    self.store_user_data(data,create_training_result)
 
                     db_model={
                         "model_hash": hash

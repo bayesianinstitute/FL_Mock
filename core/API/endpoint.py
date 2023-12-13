@@ -1,7 +1,7 @@
-create_training_result_endpoint = "create_training_result/"
-update_admin_endpoint = "update_admin/"
-update_backup_admin_endpoint = "update_backup_admin/"
-update_user_endpoint = "update_user/"
+create_training_result = "create_training_result/"
+update_admin = "update_admin/"
+update_backup_admin = "update_backup_admin/"
+update_user = "update_user/"
 toggle_network_status = "toggle_network_status/"
 toggle_training_status = "toggle_training_status/"
 create_or_update_admin = "create_or_update_admin/"
@@ -13,7 +13,7 @@ update_network_status_disconnected="update_network_status/disconnected/"
 
 
 # GET ENDPOINT
-get_training_results_endpoint = "get_training_results/"
+get_training_results = "get_training_results/"
 get_logs = "get_logs/"
 get_admin_data="get_admin_data/"
 post_global_model_hash="post_global_model_hash/"

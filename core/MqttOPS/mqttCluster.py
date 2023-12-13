@@ -58,29 +58,36 @@ class MQTTCluster:
         try:
             json_data = json.loads(data)
 
-
             if json_data.get("receiver") == 'Admin':
                 self.logger.warning("The receiver is an admin.")
-                self.received_admin_data_queue.put(data)
+                if self.received_user_data_queue.empty():
+                    self.received_admin_data_queue.put(data)
+                else:
+                        last_element = self.received_admin_data_queue.queue[-1]
+                        if last_element != data:
+                            self.received_user_data_queue.put(self.received_admin_data_queue)
+
+                            self.logger.warning("Last value put is the different as the front element.")
+
+                        else:
+                            self.logger.info("Last value put is the same as the front element.")
 
             elif json_data.get("receiver") == 'User' :
-                self.logger.critical("The receiver is User")
-                if self.received_user_data_queue.empty():
-                    self.received_user_data_queue.put(data)
-
-                else:
-                    last_element = self.received_user_data_queue.queue[-1]
-
-
-                    if last_element != data:
-                        self.received_user_data_queue.put(self.received_user_data_queue)
-
-                        self.logger.warning("Last value put is the different as the front element.")
+                if self.id==json_data.get("node_id") :
+                    self.logger.critical("The receiver is User")
+                    if self.received_user_data_queue.empty():
+                        self.received_user_data_queue.put(data)
 
                     else:
-                        self.logger.info("Last value put is the same as the front element.")
+                        last_element = self.received_user_data_queue.queue[-1]
 
+                        if last_element != data:
+                            self.received_user_data_queue.put(self.received_user_data_queue)
 
+                            self.logger.warning("Last value put is the different as the front element.")
+
+                        else:
+                            self.logger.info("Last value put is the same as the front element.")
             
         except json.JSONDecodeError as e:
             pass  
