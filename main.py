@@ -14,7 +14,7 @@ import json
 
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
-    def __init__(self, broker_service, internal_cluster_topic, cluster_name, id,
+    def __init__(self, broker_service, internal_cluster_topic, cluster_name, 
                  voting_topic, declare_winner_topic, min_node, updated_broker, training_type, optimizer):
         
         # Setup Logger
@@ -120,7 +120,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("broker_service", help="Name of broker service", type=str)
     parser.add_argument("cluster_name", help="Name of the cluster", type=str)
-    parser.add_argument("id", help="client_id", type=str)
     parser.add_argument("min_node", help="minimum Node", type=int)
 
     updated_broker = 'broker.hivemq.com'
@@ -136,6 +135,6 @@ if __name__ == "__main__":
 
     internal_cluster_topic='internal_cluster_topic'
     
-    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name, args.id,
+    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name, 
                            voting_topic, declare_winner_topic, args.min_node, updated_broker, model_type, optimizer)
     workflow.run()
