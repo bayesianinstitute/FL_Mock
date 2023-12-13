@@ -6,10 +6,9 @@ from core.Logs_System.logger import Logger
 import uuid
 
 class MQTTCluster:
-    def __init__(self, broker_address, num_clients, cluster_name,  internal_cluster_topic, head_status, role):
+    def __init__(self, broker_address, cluster_name,  internal_cluster_topic, head_status, role):
         self.logger=Logger(name='MqttComm_logger').get_logger()
         self.broker_address = broker_address
-        self.num_clients = num_clients
         self.cluster_name = cluster_name
         self.worker_head_node = head_status
         self.internal_cluster_topic = internal_cluster_topic

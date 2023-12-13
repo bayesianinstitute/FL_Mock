@@ -47,7 +47,6 @@ class User:
                     user_status = self.update_network_status()
                     self.send_network_status(user_status)
 
-                    time.sleep(16)
 
                     # Update the last update time
                     last_update_time = current_time

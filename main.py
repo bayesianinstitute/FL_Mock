@@ -15,7 +15,7 @@ import json
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
     def __init__(self, broker_service, internal_cluster_topic, cluster_name, 
-                 voting_topic, declare_winner_topic, min_node, updated_broker, training_type, optimizer):
+                 voting_topic, declare_winner_topic,  updated_broker, training_type, optimizer):
         
         # Setup Logger
         self.logger=Logger(name='DFL_logger').get_logger()
@@ -36,7 +36,7 @@ class DFLWorkflow:
         self.winner_declare = declare_winner_topic
 
         self.is_admin = None
-        self.min_node = min_node
+         
         self.updated_broker = updated_broker
 
         self.apiClient=ApiClient()
@@ -66,7 +66,6 @@ class DFLWorkflow:
         self.mqtt_operations = MqttOperations(self.internal_cluster_topic,
                                               self.cluster_name,
                                             self.broker_service,
-                                            self.min_node,
                                             self.is_admin,
                                             )
 
@@ -120,7 +119,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("broker_service", help="Name of broker service", type=str)
     parser.add_argument("cluster_name", help="Name of the cluster", type=str)
-    parser.add_argument("min_node", help="minimum Node", type=int)
 
     updated_broker = 'broker.hivemq.com'
 
@@ -136,5 +134,5 @@ if __name__ == "__main__":
     internal_cluster_topic='internal_cluster_topic'
     
     workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name, 
-                           voting_topic, declare_winner_topic, args.min_node, updated_broker, model_type, optimizer)
+                           voting_topic, declare_winner_topic,  updated_broker, model_type, optimizer)
     workflow.run()
