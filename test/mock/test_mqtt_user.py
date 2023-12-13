@@ -21,13 +21,15 @@ topics=f'{cluster_name}_topic'
 import random
 
 id = random.randint(0, 100)
-
+global node_id
 def on_connect(client, userdata, flags, rc):
     print(f"Connected with result code {rc}")
     client.subscribe(topics, qos=2)
 
 
-def handle_join(data):
+def handle_join(message):
+    global  node_id
+    node_id=message.get("node_id")
     data=json.dumps({
         "receiver": 'User',
         "role": 'Admin',
@@ -35,7 +37,8 @@ def handle_join(data):
         "model_name": "CNN",
         "dataset_name": "Mnist",
         "optimizer": "Adam",
-        "training_name":topics
+        "training_name":topics,
+        "node_id":node_id
         })
     
     client.publish(topics,data,qos=2)
@@ -46,38 +49,44 @@ def on_message(client, userdata, msg):
     message_data = json.loads(msg.payload.decode())
     msg_type = message_data.get("msg")
     if msg_type == JOIN_OPERATION:
+        
         handle_join(message_data)
     # Add logic to handle pause and resume messages if needed
 
-# def send_global_model():
-#     message_json = json.dumps({
-#         "receiver": 'User',
-#         "role": 'Admin',
-#         "msg": SEND_GLOBAL_MODEL_HASH,
-#         "Admin": id,
-#         "global_hash": 'QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'
-#     })
-#     return message_json
+def send_global_model():
+    message_json = json.dumps({
+        "receiver": 'User',
+        "role": 'Admin',
+        "msg": SEND_GLOBAL_MODEL_HASH,
+        "Admin": id,
+        "global_hash": 'QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'
+    })
+    return message_json
 
-# def send_terminate_message():
-#     message_json = json.dumps({
-#         "receiver": 'User',
-#         "role": 'Admin',
+def send_pause_message():
+    global node_id
+    message_json = json.dumps({
+        "receiver": 'User',
+        "role": 'Admin',
+        "node_id": node_id,
+        "msg": PAUSE_API,
+        "Admin": id
+    })
+    return message_json
 
-#         "msg": TERMINATE_API,
-#         "Admin": id
-#     })
-#     return message_json
+def send_terminate_message():
+    global  node_id
 
-# def send_pause_message():
-#     message_json = json.dumps({
-#         "receiver": 'User',
-#         "role": 'Admin',
+    message_json = json.dumps({
+        "receiver": 'User',
+        "role": 'Admin',
+        "node_id": node_id,
+        "msg": TERMINATE_API,
+        "Admin": id
+    })
+    return message_json
 
-#         "msg": PAUSE_API,
-#         "Admin": id
-#     })
-#     return message_json
+
 
 # def send_resume_message():
 #     message_json = json.dumps({
@@ -116,16 +125,16 @@ if __name__ == "__main__":
             # Call your message-sending methods and publish the resulting JSON
 
 
-            time.sleep(15)
+            # time.sleep(15)
             # client.publish(topics, send_global_model(), qos=2)
             # print("Successfully sent Global Model to User")
 
-            # time.sleep(4)
+            time.sleep(4)
 
-            # client.publish(topics, send_pause_message(), qos=2)
-            # print("Successfully sent Pause to User")
+            client.publish(topics, send_pause_message(), qos=2)
+            print("Successfully sent Pause to User")
 
-            # time.sleep(15)
+            time.sleep(15)
 
 
             # client.publish(topics, send_resume_message(), qos=2)
@@ -133,8 +142,8 @@ if __name__ == "__main__":
 
             # time.sleep(9)
 
-            # client.publish(topics, send_terminate_message(), qos=2)
-            # print("Successfully sent Terimate to User")
+            client.publish(topics, send_terminate_message(), qos=2)
+            print("Successfully sent Terimate to User")
             # # break
 
 

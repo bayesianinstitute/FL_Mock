@@ -89,12 +89,13 @@ class User:
 
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
-        
+
+
     def store_user_data(self, data,endpoint=None):
         try:
             response = self.apiClient.post_request(endpoint, data)
 
-            if response and response.status_code == 200:
+            if response and response.status_code == 201:
                 self.logger.info(f"POST create user Request Successful: {response.text}")
                 return json.loads(response.text)
             else:
@@ -164,14 +165,15 @@ class User:
 
 
     def update_model_status(self, data):
+
         try:
-            response = self.apiClient.post_request(update_model_hash, data)
+            response = self.apiClient.put_request(update_model_hash, data)
 
             if response and response.status_code == 200:
-                self.logger.info(f"POST update_network_status Request Successful: {response.text}")
+                self.logger.info(f"update_model_status Request Successful: {response.text}")
                 return json.loads(response.text)
             else:
-                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                self.logger.error(f"update_model_status  Request Failed: {response.status_code, response.text}")
                 return None
         except Exception as e:
             self.logger.error(f"Error in add_admin: {str(e)}")
@@ -291,7 +293,7 @@ class User:
         db_data={
             "model_hash": global_model
         }
-        self.store_user_data(db_data,update_model_hash)
+        self.update_model_status(db_data)
         self.ml_operations.is_global_model_hash(global_model)
         self.logger.debug("Successfully Set global model hash")
         pass
