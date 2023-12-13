@@ -310,6 +310,7 @@ def training_information_choices(request):
     optimizer_choices = [choice[0] for choice in TrainingInformation.optimizer_choices]
 
     choices_data = {
+        
         'model_name_choices': model_name_choices,
         'dataset_name_choices': dataset_name_choices,
         'optimizer_choices': optimizer_choices,
@@ -407,3 +408,9 @@ def update_model_hash(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+def get_all_training_information(request):
+    training_information = TrainingInformation.objects.all()
+    serializer = TrainingInformationSerializer(training_information, many=True)
+    return Response(serializer.data)

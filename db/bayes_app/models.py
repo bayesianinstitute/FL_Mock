@@ -29,7 +29,6 @@ class TrainingInformation(models.Model):
     
 class TrainingResult(models.Model):
     training_info = models.ForeignKey(TrainingInformation, on_delete=models.CASCADE, related_name='training_results',null=True, blank=True)
-    training_round = models.IntegerField(blank=True, null=True)
     accuracy = models.FloatField()
     loss = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -52,7 +51,6 @@ class TrainingResultAdmin(models.Model):
         blank=True
     )
     node_id = models.IntegerField()
-    training_round = models.IntegerField()
     accuracy = models.FloatField()
     loss = models.FloatField()
   
@@ -80,16 +78,11 @@ class Logs(models.Model):
         verbose_name_plural="Logs"
         
 class Admin(models.Model):
-    
-    TRAINING_STATUS_CHOICES = [
-        ('in_progress', 'Training In Progress'),
-        ('not_in_progress', 'Training Not In Progress'),
-    ]
 
     NETWORK_STATUS_CHOICES = [
         ('connected', 'Connected'),
         ('disconnected', 'Disconnected'),
-        ('idle', 'Idle'),
+       
     ]
     ROLE_CHOICES = [
         ('User', 'User'),
@@ -97,6 +90,7 @@ class Admin(models.Model):
         ('BackupAdmin', 'BackupAdmin'),
     ]
     OPERATION_CHOICES = [
+        ('idle', 'Idle'),
         ('resume', 'resume'),
         ('pause', 'pause'),
         ('terminate', 'terminate'),
@@ -104,13 +98,9 @@ class Admin(models.Model):
     operation_status = models.CharField(
         max_length=20,
         choices=OPERATION_CHOICES,
-        default='resume'
+        default='idle'
     )
-    training_status = models.CharField(
-        max_length=20,
-        choices=TRAINING_STATUS_CHOICES,
-        default='not_in_progress'
-    )
+
     role = models.CharField(
         max_length=20,
         choices=ROLE_CHOICES,
@@ -122,13 +112,13 @@ class Admin(models.Model):
     network_status = models.CharField(
         max_length=15,
         choices=NETWORK_STATUS_CHOICES,
-        default='idle'
+        default='disconnected'
     )
     def save(self, *args, **kwargs):
         self.timestamp = timezone.now()
         super().save(*args, **kwargs)
     def __str__(self):
-        return f"{self.role}-{self.node_id}-{self.operation_status} - {self.training_status} - {self.model_hash}"
+        return f"{self.role}-{self.node_id}-{self.operation_status} - {self.model_hash}"
     
     
     class Meta:
@@ -141,15 +131,9 @@ class NodeStatusManager(models.Manager):
         return instance
     
 class NodeStatus(models.Model):
-    TRAINING_STATUS_CHOICES = [
-        ('in_progress', 'Training In Progress'),
-        ('not_in_progress', 'Training Not In Progress'),
-    ]
-
     NETWORK_STATUS_CHOICES = [
         ('connected', 'Connected'),
         ('disconnected', 'Disconnected'),
-        ('idle', 'Idle'),
     ]
     OPERATION_CHOICES = [
         ('idle', 'idle'),
@@ -162,21 +146,15 @@ class NodeStatus(models.Model):
         choices=OPERATION_CHOICES,
         default='idle'
     )
-
-    training_status = models.CharField(
-        max_length=20,
-        choices=TRAINING_STATUS_CHOICES,
-        default='not_in_progress'
-    )
     network_status = models.CharField(
         max_length=15,
         choices=NETWORK_STATUS_CHOICES,
-        default='idle'
+        default='disconnected'
     )    
     model_hash = models.CharField(max_length=255, blank=True, null=True) 
     objects = NodeStatusManager()
     def __str__(self):
-        return f"{self.operation_status} - {self.training_status} - {self.network_status}"
+        return f"{self.operation_status} - {self.network_status}"
    
     class Meta:
         verbose_name_plural="User Node Status"
