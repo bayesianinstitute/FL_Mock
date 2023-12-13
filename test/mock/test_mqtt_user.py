@@ -16,7 +16,8 @@ JOIN_OPERATION = "JoinOperation"
 
 GRANTED_JOIN = "Granted_JOIN"
 
-topics = 'internal_cluster_topic'
+cluster_name="USA"
+topics=f'{cluster_name}_topic'
 import random
 
 id = random.randint(0, 100)

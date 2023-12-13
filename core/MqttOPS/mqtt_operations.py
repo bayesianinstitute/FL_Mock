@@ -2,20 +2,19 @@ from core.MqttOPS.mqttCluster import MQTTCluster
 from core.Logs_System.logger import Logger
 
 class MqttOperations:
-    def __init__(self,internal_cluster_topic,cluster_name,initial_broker,status):
+    def __init__(self,internal_cluster_topic,cluster_name,initial_broker):
         self.logger=Logger(name='MqttOPS_logger').get_logger()
         self.internal_cluster_topic=internal_cluster_topic
         self.initial_broker=initial_broker
         self.cluster=None
         self.cluster_name=cluster_name
-        self.status=status
 
     
 
     def start_dfl_using_mqtt(self,role):
         try:
             self.cluster = MQTTCluster(self.initial_broker, self.cluster_name,
-                                       self.internal_cluster_topic, self.status, role)
+                                       self.internal_cluster_topic,  role)
             
             receiver=None
             if role=='Admin':
@@ -23,7 +22,6 @@ class MqttOperations:
             elif role=='User':
                 receiver='Admin'    
             self.cluster.connect_clients(role,receiver)
-            self.logger.info(f'Check head node {self.status}')
             self.logger.info("Started DFL Process")
             return self.cluster
         except Exception as e:
