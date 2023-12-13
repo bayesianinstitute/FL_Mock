@@ -14,7 +14,7 @@ class MQTTCluster:
         self.client = None
         # Generate a random UUID using a secure random number generator
         self.uuid = str(uuid.uuid1()) 
-        self.id = f"{role}_UIQ:{self.uuid}"
+        self.id = f"{role}_UID:{self.uuid}"
         self.terimate_status = False
         self.received_admin_data_queue = queue.Queue()
         self.received_user_data_queue=queue.Queue()
