@@ -7,7 +7,7 @@ from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
 import time
-import ast
+
 class Admin:
     def __init__(self,training_name, training_type, optimizer,mqtt_operations,role='Admin',):
         self.apiClient=ApiClient()
@@ -22,7 +22,7 @@ class Admin:
     
 
 
-    def admin_logic(self,id  ):
+    def admin_logic(self,):
         try:
             last_update_time = time.time()
 
@@ -33,7 +33,7 @@ class Admin:
 
                 current_time = time.time()
 
-                if current_time - last_update_time >= 10:
+                if current_time - last_update_time >= 50:
 
                     self.handle_aggregate_model()
 

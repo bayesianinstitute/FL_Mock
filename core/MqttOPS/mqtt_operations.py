@@ -2,7 +2,7 @@ from core.MqttOPS.mqttCluster import MQTTCluster
 from core.Logs_System.logger import Logger
 
 class MqttOperations:
-    def __init__(self,internal_cluster_topic,cluster_name,initial_broker,num_workers,status,id):
+    def __init__(self,internal_cluster_topic,cluster_name,initial_broker,num_workers,status):
         self.logger=Logger(name='MqttOPS_logger').get_logger()
         self.internal_cluster_topic=internal_cluster_topic
         self.num_workers =num_workers
@@ -10,14 +10,13 @@ class MqttOperations:
         self.cluster=None
         self.cluster_name=cluster_name
         self.status=status
-        self.id=id
 
     
 
     def start_dfl_using_mqtt(self,role):
         try:
             self.cluster = MQTTCluster(self.initial_broker, self.num_workers, self.cluster_name,
-                                       self.internal_cluster_topic, self.status, self.id)
+                                       self.internal_cluster_topic, self.status, role)
             
             receiver=None
             if role=='Admin':

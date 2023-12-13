@@ -35,7 +35,6 @@ class DFLWorkflow:
         self.voting_topic = voting_topic
         self.winner_declare = declare_winner_topic
 
-        self.id = f'{id}-{uuid.uuid4()}'  # Create a unique client ID with a UUID
         self.is_admin = None
         self.min_node = min_node
         self.updated_broker = updated_broker
@@ -50,10 +49,7 @@ class DFLWorkflow:
     # Main function to run the federated learning workflow
     def run(self):
 
-
-
         self.logger.debug(self.internal_cluster_topic)
-        self.logger.debug(self.id)
 
         get_role=self.apiClient.get_request(get_track_role)
 
@@ -72,7 +68,7 @@ class DFLWorkflow:
                                             self.broker_service,
                                             self.min_node,
                                             self.is_admin,
-                                            self.id)
+                                            )
 
         # while True:n
             # TODO:  Need api to update training rounds 
@@ -101,7 +97,7 @@ class DFLWorkflow:
                 self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
 
             admin = Admin(self.internal_cluster_topic , self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'],)
-            admin.admin_logic(self.id)
+            admin.admin_logic()
         # User
         elif role_data['role'] == "User":
             from core.Role.User import User

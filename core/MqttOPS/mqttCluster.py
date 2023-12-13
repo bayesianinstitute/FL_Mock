@@ -3,10 +3,10 @@ import random
 import json
 import queue
 from core.Logs_System.logger import Logger
-
+import uuid
 
 class MQTTCluster:
-    def __init__(self, broker_address, num_clients, cluster_name,  internal_cluster_topic, head_status, id):
+    def __init__(self, broker_address, num_clients, cluster_name,  internal_cluster_topic, head_status, role):
         self.logger=Logger(name='MqttComm_logger').get_logger()
         self.broker_address = broker_address
         self.num_clients = num_clients
@@ -14,7 +14,9 @@ class MQTTCluster:
         self.worker_head_node = head_status
         self.internal_cluster_topic = internal_cluster_topic
         self.client = None
-        self.id = f"{self.cluster_name}_Client_{id}"
+        # Generate a random UUID using a secure random number generator
+        self.uuid = str(uuid.uuid1()) 
+        self.id = f"{role}_UIQ:{self.uuid}"
         self.terimate_status = False
         self.received_admin_data_queue = queue.Queue()
         self.received_user_data_queue=queue.Queue()
