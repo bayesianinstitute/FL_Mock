@@ -144,7 +144,7 @@
                 <tr>
                   <th>Node Id</th>
                   <th>User Role</th>
-                  <th>Training Status</th>
+                  <th>Operation Status</th>
                   <th>Network Status</th>
                   <th>Actions</th>
                 </tr>
@@ -526,7 +526,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
 
       cell1.textContent = user.node_id;
       cell2.textContent = user.role;
-      cell3.textContent = user.training_status;
+      cell3.textContent = user.operation_status;
       cell4.textContent = user.network_status;
 
       const toggleButton = document.createElement('button');

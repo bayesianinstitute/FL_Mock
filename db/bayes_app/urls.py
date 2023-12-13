@@ -15,7 +15,7 @@ urlpatterns = [
     path('api/v1/update_backup_admin/', update_backup_admin_role, name='update_backup_admin_role'),
     path('api/v1/update_user/', update_user_role, name='update_user_role'),
     path('api/v1/update_network_status/<str:new_status>/', update_network_status, name='update_network_status'),
-    path('api/v1/toggle_training-status/', toggle_training_status, name='toggle_training_status'),
+    path('api/v1/toggle_training_status/', toggle_training_status, name='toggle_training_status'),
     path('api/v1/create_or_update_status/', create_or_update_status, name='create_or_update_status'),
     
 
@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/v1/add_training_result/', add_training_result, name='add_training_result'),
     path('api/v1/update_operation_status/', update_operation_status, name='update_operation_status'),
     path('api/v1/get_operation_status/', get_operation_status, name='get_operation_status'),
-    path('api/v1/get_unique_training-names/', get_unique_training_names, name='get-unique-training-names'),
+    path('api/v1/get_unique_training_names/', get_unique_training_names, name='get-unique-training-names'),
     path('api/v1/training_information_choices/', training_information_choices, name='training-information-choices'),
     path('api/v1/get_model_hashes/', get_model_hashes, name='get_model_hashes'),
     path('api/v1/logs/', get_logs, name='get_logs'),
