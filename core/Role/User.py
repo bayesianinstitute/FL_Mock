@@ -27,6 +27,8 @@ class User:
         rounds = 0
         self.join_training_network()
 
+
+        self.logger.debug(f"Waiting for grant request from admin")
         try:
             last_update_time = time.time()
 
@@ -157,6 +159,7 @@ class User:
                     "node_id": self.id
                 })
                 self.mqtt_obj.send_internal_messages(message_json)
+                self.logger.info(f"sucessfully sent Joined training network")
 
         except Exception as e:
             self.logger.error(f"Error in send_network_status: {str(e)}")
