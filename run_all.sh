@@ -5,13 +5,7 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Check if IPFS is installed
-if command_exists ipfs; then
-  echo "IPFS is already installed. Running IPFS daemon..."
-
-  # Run IPFS daemon
-  start ipfs daemon
-else
+install_ipfs() {
   echo "IPFS is not installed. Installing IPFS..."
 
   # Install IPFS
@@ -23,23 +17,42 @@ else
   sudo bash install.sh
   ipfs --version
   ipfs init
+}
+
+# Check if IPFS is installed
+if command_exists ipfs; then
+  echo "IPFS is already installed. Running IPFS daemon..."
+
+  # Run IPFS daemon
+  start ipfs daemon
+else
+  install_ipfs
 fi
 
-# Your existing script follows...
+# Continue with the rest of the script...
 
 # cd FL_Mock
+cd FL_Mock || exit
 git pull
+
+# Install Python virtual environment
+sudo apt install python3.10-venv
+
+python3 -m venv myenv
 
 # Activate virtual environment
 source myenv/bin/activate
 
+# Install Python dependencies
 pip install -r requirements.txt
 
 # Run Django server
-start python db/manage.py runserver
+python3 db/manage.py runserver 
 
 # Run mlflow
-start mlflow ui -H localhost -p 5000
+cd core/MLOPS/Model/
+# Run mlflow with host as 0.0.0.0 and port as 5000
+mlflow ui --host 0.0.0.0 --port 5000
 
-# Run main program
-start python core/MLOPS/Model/main.py test.mosquitto.org USA $1 1
+# Run the main program
+python3 main.py test.mosquitto.org USA 

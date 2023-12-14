@@ -1,7 +1,7 @@
 
 from core.IPFS.ipfs import IPFS
 from core.Logs_System.logger import Logger
-
+import requests
 class MLOperations:
     def __init__(self,training_type,optimizer,training_name='ML_training_name'):
         self.logger=Logger(name='MLOPS_Logger').get_logger()
@@ -14,7 +14,20 @@ class MLOperations:
         self.optimizer=optimizer
         self.training_name=training_name
         self.get_weights=None
+        self.ip=self.get_public_ip()
+        self.port=5000
         pass
+
+    def get_public_ip(self):
+        try:
+            response = requests.get("https://api64.ipify.org?format=json")
+            if response.status_code == 200:
+                public_ip = response.json()["ip"]
+                return f"http://{public_ip}"
+            else:
+                print(f"Failed to retrieve public IP. Status code: {response.status_code}")
+        except Exception as e:
+            print(f"Error retrieving public IP: {e}")
 
     def is_global_model_hash(self, model_hash):
         try:
@@ -31,7 +44,7 @@ class MLOperations:
                 
                 from core.MLOPS.Model.deepLearningModel.CNN import CNNMnist
 
-                self.current_model=CNNMnist(self.optimizer,experiment_name=self.training_name)
+                self.current_model=CNNMnist(self.ip,self.port,self.optimizer,experiment_name=self.training_name,)
 
 
             elif self.training_type=='ANN-Regression':

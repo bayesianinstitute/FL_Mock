@@ -10,7 +10,7 @@ import os
 
 
 class CNNMnist:
-    def __init__(self, optimizer='adam', experiment_name='custom_CNNMnist_experiment'):
+    def __init__(self,ip="http://localhost",port=5000, optimizer='adam', experiment_name='custom_CNNMnist_experiment',):
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
         warnings.filterwarnings("ignore", category=UserWarning, message=".*Setuptools is replacing distutils.*")
      
@@ -21,11 +21,13 @@ class CNNMnist:
 
         # Start MLflow experiment
         self.name = "CNN_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.config_mlflow(experiment_name)
+        self.url=f'{ip}:{port}'
 
-    def config_mlflow(self,experiment_name):
+        self.config_mlflow(experiment_name,self.url)
+
+    def config_mlflow(self,experiment_name,url):
         try:
-            mlflow.set_tracking_uri("http://localhost:5000")  
+            mlflow.set_tracking_uri(url)  
             mlflow.set_experiment(experiment_name)
         except Exception as e:
             print(f"Error configuring MLflow: {e}")
