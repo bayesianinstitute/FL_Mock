@@ -85,7 +85,6 @@ class User:
                     self.send_model_to_internal_cluster(
                         user_status, hash, final_accuracy, final_loss
                     )
-                    time.sleep(1)
 
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
@@ -147,7 +146,6 @@ class User:
             self.logger.error(f"Error decoding JSON: {e}")
         except Exception as e:
             self.logger.error(f"Error in process_received_message: {str(e)}")
-            time.sleep(10)
 
     def join_training_network(self, ):
         try:
@@ -283,7 +281,6 @@ class User:
             self.logger.error(f"Error decoding JSON: {e}")
         except Exception as e:
             self.logger.error(f"Error in process_received_message: {str(e)}")
-            time.sleep(10)
 
 
     

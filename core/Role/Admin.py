@@ -241,28 +241,30 @@ class Admin:
         if len(model_hashes) ==0:
             self.logger.debug("Model hashes are None. Returning from handle_aggregate_model. {model_hashes}")
             return None
-
+        
         self.logger.debug(f"Modeling handle_aggregate_model {model_hashes}")
 
         global_model_hash = self.ml_operations.aggregate_models(model_hashes)
 
-        data = {
-            "global_model_hash": global_model_hash
-        }
+        if global_model_hash:
+            data = {
+                "global_model_hash": global_model_hash
+            }
 
-        respose= self.update_global_model(data)
-        if respose:
-            message_json = json.dumps({
-                "receiver": 'User',
-                "role": 'Admin',
-                "msg": SEND_GLOBAL_MODEL_HASH,
-                "Admin": 1,
-                "global_hash": global_model_hash
-            })
-            
-            self.mqtt_obj.send_internal_messages(message_json)
-            self.logger.info("Sent global model to users")
-        
+            respose= self.update_global_model(data)
+            if respose:
+                message_json = json.dumps({
+                    "receiver": 'User',
+                    "role": 'Admin',
+                    "msg": SEND_GLOBAL_MODEL_HASH,
+                    "Admin": 1,
+                    "global_hash": global_model_hash
+                })
+                
+                self.mqtt_obj.send_internal_messages(message_json)
+                self.logger.info("Sent global model to users")
+        else :
+            self.logger.warning("no Global model hash ")
 
 
 

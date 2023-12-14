@@ -16,8 +16,7 @@ JOIN_OPERATION = "JoinOperation"
 
 GRANTED_JOIN = "Granted_JOIN"
 
-cluster_name="USA"
-topics=f'{cluster_name}_topic'
+topics="USA_topic"
 
 import random
 
@@ -92,7 +91,7 @@ def join_training_network( ):
     message_json = json.dumps({
                     "receiver": 'Admin',
                     "role": 'User',
-                    "training_name": cluster_name,
+                    "training_name": topics,
                     "msg": JOIN_OPERATION,
                     "node_id": id,
                 })
@@ -105,7 +104,7 @@ def send_model_to_internal_cluster():
         "receiver": 'Admin',
         "msg": RECEIVE_MODEL_INFO,
         "node_id": id,
-        "model_hash": "'QmeckrNjvpqGfWywVtdt6RW1eQAamxFf1UZ8QBh8dsbADf",
+        "model_hash": "QmeckrNjvpqGfWywVtdt6RW1eQAamxFf1UZ8QBh8dsbADf",
         "accuracy": "500000",
         "loss": "3",
     })

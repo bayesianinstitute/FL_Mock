@@ -117,7 +117,10 @@ class MLOperations:
             for value in data:
                 model = self.ipfs.fetch_model(value)
                 models.append(model)
-
+                
+            if len(models)==0:
+                return None
+            
             global_model = self.aggregate_weights(models)
             self.logger.info("Global model Aggregate weights")
             self.logger.debug(f"global model {global_model.summary()}")
