@@ -1,10 +1,3 @@
-#!/bin/bash
-
-# Check if 'id' argument is provided
-if [ -z "$1" ]; then
-  echo "Please provide the 'id' argument."
-  exit 1
-fi
 
 # Execute main.py with the 'id' argument
-python main.py test.mosquitto.org USA  "$1" "$3"
+python main.py test.mosquitto.org USA  
