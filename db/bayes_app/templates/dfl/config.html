@@ -98,8 +98,9 @@
       async function fetchChoices() {
         try {
           const response = await fetch(
-            '/bayes_app/api/v1/training_information_choices/'
+            '{% url "training_information_choices" %}'
           )
+
           const choices = await response.json()
 
           populateDropdown('model-name', choices.model_name_choices)
@@ -133,7 +134,7 @@
         }
 
         // Send the configuration to the server
-        const apiUrl = '/bayes_app/api/v1/create_training_information/'
+        const apiUrl = '{% url "create_training_information" %}'
         const requestData = {
           model_name: modelName,
           dataset_name: datasetName,

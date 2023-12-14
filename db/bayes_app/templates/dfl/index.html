@@ -41,7 +41,8 @@
                 <a class="nav-link" href="{% url 'dfl' %}">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:5000/" target="_blank">View Model Tracking</a>
+                <a class="nav-link" href="{% url 'mlflow' %}" target="_blank">View Model Tracking</a>
+
 
               </li>
               <!-- Add more navigation links as needed -->
@@ -242,7 +243,6 @@
     fetchLogs();
   });
 
-
   
   // Function to get the selected training name
   function getSelectedTrainingName() {
@@ -251,10 +251,10 @@
   }
   async function startTraining() {
     try {
-      // Make an API call to start training
-      const response = await fetch('/bayes_app/api/v1/update_status/operation/resume/', {
+     
+      const response = await fetch('{% url "update_status" status="operation" new_status="resume" %}', {
         method: 'PUT',
-      });
+    });
     
     
 
@@ -271,11 +271,9 @@
 
   async function stopTraining() {
     try {
-      // Make an API call to stop training
-      const response = await fetch('/bayes_app/api/v1/update_status/operation/terminate/', {
-        method: 'PUT', // Assuming it's a PUT request
-      });
-
+      const response = await fetch('{% url "update_status" status="operation" new_status="terminate" %}', {
+        method: 'PUT',
+    });
       if (response.ok) {
         console.log('Training stopped successfully');
         // Add any additional logic you need after stopping training
@@ -288,7 +286,7 @@
   }
   async function fetchLogs() {
     try {
-      const response = await fetch('/bayes_app/api/v1/logs/');
+      const response = await fetch('{% url "get_logs" %}');
       const data = await response.json();
   
       if (Array.isArray(data)) {
@@ -320,7 +318,8 @@ window.addEventListener('load', startLogPolling);
   
 async function fetchGlobalModelHash() {
   try {
-    const response = await fetch('/bayes_app/api/v1/get_global_model_hash/');
+    
+    const response = await fetch('{% url "get_global_model_hash" %}');
     const data = await response.json();
 
     const globalModelHashElement = document.getElementById('globalModelHash');
@@ -345,7 +344,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
 
 async function fetchGlobalModelHashAdmin() {
   try {
-    const response = await fetch('/bayes_app/api/v1/get_global_model_hash/');
+    const response = await fetch('{% url "get_global_model_hash" %}');
     const data = await response.json();
 
     const globalModelHashElement = document.getElementById('globalModelHashAdmin');
@@ -375,7 +374,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to fetch and populate training names
   async function fetchTrainingNames() {
     try {
-      const response = await fetch('/bayes_app/api/v1/get_unique_training_names/');
+      const response = await fetch('{% url "get_unique_training_names" %}');
       const data = await response.json();
 
       const trainingNames = data.data;
@@ -398,39 +397,57 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   async function fetchAccuracyDataAndPlotGraph() {
     try {
       const selectedTrainingName = getSelectedTrainingName();
-      const accuracyApiUrl = `/bayes_app/api/v1/accuracy/${selectedTrainingName}/`;
-      const response = await fetch(accuracyApiUrl);
+      const accuracyApiUrl = `{% url 'metrics_api_all' metric_name='accuracy'%}`;
+      const response = await fetch(accuracyApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          training_name: selectedTrainingName,
+        }),
+      });
+  
       const accuracyData = await response.json();
-
+  
       console.log('Accuracy Data:', accuracyData);
-
+  
       // Plot the line graph
       plotLineGraph(accuracyData, 'accuracyChart');
     } catch (error) {
       console.error('Error fetching accuracy data:', error);
     }
   }
-
+  
   // Function to fetch loss data and plot graph
   async function fetchLossDataAndPlotGraph() {
     try {
       const selectedTrainingName = getSelectedTrainingName();
-      const lossApiUrl = `/bayes_app/api/v1/loss/${selectedTrainingName}/`;
-      const response = await fetch(lossApiUrl);
+      const lossApiUrl =  `{% url 'metrics_api_all' metric_name='loss' %}`; // Use the actual URL or adjust as needed
+      const response = await fetch(lossApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          training_name: selectedTrainingName,
+        }),
+      });
+  
       const lossData = await response.json();
-
+  
       console.log('Loss Data:', lossData);
-
+  
       // Plot the line graph
       plotLineGraph(lossData, 'lossChart');
     } catch (error) {
       console.error('Error fetching loss data:', error);
     }
   }
+  
   function pauseUser(nodeId) {
     console.log(`Pausing user with Node ID ${nodeId}`);
-    const apiUrl = '/bayes_app/api/v1/update_operation_status/';
-
+    const apiUrl = '{% url "update_operation_status" %}';
     const requestData = {
       node_id: nodeId,
       operation_status: 'pause',
@@ -464,7 +481,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to handle resuming a user
   function resumeUser(nodeId) {
     console.log(`Resuming user with Node ID ${nodeId}`);
-    const apiUrl = '/bayes_app/api/v1/update_operation_status/';
+    const apiUrl = '{% url "update_operation_status" %}';
 
     const requestData = {
       node_id: nodeId,
@@ -498,7 +515,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to handle terminating a user
   function terminateUser(nodeId) {
     console.log(`Terminating user with Node ID ${nodeId}`);
-    const apiUrl = '/bayes_app/api/v1/update_operation_status/';
+    const apiUrl = '{% url "update_operation_status" %}';
 
     const requestData = {
       node_id: nodeId,
@@ -639,7 +656,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to fetch admin data and initialize the process
   async function fetchData() {
     try {
-      const response = await fetch('/bayes_app/api/v1/get_track_role/');
+      const response = await fetch('{% url "get_track_role" %}');
       const data = await response.json();
 
       const role = data.role;
@@ -675,7 +692,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to fetch admin data and initialize the process
   async function fetchAdminData() {
     try {
-      const response = await fetch('/bayes_app/api/v1/get_admin_data/');
+      const response = await fetch('{% url "get_admin_data" %}');
       const adminData = await response.json();
 
       console.log('Admin Data:', adminData);

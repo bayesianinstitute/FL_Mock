@@ -14,13 +14,23 @@ from django.http import JsonResponse
 from rest_framework import status as drf_status
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
-
+from django.shortcuts import redirect
 
 
 def dfl(request):
     return render(request, 'dfl/index.html')
 def dfladmin(request):
     return render(request, 'dfl/config.html')
+
+def mlflow(request):
+    # Get the current request's host (including the dynamic IP address)
+    current_host = request.get_host()
+    
+    # Construct the new URL with the desired port (e.g., 5000)
+    new_url = f'http://{current_host.replace(":8000", ":5000")}/'
+
+    return redirect(new_url)
+
 
 @api_view(['POST'])
 def create_training_information(request):
@@ -181,12 +191,17 @@ def get_track_role(request):
     except Track.DoesNotExist:
         return Response({'error': 'Track data not found'}, status=status.HTTP_404_NOT_FOUND)
     
-@api_view(['GET'])
-def get_all_users_metrics(request, metric_name, training_name):
+@api_view(['POST'])
+def get_all_users_metrics(request, metric_name):
     try:
         allowed_metrics = ['accuracy', 'loss']
         if metric_name not in allowed_metrics:
             return Response({'error': f"Invalid metric parameter. Allowed values: {', '.join(allowed_metrics)}"}, status=400)
+
+        training_name = request.data.get('training_name')
+        if not training_name:
+            return Response({'error': 'Missing training_name in the request body'}, status=400)
+
         metric_field = F(metric_name)
 
         metric_records = TrainingResultAdmin.objects.filter(
@@ -195,7 +210,6 @@ def get_all_users_metrics(request, metric_name, training_name):
 
         grouped_data = []
         for node_id, records in groupby(metric_records, key=lambda x: x['node_id']):
-            
             data = [record['metric'] for record in records]
 
             grouped_data.append({
