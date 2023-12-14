@@ -81,6 +81,20 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in user_logic: {str(e)}")
 
+        
+    def update_global_model(self, data):
+        try:
+            response = self.apiClient.post_request(post_global_model_hash, data)
+
+            if response and response.status_code == 201:
+                self.logger.info(f"POST Global model Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Global model Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in update global model: {str(e)}")
+            return None
 
     def store_user_data(self, data,endpoint=None):
         try:
@@ -282,10 +296,11 @@ class User:
     def handle_global_model( self,global_model) :
         
         self.logger.info(f" got global model hash: {global_model}")
-        db_data={
-            "model_hash": global_model
-        }
-        self.update_model_status(db_data)
+
+        db_data = {
+                "global_model_hash": global_model
+            }
+        self.update_global_model(db_data)
         self.ml_operations.is_global_model_hash(global_model)
         self.logger.debug("Successfully Set global model hash")
         pass
