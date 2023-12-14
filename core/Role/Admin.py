@@ -236,8 +236,9 @@ class Admin:
         pass
 
     def handle_aggregate_model(self):
-        self.logger.debug("Getting handle_aggregate_model")
         model_hashes = self.get_all_model_hash()
+        self.logger.debug(f"Getting handle_aggregate_model {model_hashes} and len {len(model_hashes)}")
+
         
         if len(model_hashes) ==0:
             self.logger.debug("Model hashes are None. Returning from handle_aggregate_model. {model_hashes}")
