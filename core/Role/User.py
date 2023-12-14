@@ -258,6 +258,7 @@ class User:
 
     def process_received_message(self, data):
         try:
+            self.logger.debug(f"Processing message {data} and type {(str(data))}")
             if isinstance(data, str):
                 message_data = json.loads(data)
             elif isinstance(data, bytes):

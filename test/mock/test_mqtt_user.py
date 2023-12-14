@@ -64,11 +64,9 @@ def send_global_model():
     return message_json
 
 def send_pause_message():
-    global node_id
     message_json = json.dumps({
         "receiver": 'User',
         "role": 'Admin',
-        "node_id": node_id,
         "msg": PAUSE_API,
         "Admin": id
     })
@@ -142,8 +140,8 @@ if __name__ == "__main__":
 
             # time.sleep(9)
 
-            client.publish(topics, send_terminate_message(), qos=2)
-            print("Successfully sent Terimate to User")
+            # client.publish(topics, send_terminate_message(), qos=2)
+            # print("Successfully sent Terimate to User")
             # # break
 
 
