@@ -9,9 +9,10 @@ from core.Logs_System.logger import Logger
 import time
 
 class Admin:
-    def __init__(self,training_name, training_type, optimizer,mqtt_operations,role='Admin',):
-        self.apiClient=ApiClient()
-        self.ml_operations = MLOperations(training_type, optimizer,training_name=f'Admin-{training_name}')
+    def __init__(self,training_name, training_type, optimizer,mqtt_operations,ip,role='Admin',):
+        self.ip=ip
+        self.apiClient=ApiClient(ip=self.ip)
+        self.ml_operations = MLOperations(self.ip,training_type, optimizer,training_name=f'Admin-{training_name}')
 
         self.logger = Logger(name='admin-role').get_logger()
 

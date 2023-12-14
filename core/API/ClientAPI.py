@@ -1,8 +1,8 @@
 import requests
 
 class ApiClient:
-    def __init__(self, base_url='http://127.0.0.1:8000/api/v1'):
-        self.base_url = base_url
+    def __init__(self, ip='http://127.0.0.1',port=8000):
+        self.base_url = f'{ip}:{port}/api/v1'
 
     def get_request(self, endpoint, params=None):
         url = f"{self.base_url}/{endpoint}"

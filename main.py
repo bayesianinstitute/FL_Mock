@@ -7,6 +7,8 @@ from core.API.ClientAPI import ApiClient
 from core.API.endpoint import *
 import json
 
+import requests
+
 
 
 # Define a class for the Federated Learning Workflow
@@ -31,8 +33,20 @@ class DFLWorkflow:
 
 
         self.is_admin = None
+        self.ip=self.get_public_ip()
          
-        self.apiClient=ApiClient()
+        self.apiClient=ApiClient(ip=self.ip)
+
+    def get_public_ip(self):
+        try:
+            response = requests.get("https://api64.ipify.org?format=json")
+            if response.status_code == 200:
+                public_ip = response.json()["ip"]
+                return f"http://{public_ip}"
+            else:
+                print(f"Failed to retrieve public IP. Status code: {response.status_code}")
+        except Exception as e:
+            print(f"Error retrieving public IP: {e}")
 
     # Main function to run the federated learning workflow
     def run(self):
@@ -75,14 +89,14 @@ class DFLWorkflow:
             else:
                 self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
 
-            admin = Admin(self.internal_cluster_topic , self.training_type, self.optimizer,self.mqtt_operations,role=role_data['role'],)
+            admin = Admin(self.internal_cluster_topic , self.training_type, self.optimizer,self.mqtt_operations,self.ip,role=role_data['role'])
             admin.admin_logic()
         # User
         elif role_data['role'] == "User":
             from core.Role.User import User
 
             self.logger.info(f"Role User")
-            user = User( self.internal_cluster_topic,self.mqtt_operations,role=role_data['role'] )
+            user = User( self.internal_cluster_topic,self.mqtt_operations,self.ip,role=role_data['role'] )
             user.user_logic()
         else:
              pass

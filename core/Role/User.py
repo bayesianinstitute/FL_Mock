@@ -8,8 +8,9 @@ from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
 class User:
-    def __init__(self,training_name,mqtt_operations,role='User'):
-        self.apiClient=ApiClient()
+    def __init__(self,training_name,mqtt_operations,ip,role='User'):
+        self.ip=ip
+        self.apiClient=ApiClient(ip=self.ip)
         self.training_name=training_name
         self.ml_operations = None
         self.logger = Logger(name='user-role').get_logger()
@@ -125,7 +126,7 @@ class User:
         # add configuration in database
         self.store_user_data(db_data,create_training_information)
 
-        self.ml_operations = MLOperations(model_name, optimizer,training_name=f'{self.training_name}_client')
+        self.ml_operations = MLOperations(self.ip,model_name, optimizer,training_name=f'{self.training_name}_client')
 
 
     def process_initial_message(self, data):
