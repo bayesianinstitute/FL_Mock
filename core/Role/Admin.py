@@ -310,15 +310,15 @@ class Admin:
         self.logger.info(f"Terminated API for user {user_id}")
         self.mqtt_obj.send_internal_messages(message_json)
 
-    def handle_pause_api(self, user_id):
+    def handle_pause_api(self, node_id):
 
         message_json = json.dumps({
         "receiver": 'User',
         "role": 'Admin',
-        "node_id": user_id,
+        "node_id": node_id,
         "msg": PAUSE_API,
        })
-        self.logger.info(f"Paused API for user {user_id}")
+        self.logger.info(f"Paused API for user {node_id}")
 
         self.mqtt_obj.send_internal_messages(message_json)
 

@@ -44,18 +44,18 @@ class User:
 
 
             while True:
-                current_time = time.time()
+                # current_time = time.time()
 
-                # Check if 60 seconds have passed since the last update
-                if current_time - last_update_time >= 30:
-                    # check local database then send update 
+                # # Check if 60 seconds have passed since the last update
+                # if current_time - last_update_time >= 30:
+                #     # check local database then send update 
 
-                    user_status = self.update_network_status()
-                    self.send_network_status(user_status)
+                #     user_status = self.update_network_status()
+                #     self.send_network_status(user_status)
 
 
-                    # Update the last update time
-                    last_update_time = current_time
+                #     # Update the last update time
+                #     last_update_time = current_time
 
                 received_message = self.mqtt_obj.handle_user_data()
                 if received_message:
@@ -317,7 +317,6 @@ class User:
         if node_id==self.id:
 
             self.pause_training = False
-
             self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
         else :
             self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
