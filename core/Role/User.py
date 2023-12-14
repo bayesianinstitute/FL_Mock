@@ -86,7 +86,7 @@ class User:
                     self.update_model_status(db_model)
 
                     self.send_model_to_internal_cluster(
-                        user_status, hash, final_accuracy, final_loss
+                        user_status, hash,self.training_name, final_accuracy, final_loss
                     )
 
         except Exception as e:
@@ -242,7 +242,7 @@ class User:
         except Exception as e:
             self.logger.error(f"Error in send_training_status: {str(e)}")
 
-    def send_model_to_internal_cluster(self, user_status, hash, accuracy, loss):
+    def send_model_to_internal_cluster(self, user_status, hash,training_name, accuracy, loss):
         
         try:
             if user_status:
@@ -251,6 +251,7 @@ class User:
                     "msg": RECEIVE_MODEL_INFO,
                     "node_id": self.id,
                     "model_hash": hash,
+                    "training_name":training_name,
                     "accuracy": accuracy,
                     "loss": loss
 

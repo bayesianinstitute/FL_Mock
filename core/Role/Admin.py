@@ -123,8 +123,8 @@ class Admin:
             elif msg_type == RECEIVE_MODEL_INFO:
                 accuracy = message_data.get("accuracy")
                 loss = message_data.get("loss")
-                model_hash = message_data.get("model_hash")
-                self.handle_receive_model_info(node_id, accuracy,loss,model_hash)
+                training_name = message_data.get("training_name")
+                self.handle_receive_model_info(node_id, accuracy,loss,training_name)
 
 
         except json.JSONDecodeError as e:
@@ -376,7 +376,7 @@ class Admin:
     
     def update_receive_model_info(self, data):
         try:
-            response = self.apiClient.post_request(create_or_update_status, data)
+            response = self.apiClient.post_request(add_training_result, data)
 
             if response and response.status_code == 201:
                 self.logger.info(f"POST update_receive_model_info Request Successful: {response.text}")
