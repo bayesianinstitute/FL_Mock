@@ -75,6 +75,7 @@ class User:
                         "training_accuracy": val_acc,
                         "loss": final_loss,
                         "training_info_name": self.training_name,
+                        "model_hash": hash
                         }
 
                     self.store_user_data(data,create_training_result)

@@ -124,7 +124,8 @@ class Admin:
                 accuracy = message_data.get("accuracy")
                 loss = message_data.get("loss")
                 training_name = message_data.get("training_name")
-                self.handle_receive_model_info(node_id, accuracy,loss,training_name)
+                model_hash=message_data.get("model_hash")
+                self.handle_receive_model_info(node_id, accuracy,loss,training_name,model_hash)
 
 
         except json.JSONDecodeError as e:
@@ -268,16 +269,32 @@ class Admin:
 
 
 
-    def handle_receive_model_info(self,node_id, accuracy,loss,training_name):
+    def handle_receive_model_info(self,node_id, accuracy,loss,training_name,model_hash):
         data = {
             "training_name":training_name,
             "node_id": node_id,
             "accuracy": accuracy,
             "loss":loss
         }
+        respose = self.add_training_result(data)
+
+        if respose:
+            self.logger.critical(f"add training_result Information")
+        else:
+            self.logger.error("Add training_result Information")
+
+        data = {
+            "node_id": node_id,
+            "accuracy": accuracy,
+            "loss":loss,
+            "model_hash":model_hash
+        }
+
         status = self.update_receive_model_info(data)
+
+
         if status:
-            self.logger.critical(f"Received Model Information")
+            self.logger.critical(f" Received Model  Information")
         else:
             self.logger.error("Not Received Model Information")
 
@@ -373,9 +390,23 @@ class Admin:
             self.logger.error(f"Error in add_admin: {str(e)}")
             return None
     
-    def update_receive_model_info(self, data):
+    def add_training_result(self, data):
         try:
             response = self.apiClient.post_request(add_training_result, data)
+
+            if response and response.status_code == 201:
+                self.logger.info(f"POST update_receive_model_info Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"POST Request Failed: {response.status_code, response.text}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None  
+
+    def update_receive_model_info(self, data):
+        try:
+            response = self.apiClient.post_request(create_or_update_status, data)
 
             if response and response.status_code == 201:
                 self.logger.info(f"POST update_receive_model_info Request Successful: {response.text}")
