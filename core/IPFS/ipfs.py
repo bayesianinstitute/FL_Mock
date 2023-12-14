@@ -1,7 +1,7 @@
 import os
 import ipfshttpclient
 import io
-import tensorflow as tf
+from requests.exceptions import Timeout
 from tensorflow import keras
 import tempfile
 from core.Logs_System.logger import Logger
@@ -21,10 +21,13 @@ class IPFS:
             self.logger.critical("Unable to connect to IPFS")
             raise  
 
-    def fetch_model(self, model_hash):
+    def fetch_model(self, model_hash, timeout_seconds=15):
         self.logger.debug(f"Model hash: {model_hash}")
         try:
-            model_bytes = self.client.cat(model_hash)
+            model_bytes = self.client.cat(model_hash, timeout=timeout_seconds)
+        except Timeout:
+            self.logger.error(f"Timeout error: Unable to fetch model within {timeout_seconds} seconds.")
+            return None
         except Exception as e:
             self.logger.error(f"Error retrieving model with hash {model_hash}: {str(e)}")
             return None
@@ -35,6 +38,7 @@ class IPFS:
             except Exception as e:
                 self.logger.error(f"Error writing model bytes to temporary file: {str(e)}")
                 return None
+
         try:
             model = keras.models.load_model(temp_model_file.name)
         except Exception as e:
@@ -42,6 +46,7 @@ class IPFS:
             return None
         finally:
             temp_model_file.close()
+
         return model
 
     def push_model(self, saved_model_path):
