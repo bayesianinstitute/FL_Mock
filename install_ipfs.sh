@@ -8,3 +8,5 @@ sudo bash install.sh
 ipfs --version
 
 
+rm -rf kubo
+rm kubo_v0.23.0_linux-amd64.tar.gz
