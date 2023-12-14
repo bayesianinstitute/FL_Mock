@@ -16,7 +16,7 @@
     <!-- Header -->
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="http://127.0.0.1:8000/">
+        <a class="navbar-brand" href="{% url 'dfl' %}">
           <img
             src="https://bayesian.global/wp-content/uploads/2023/08/cropped-%E8%B4%9D%E5%8F%B6%E6%96%AFlogo.png"
             alt="Logo"
@@ -38,12 +38,10 @@
           <!-- Navigation Links -->
           <ul class="navbar-nav ml-auto">
             <li class="nav-item active">
-              <a class="nav-link" href="http://127.0.0.1:8000/">Home</a>
+              <a class="nav-link" href="{% url 'dfl' %}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="http://127.0.0.1:8000/config/"
-                >Configuration</a
-              >
+              <a class="nav-link" href="{% url 'dfladmin' %}">Configuration</a>
             </li>
             <!-- Add more navigation links as needed -->
           </ul>
@@ -100,7 +98,7 @@
       async function fetchChoices() {
         try {
           const response = await fetch(
-            'http://127.0.0.1:8000/api/v1/training_information_choices/'
+            '/bayes_app/api/v1/training_information_choices/'
           )
           const choices = await response.json()
 
@@ -135,8 +133,7 @@
         }
 
         // Send the configuration to the server
-        const apiUrl =
-          'http://127.0.0.1:8000/api/v1/create_training_information/'
+        const apiUrl = '/bayes_app/api/v1/create_training_information/'
         const requestData = {
           model_name: modelName,
           dataset_name: datasetName,
