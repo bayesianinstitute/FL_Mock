@@ -113,8 +113,8 @@ class MLOperations:
         
     def aggregate_models(self,get_model_list:list):
         try:
-            if get_model_list is None:
-                    # Handle the case where models_list is None
+            if get_model_list is None or len(get_model_list) == 0:
+                # Return None in case of None or an empty list
                 return None
             data=get_model_list
 
