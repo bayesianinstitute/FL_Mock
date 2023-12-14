@@ -9,6 +9,7 @@ from core.API.endpoint import *
 
 class IPFS:
     def __init__(self,ip,connection_link='/ip4/127.0.0.1/tcp/5001/http'):
+        self.ip=ip
         self.logger=Logger(name='ipfs_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.client = self._connect_to_ipfs(connection_link)
     
