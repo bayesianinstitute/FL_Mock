@@ -22,7 +22,7 @@ class MQTTCluster:
 
 
     def on_connect(self,client, userdata, flags, rc):
-        self.logger.warning(f"Connected with result code {rc}")
+        self.logger.info(f"Connected to broker Successfully with result code {rc}")
         self.client.subscribe(self.internal_cluster_topic,qos=2) 
 
     def connect_clients(self,role,receiver):

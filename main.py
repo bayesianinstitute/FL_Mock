@@ -53,6 +53,8 @@ class DFLWorkflow:
 
         self.logger.debug(self.internal_cluster_topic)
 
+        self.logger.info(f"Your IP address is {self.ip}")
+
         get_role=self.apiClient.get_request(get_track_role)
 
         if get_role.status_code == 200:
