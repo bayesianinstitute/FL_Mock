@@ -50,7 +50,7 @@ class LogsSerializer(serializers.ModelSerializer):
         fields = ['message']
         
 class UpdateOperationStatusSerializer(serializers.Serializer):
-    node_id = serializers.IntegerField()
+    node_id = serializers.CharField(max_length=100)
     operation_status = serializers.ChoiceField(choices=Admin.OPERATION_CHOICES)
 
 class OperationStatusRequestSerializer(serializers.Serializer):
