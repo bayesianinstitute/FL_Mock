@@ -262,7 +262,29 @@ def add_global_model_hash(request):
     
 @api_view(['POST'])
 def add_training_result(request):
-    serializer = TrainingResultAdminSerializer(data=request.data)
+    # Extract data from the request payload
+    training_name = request.data.get('training_name')
+    node_id = request.data.get('node_id')
+    accuracy = request.data.get('accuracy')
+    loss = request.data.get('loss')
+
+    # Query TrainingInformation model to get the instance based on training_name
+    try:
+        training_info = TrainingInformation.objects.get(training_name=training_name)
+    except TrainingInformation.DoesNotExist:
+        return Response({'error': f"TrainingInformation with training_name '{training_name}' does not exist."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    # Create a dictionary with the extracted data and the obtained training_info instance
+    data = {
+        'training_info': training_info.id,  # Assuming 'id' is the primary key of TrainingInformation
+        'node_id': node_id,
+        'accuracy': accuracy,
+        'loss': loss,
+    }
+
+    # Use the serializer with the extracted data
+    serializer = TrainingResultAdminSerializer(data=data)
 
     if serializer.is_valid():
         serializer.save()
