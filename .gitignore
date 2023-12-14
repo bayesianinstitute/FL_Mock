@@ -30,3 +30,8 @@ db.sqlite3
 
 #mlflow
 mlartifacts
+
+#ipfs
+kubo/
+kubo_v0.23.0_linux-amd64.tar.gz
+
