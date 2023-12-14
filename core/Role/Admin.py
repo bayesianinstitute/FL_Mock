@@ -268,13 +268,12 @@ class Admin:
 
 
 
-    def handle_receive_model_info(self,node_id, accuracy,loss,model_hash):
+    def handle_receive_model_info(self,node_id, accuracy,loss,training_name):
         data = {
-            "training_info":1,
+            "training_name":training_name,
             "node_id": node_id,
             "accuracy": accuracy,
-            "loss":loss,
-            "model_hash":model_hash,
+            "loss":loss
         }
         status = self.update_receive_model_info(data)
         if status:
