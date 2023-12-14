@@ -103,8 +103,8 @@ class CNNMnist:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=UserWarning)
                 self.model.save(model_path, save_format='tf')
-
-            print(f"Model saved to {model_filename}")
+                self.model.save(model_filename)
+                print(f"Model saved to {model_filename}")
 
             # Save model summary to a text file
             summary_path = f"mlruns/models/{model_filename}_summary.txt"
