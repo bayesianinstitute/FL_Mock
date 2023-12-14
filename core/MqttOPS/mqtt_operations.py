@@ -3,6 +3,7 @@ from core.Logs_System.logger import Logger
 from core.API.endpoint import *
 class MqttOperations:
     def __init__(self,ip,internal_cluster_topic,cluster_name,initial_broker):
+        self.ip=ip
         
         self.logger=Logger(name='MqttOPS_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.internal_cluster_topic=internal_cluster_topic
@@ -14,7 +15,7 @@ class MqttOperations:
 
     def start_dfl_using_mqtt(self,role):
         try:
-            self.cluster = MQTTCluster(self.initial_broker, self.cluster_name,
+            self.cluster = MQTTCluster(self.ip,self.initial_broker, self.cluster_name,
                                        self.internal_cluster_topic,  role)
             
             receiver=None

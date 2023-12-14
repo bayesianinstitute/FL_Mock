@@ -7,6 +7,7 @@ import uuid
 from core.API.endpoint import *
 class MQTTCluster:
     def __init__(self,ip, broker_address, cluster_name,  internal_cluster_topic,  role):
+        self.ip=ip
         self.logger=Logger(name='MqttComm_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.broker_address = broker_address
         self.cluster_name = cluster_name
