@@ -16,7 +16,7 @@ class DFLWorkflow:
     def __init__(self, broker_service, internal_cluster_topic, cluster_name, 
                   training_type, optimizer):
         
-        self.ip="http://127.0.0.1"
+        self.ip=self.get_public_ip()
         # Setup Logger
         self.logger=Logger(name='DFL_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         # Initialize various attributes and parameters
@@ -66,7 +66,7 @@ class DFLWorkflow:
             self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
 
         # Initialize  MQTT operations for communication
-        self.mqtt_operations = MqttOperations(self.internal_cluster_topic,self.ip,
+        self.mqtt_operations = MqttOperations(self.ip,self.internal_cluster_topic,
                                               self.cluster_name,
                                             self.broker_service,
                                             )
