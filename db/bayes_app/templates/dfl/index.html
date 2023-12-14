@@ -18,7 +18,7 @@
       <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
           <img src='https://bayesian.global/wp-content/uploads/2023/08/cropped-%E8%B4%9D%E5%8F%B6%E6%96%AFlogo.png' alt="Logo">
-          <a class="navbar-brand" href="http://127.0.0.1:8000/">
+          <a class="navbar-brand" href="{% url 'dfl' %}">
             <!-- Your Title/Logo Image or Text -->
             <span>User</span>
 
@@ -38,7 +38,7 @@
             <!-- Navigation Links -->
             <ul class="navbar-nav ml-auto">
               <li class="nav-item active">
-                <a class="nav-link" href="http://127.0.0.1:8000/">Home</a>
+                <a class="nav-link" href="{% url 'dfl' %}">Home</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="http://127.0.0.1:5000/" target="_blank">View Model Tracking</a>
@@ -100,7 +100,7 @@
       <!-- Admin-specific content goes here -->
       <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <a class="navbar-brand" href="http://127.0.0.1:8000/">
+          <a class="navbar-brand" href="{% url 'dfl' %}">
             <!-- Your Title/Logo Image or Text -->
             <img src='https://bayesian.global/wp-content/uploads/2023/08/cropped-%E8%B4%9D%E5%8F%B6%E6%96%AFlogo.png' alt="Logo">
             <span>Admin</span>
@@ -120,10 +120,10 @@
             <!-- Navigation Links -->
             <ul class="navbar-nav ml-auto">
               <li class="nav-item active">
-                <a class="nav-link" href="http://127.0.0.1:8000/">Home</a>
+                <a class="nav-link" href="{% url 'dfl' %}" >Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:8000/config/">Configuration</a>
+                <a class="nav-link" href="{% url 'dfladmin' %}">Configuration</a>
               </li>
               <!-- Add more navigation links as needed -->
             </ul>
@@ -252,9 +252,11 @@
   async function startTraining() {
     try {
       // Make an API call to start training
-      const response = await fetch('http://127.0.0.1:8000/api/v1/update_status/operation/resume/', {
-        method: 'PUT', // Assuming it's a PUT request
+      const response = await fetch('/bayes_app/api/v1/update_status/operation/resume/', {
+        method: 'PUT',
       });
+    
+    
 
       if (response.ok) {
         console.log('Training started successfully');
@@ -270,7 +272,7 @@
   async function stopTraining() {
     try {
       // Make an API call to stop training
-      const response = await fetch('http://127.0.0.1:8000/api/v1/update_status/operation/terminate/', {
+      const response = await fetch('/bayes_app/api/v1/update_status/operation/terminate/', {
         method: 'PUT', // Assuming it's a PUT request
       });
 
@@ -286,7 +288,7 @@
   }
   async function fetchLogs() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/logs/');
+      const response = await fetch('/bayes_app/api/v1/logs/');
       const data = await response.json();
   
       if (Array.isArray(data)) {
@@ -318,7 +320,7 @@ window.addEventListener('load', startLogPolling);
   
 async function fetchGlobalModelHash() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/get_global_model_hash/');
+    const response = await fetch('/bayes_app/api/v1/get_global_model_hash/');
     const data = await response.json();
 
     const globalModelHashElement = document.getElementById('globalModelHash');
@@ -343,7 +345,7 @@ window.addEventListener('load', startGlobalModelHashPolling);
 
 async function fetchGlobalModelHashAdmin() {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/get_global_model_hash/');
+    const response = await fetch('/bayes_app/api/v1/get_global_model_hash/');
     const data = await response.json();
 
     const globalModelHashElement = document.getElementById('globalModelHashAdmin');
@@ -373,7 +375,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to fetch and populate training names
   async function fetchTrainingNames() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/get_unique_training_names/');
+      const response = await fetch('/bayes_app/api/v1/get_unique_training_names/');
       const data = await response.json();
 
       const trainingNames = data.data;
@@ -396,7 +398,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   async function fetchAccuracyDataAndPlotGraph() {
     try {
       const selectedTrainingName = getSelectedTrainingName();
-      const accuracyApiUrl = `http://127.0.0.1:8000/api/v1/accuracy/${selectedTrainingName}/`;
+      const accuracyApiUrl = `/bayes_app/api/v1/accuracy/${selectedTrainingName}/`;
       const response = await fetch(accuracyApiUrl);
       const accuracyData = await response.json();
 
@@ -413,7 +415,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   async function fetchLossDataAndPlotGraph() {
     try {
       const selectedTrainingName = getSelectedTrainingName();
-      const lossApiUrl = `http://127.0.0.1:8000/api/v1/loss/${selectedTrainingName}/`;
+      const lossApiUrl = `/bayes_app/api/v1/loss/${selectedTrainingName}/`;
       const response = await fetch(lossApiUrl);
       const lossData = await response.json();
 
@@ -427,7 +429,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   }
   function pauseUser(nodeId) {
     console.log(`Pausing user with Node ID ${nodeId}`);
-    const apiUrl = 'http://127.0.0.1:8000/api/v1/update_operation_status/';
+    const apiUrl = '/bayes_app/api/v1/update_operation_status/';
 
     const requestData = {
       node_id: nodeId,
@@ -462,7 +464,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to handle resuming a user
   function resumeUser(nodeId) {
     console.log(`Resuming user with Node ID ${nodeId}`);
-    const apiUrl = 'http://127.0.0.1:8000/api/v1/update_operation_status/';
+    const apiUrl = '/bayes_app/api/v1/update_operation_status/';
 
     const requestData = {
       node_id: nodeId,
@@ -496,7 +498,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to handle terminating a user
   function terminateUser(nodeId) {
     console.log(`Terminating user with Node ID ${nodeId}`);
-    const apiUrl = 'http://127.0.0.1:8000/api/v1/update_operation_status/';
+    const apiUrl = '/bayes_app/api/v1/update_operation_status/';
 
     const requestData = {
       node_id: nodeId,
@@ -637,7 +639,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to fetch admin data and initialize the process
   async function fetchData() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/get_track_role/');
+      const response = await fetch('/bayes_app/api/v1/get_track_role/');
       const data = await response.json();
 
       const role = data.role;
@@ -673,7 +675,7 @@ window.addEventListener('load', startGlobalModelHashPollingAdmin);
   // Function to fetch admin data and initialize the process
   async function fetchAdminData() {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/get_admin_data/');
+      const response = await fetch('/bayes_app/api/v1/get_admin_data/');
       const adminData = await response.json();
 
       console.log('Admin Data:', adminData);
