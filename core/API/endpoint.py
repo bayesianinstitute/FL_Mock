@@ -34,3 +34,4 @@ get_operation_status="get_operation_status/"
 create_training_information="create_training_information/"
 
 update_model_hash="update_model_hash/"
+update_logs="update_logs/"

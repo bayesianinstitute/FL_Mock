@@ -1,9 +1,10 @@
 from core.MqttOPS.mqttCluster import MQTTCluster
 from core.Logs_System.logger import Logger
-
+from core.API.endpoint import *
 class MqttOperations:
-    def __init__(self,internal_cluster_topic,cluster_name,initial_broker):
-        self.logger=Logger(name='MqttOPS_logger').get_logger()
+    def __init__(self,ip,internal_cluster_topic,cluster_name,initial_broker):
+        
+        self.logger=Logger(name='MqttOPS_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.internal_cluster_topic=internal_cluster_topic
         self.initial_broker=initial_broker
         self.cluster=None

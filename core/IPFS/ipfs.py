@@ -5,10 +5,11 @@ from requests.exceptions import Timeout
 from tensorflow import keras
 import tempfile
 from core.Logs_System.logger import Logger
+from core.API.endpoint import *
 
 class IPFS:
-    def __init__(self,connection_link='/ip4/127.0.0.1/tcp/5001/http'):
-        self.logger=Logger(name='ipfs_logger').get_logger()
+    def __init__(self,ip,connection_link='/ip4/127.0.0.1/tcp/5001/http'):
+        self.logger=Logger(name='ipfs_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.client = self._connect_to_ipfs(connection_link)
     
     def _connect_to_ipfs(self, connect_link):

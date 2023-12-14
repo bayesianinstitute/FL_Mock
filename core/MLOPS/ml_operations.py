@@ -2,10 +2,12 @@
 from core.IPFS.ipfs import IPFS
 from core.Logs_System.logger import Logger
 import requests
+from core.API.endpoint import *
 class MLOperations:
     def __init__(self,ip,training_type,optimizer,training_name='ML_training_name'):
-        self.logger=Logger(name='MLOPS_Logger').get_logger()
-        self.ipfs=IPFS()
+        self.ip=ip
+        self.logger=Logger(name='MLOPS_Logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+        self.ipfs=IPFS(self.ip)
         self.path_model="saved_model.h5"
         self.path_global_model="global_model.h5"
         self.global_model_hash=None
@@ -14,7 +16,7 @@ class MLOperations:
         self.optimizer=optimizer
         self.training_name=training_name
         self.get_weights=None
-        self.ip=ip
+        
         self.port=5000
         pass
 

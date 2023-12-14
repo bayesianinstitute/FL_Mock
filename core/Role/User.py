@@ -13,7 +13,7 @@ class User:
         self.apiClient=ApiClient(ip=self.ip)
         self.training_name=training_name
         self.ml_operations = None
-        self.logger = Logger(name='user-role').get_logger()
+        self.logger = Logger(name='user-role',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.pause_training = False
         # Start, initialize, and get MQTT communication object
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)

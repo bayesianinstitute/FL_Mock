@@ -14,8 +14,7 @@ class Admin:
         self.apiClient=ApiClient(ip=self.ip)
         self.ml_operations = MLOperations(self.ip,training_type, optimizer,training_name=f'Admin-{training_name}')
 
-        self.logger = Logger(name='admin-role').get_logger()
-
+        self.logger = Logger(name='admin-role',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         # Start, initialize, and get MQTT communication object
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
 

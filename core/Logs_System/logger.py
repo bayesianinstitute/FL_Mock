@@ -2,6 +2,7 @@ import logging
 import colorlog
 import requests
 import json
+
 class DatabaseLogger(logging.Handler):
     def __init__(self, api_endpoint):
         super().__init__()
@@ -62,6 +63,8 @@ class Logger:
 
     def get_logger(self):
         return self.logger
+    
+
 
 if __name__ == '__main__':
     api_endpoint = "http://127.0.0.1:8000/api/v1/update_logs/"
