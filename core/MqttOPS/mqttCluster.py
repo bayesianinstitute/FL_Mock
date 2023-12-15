@@ -5,6 +5,8 @@ import queue
 from core.Logs_System.logger import Logger
 import uuid
 from core.API.endpoint import *
+from core.Role.MsgType import *
+
 class MQTTCluster:
     def __init__(self,ip, broker_address, cluster_name,  internal_cluster_topic,  role):
         self.ip=ip
@@ -64,9 +66,16 @@ class MQTTCluster:
                 self.received_admin_data_queue.put(data)
 
             elif json_data.get("receiver") == 'User' :
-                # nodeId=json_data.get("node_id") 
-                # self.logger.warning(f"Node with ID {nodeId} and your id {self.id}")
-                # if self.id==nodeId:
+                nodeId=json_data.get("node_id") 
+                msg_type = json_data.get("msg")
+
+                if msg_type==SEND_GLOBAL_MODEL_HASH:
+                    self.received_user_data_queue.put(data)
+                    return
+
+                self.logger.warning(f"Node with ID {nodeId} and your id {self.id}")
+                
+                if self.id==nodeId:
                     self.logger.critical("The receiver is User")
                     if self.received_user_data_queue.empty():
                         self.received_user_data_queue.put(data)
