@@ -75,19 +75,20 @@ class MLOperations:
         try:
 
             if self.global_model_hash:
+                ipfs_model = self.ipfs.fetch_model(self.global_model_hash)
 
-
-                ipfs_model=self.ipfs.fetch_model(self.global_model_hash)
-                self.get_weights=ipfs_model.get_weights()
-                self.current_model.set_weights(self.get_weights)                
-                self.logger.info("set Weight Successfully ")
+                if ipfs_model is not None:
+                    self.get_weights = ipfs_model.get_weights()
+                    self.current_model.set_weights(self.get_weights)
+                    self.logger.info("Set weights successfully.")
+                else:
+                    self.logger.error("Failed to fetch model from IPFS. ipfs_model is None.")
 
             else :
                 self.current_model=self.get_model()
                 self.current_model.build_model()
                 self.logger.info(f"builded model: Successfully built model: {self.current_model}",) 
-                import time
-                time.sleep(5)
+
             
             final_loss, final_accuracy, final_val_loss, final_val_accuracy=self.current_model.train_model(rounds,epochs,batch_size)
 

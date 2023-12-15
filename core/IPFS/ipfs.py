@@ -23,7 +23,7 @@ class IPFS:
             self.logger.critical("Unable to connect to IPFS")
             raise  
 
-    def fetch_model(self, model_hash, timeout_seconds=15):
+    def fetch_model(self, model_hash, timeout_seconds=30):
         self.logger.debug(f"Model hash: {model_hash}")
         try:
             model_bytes = self.client.cat(model_hash, timeout=timeout_seconds)
