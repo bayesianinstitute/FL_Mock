@@ -30,7 +30,7 @@ This project is focused on MQTT communication, IPFS,MLFLOW,DJANGO BACKED TO STOR
 
 1. **Create an AWS EC2 Instance:**
 
-   To create an EC2 instance with Ubuntu, machine type t2.2xlarge, and 20 GB SSD storage, follow these steps:
+   To create an EC2 instance with Ubuntu, machine type t2.2xlarge, and 30 GB SSD storage, follow these steps:
 
    1. **Open the AWS Management Console:**
       - Go to [AWS Console](https://aws.amazon.com/console/).
@@ -213,15 +213,27 @@ mlflow ui --host 0.0.0.0 --port 5000
 ```
 
 
-### Run
 
-Finally, run the main program:
+### How to Run the Program
 
+To execute the main program, follow these steps:
 
-To run the script, use the following command:
+1. Open your terminal.
 
-```bash
-bash run.sh
-```
+2. Navigate to the project directory.
 
-Ensure that the necessary dependencies are installed and configured for successful execution.
+3. Use the following command to run the script:
+
+   ```bash
+   bash run.sh TRAINING_NAME ROLE
+   ```
+
+   Replace `TRAINING_NAME` with the desired training name (e.g., "UCLA") and `ROLE` with either "Admin" or "User."
+
+   Example:
+
+   ```bash
+   bash run.sh UCLA User
+   ```
+
+   This command initiates the program with the specified training name and role, allowing you to customize the execution based on your requirements.
