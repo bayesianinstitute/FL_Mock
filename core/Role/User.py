@@ -147,11 +147,11 @@ class User:
                 self.handle_config(message_data)
                 self.grant_received = True
 
-                operation_status={
+                operation_statuss={
                         "operation_status": "resume"
                     }
 
-                # self.update_operation_status(operation_status)
+                self.update_operation_status(operation_statuss)
                 
 
 
@@ -327,44 +327,44 @@ class User:
         pass
 
     def handle_pause_training(self,message_data):
-        # node_id=message_data.get("node_id")
-        # if node_id==self.id:
+        node_id=message_data.get("node_id")
+        if node_id==self.id:
             self.pause_training = True
             self.logger.debug(f" got pause training command: {message_data} and paused: {self.pause_training}")
-            operation_status={
+            operation_statuss={
                 "operation_status": "pause"
                 }
-            # self.update_operation_status(operation_status)
-        # else :
-        #     self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
+            self.update_operation_status(operation_statuss)
+        else :
+            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
         # pass
 
     def handle_resume_training(self,message_data ):
-            node_id=message_data.get("node_id")
+        node_id=message_data.get("node_id")
 
-        # if node_id==self.id:
+        if node_id==self.id:
 
             self.pause_training = False
             self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
-        # else :
-            operation_status={
+        else :
+            operation_statuss={
                 "operation_status": "resume"
                 }
-            # self.update_operation_status(operation_status)
-            # self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
+            self.update_operation_status(operation_statuss)
+            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
             pass
 
     def handle_terminate(self,message_data):
-            node_id=message_data.get("node_id")
+        node_id=message_data.get("node_id")
 
-        # if node_id==self.id:
+        if node_id==self.id:
             self.logger.debug(f" got pause terimate command: {message_data}")
-            operation_status={
+            operation_statuss={
                 "network_status": "disconnected",
                 "operation_status": "terminate"
                 
                 }
-            # self.update_operation_status(operation_status)
+            self.update_operation_status(operation_statuss)
 
             self.mqtt_obj.terimate_connection()
             self.logger.debug("Terminate Successfully!!!!!")
