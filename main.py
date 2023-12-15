@@ -147,7 +147,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
-    internal_cluster_topic=f'{args.cluster_name}_topic'
+    internal_cluster_topic=f'{args.cluster_name}'
     
     workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name)
     workflow.run(args.role)
