@@ -1,5 +1,12 @@
 @echo off
-REM Check if 'id' argument is provided
+REM Hardcoded MQTT broker
+set MQTT_BROKER="test.mosquitto.org"
 
-REM Execute main.py with the 'id' argument and add '5' at the end
-python main.py test.mosquitto.org USA   
+REM Check if the correct number of arguments is provided
+if "%~2"=="" (
+    echo Usage: %0 ^<TRAINING_NAME^> ^<ROLE^>
+    exit /B 1
+)
+
+REM Run the Python script with the provided parameters
+python.exe main.py %MQTT_BROKER% %1 %2

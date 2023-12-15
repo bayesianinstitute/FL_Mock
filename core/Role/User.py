@@ -147,6 +147,13 @@ class User:
                 self.handle_config(message_data)
                 self.grant_received = True
 
+                operation_status={
+                        "operation_status": "resume"
+                    }
+
+                # self.update_operation_status(operation_status)
+                
+
 
         except json.JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON: {e}")
@@ -167,7 +174,22 @@ class User:
 
         except Exception as e:
             self.logger.error(f"Error in send_network_status: {str(e)}")
+   
+    def update_operation_status(self, data):
 
+        try:
+            self.logger.info(f'Updating operation status {data}')
+            response = self.apiClient.put_request(update_model_hash, data)
+
+            if response and response.status_code == 200:
+                self.logger.info(f"update_operation_status Request Successful: {response.text}")
+                return json.loads(response.text)
+            else:
+                self.logger.error(f"update_operation_status  Request Failed: {response.status_code}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Error in add_admin: {str(e)}")
+            return None
 
     def update_model_status(self, data):
 
@@ -266,7 +288,6 @@ class User:
 
     def process_received_message(self, data):
         try:
-            self.logger.debug(f"Processing message {data} and type {(str(data))}")
             if isinstance(data, str):
                 message_data = json.loads(data)
             elif isinstance(data, bytes):
@@ -306,36 +327,51 @@ class User:
         pass
 
     def handle_pause_training(self,message_data):
-        node_id=message_data.get("node_id")
-        if node_id==self.id:
+        # node_id=message_data.get("node_id")
+        # if node_id==self.id:
             self.pause_training = True
             self.logger.debug(f" got pause training command: {message_data} and paused: {self.pause_training}")
-        else :
-            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
-        pass
+            operation_status={
+                "operation_status": "pause"
+                }
+            # self.update_operation_status(operation_status)
+        # else :
+        #     self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
+        # pass
 
     def handle_resume_training(self,message_data ):
-        node_id=message_data.get("node_id")
+            node_id=message_data.get("node_id")
 
-        if node_id==self.id:
+        # if node_id==self.id:
 
             self.pause_training = False
             self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
-        else :
-            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
-        pass
+        # else :
+            operation_status={
+                "operation_status": "resume"
+                }
+            # self.update_operation_status(operation_status)
+            # self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
+            pass
 
     def handle_terminate(self,message_data):
-        node_id=message_data.get("node_id")
+            node_id=message_data.get("node_id")
 
-        if node_id==self.id:
+        # if node_id==self.id:
             self.logger.debug(f" got pause terimate command: {message_data}")
+            operation_status={
+                "network_status": "disconnected",
+                "operation_status": "terminate"
+                
+                }
+            # self.update_operation_status(operation_status)
+
             self.mqtt_obj.terimate_connection()
             self.logger.debug("Terminate Successfully!!!!!")
             import sys
 
             sys.exit(0)     
-        else :
-            self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
+        # else :
+        #     self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
        
-        pass
+        # pass

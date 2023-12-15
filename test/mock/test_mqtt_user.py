@@ -68,6 +68,8 @@ class MqttClient:
         })
 
         self.client.publish(self.topics, data, qos=2)
+        print(f"Granted to join ID {self.node_id}")
+        time.sleep(15)
 
     def send_global_model(self):
         message_json = json.dumps({
@@ -75,8 +77,7 @@ class MqttClient:
             "role": 'Admin',
             "msg": SEND_GLOBAL_MODEL_HASH,
             "Admin": id,
-            "node_id": self.node_id,
-            "global_hash": 'QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'
+            "global_hash": 'QmYWD59UJdvTXzc3U6pVSS8VB33HqDQZdC2hmHAAHfFHCN'
         })
         return message_json
 
@@ -99,6 +100,18 @@ class MqttClient:
             "node_id": self.node_id
         })
         return message_json
+    
+    def send_terminate_message(self, ):
+        message_json = json.dumps({
+                "receiver": 'User',
+                "role": 'Admin',
+                "node_id": self.node_id,
+                "msg": TERMINATE_API,
+            })
+    
+        
+        print(f"Terminated API for user {self.node_id}")
+        return message_json
 
     def connect_and_start(self):
         self.client.connect(self.broker_address, self.port, 60)
@@ -108,12 +121,16 @@ class MqttClient:
             try:
                 # Call your message-sending methods and publish the resulting JSON
 
-                time.sleep(9)
+                time.sleep(15)
+                # self.client.publish(self.topics, self.send_global_model(), qos=2)
+                # print("Successfully Model")
+
+                time.sleep(8)
                 self.client.publish(self.topics, self.send_pause_message(), qos=2)
-                print("Successfully sent Pause to User")
+                print("Successfully sent Resume to User")
 
                 time.sleep(20)
-                self.client.publish(self.topics, self.send_resume_message(), qos=2)
+                self.client.publish(self.topics, self.send_terminate_message(), qos=2)
                 print("Successfully sent Resume to User")
 
             except KeyboardInterrupt:

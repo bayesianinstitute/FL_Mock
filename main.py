@@ -13,8 +13,7 @@ import requests
 
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
-    def __init__(self, broker_service, internal_cluster_topic, cluster_name, 
-                  training_type, optimizer):
+    def __init__(self, broker_service, internal_cluster_topic, cluster_name):
         
         self.ip=self.get_public_ip()
         # Setup Logger
@@ -26,15 +25,10 @@ class DFLWorkflow:
         self.broker_service = broker_service
         self.internal_cluster_topic = internal_cluster_topic
         self.mqtt_operations = None
-        self.optimizer = optimizer
-        self.training_type=training_type
-        self.global_model = None
 
         self.cluster_name=cluster_name
 
 
-        self.is_admin = None
-       
          
         self.apiClient=ApiClient(ip=self.ip)
 
@@ -49,21 +43,55 @@ class DFLWorkflow:
         except Exception as e:
             print(f"Error retrieving public IP: {e}")
 
+    def update_role_status(self,data,role):
+
+        try:
+            if role =='User':
+
+                connected_status = self.apiClient.put_request(update_user,data)
+
+                if connected_status.status_code == 200:
+                    self.logger.info(f"PUT  User Role_status Request Successful: {connected_status.text}")
+                    return json.loads(connected_status.text)
+                else:
+                    self.logger.info(f"PUT  User Request Failed: {connected_status.status_code, connected_status.text}")
+                    return None
+
+            elif role =='Admin':
+
+                connected_status = self.apiClient.put_request(update_admin,data)
+
+                if connected_status.status_code == 200:
+                    self.logger.info(f"PUT Admin Role_status Request Successful: {connected_status.text}")
+                    return json.loads(connected_status.text)
+                else:
+                    self.logger.info(f"PUT Admin Request Failed: {connected_status.status_code, connected_status.text}")
+                    return None
+            else:
+                import sys
+                self.logger.critical(F"unknow role: {role} failed")
+                sys.exit(1)
+
+        except Exception as e:
+                self.logger.error(f"Error in update_network_status: {str(e)}")
+                return None
+        else:
+            pass
+        
     # Main function to run the federated learning workflow
-    def run(self):
+    def run(self,role='User'):
 
         self.logger.debug(self.internal_cluster_topic)
 
         self.logger.info(f"Your IP address is {self.ip}")
 
-        get_role=self.apiClient.get_request(get_track_role)
+        data={
+            "role":role
+        }
 
-        if get_role.status_code == 200:
-            self.logger.info(f"Get Request Successful: {get_role.text}" )
-            role_data = json.loads(get_role.text)
-            print(role_data['role'])
-        else:
-            self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
+
+        role_data=self.update_role_status(data,role)
+
 
         # Initialize  MQTT operations for communication
         self.mqtt_operations = MqttOperations(self.ip,self.internal_cluster_topic,
@@ -76,11 +104,15 @@ class DFLWorkflow:
 
             self.logger.info(f"Role Admin")
 
+            model_type = 'CNN'
 
+            optimizer = "Adam"  
+
+            # Fetch from database
             data={
-                    "model_name": self.training_type,
+                    "model_name": model_type,
                     "dataset_name": "Mnist",
-                    "optimizer": self.optimizer,
+                    "optimizer": optimizer,
                     "training_name": self.internal_cluster_topic }    
             
             self.logger.warning(data)
@@ -92,7 +124,7 @@ class DFLWorkflow:
             else:
                 self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
 
-            admin = Admin(self.internal_cluster_topic , self.training_type, self.optimizer,self.mqtt_operations,self.ip,role=role_data['role'])
+            admin = Admin(self.internal_cluster_topic , model_type, optimizer,self.mqtt_operations,self.ip,role=role_data['role'])
             admin.admin_logic()
         # User
         elif role_data['role'] == "User":
@@ -109,16 +141,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("broker_service", help="Name of broker service", type=str)
     parser.add_argument("cluster_name", help="Name of the cluster", type=str)
+    parser.add_argument("role", help="Name of role", type=str)
 
-
-    model_type = 'CNN'
-
-    optimizer = "Adam"
 
     args = parser.parse_args()
 
 
     internal_cluster_topic=f'{args.cluster_name}_topic'
     
-    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name, model_type, optimizer)
-    workflow.run()
+    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name)
+    workflow.run(args.role)
