@@ -42,7 +42,7 @@ class Logger:
 
             handler = colorlog.StreamHandler()
             formatter = colorlog.ColoredFormatter(
-                '%(log_color)s%(asctime)s [%(levelname)s]%(reset)s: %(message)s - %(filename)s:%(lineno)d',
+                '[ %(log_color)s%(asctime)s [%(levelname)s]%(reset)s: %(message)s - %(filename)s:%(lineno)d ]',
                 datefmt='%Y-%m-%d %H:%M:%S',
                 log_colors={
                     'DEBUG': 'cyan',
