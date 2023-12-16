@@ -1,8 +1,6 @@
-import pandas as pd
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-import subprocess
+
+from keras.models import Sequential
+from keras.layers import Dense
 from sklearn.model_selection import train_test_split
 from sklearn import datasets
 from sklearn.datasets import fetch_california_housing

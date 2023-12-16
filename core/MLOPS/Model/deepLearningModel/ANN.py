@@ -1,29 +1,38 @@
-import pandas as pd
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-import subprocess
+from keras.models import Sequential
+from keras.layers import Dense
 from sklearn.model_selection import train_test_split
-from sklearn import datasets  
-from sklearn.datasets import fetch_california_housing
+from sklearn import datasets
 import datetime
+import mlflow
+import mlflow.keras
+import mlflow.tensorflow
+
 class ANNTabularClassification:
-    def __init__(self, optimizer='adam', log="custom_ANN_Classification_log"):
+    def __init__(self,ip="http://localhost",port=5000, optimizer='adam', experiment_name='custom_ANN_Classification_experiment'):
         self.optimizer = optimizer
         self.x_train, self.y_train, self.x_test, self.y_test = self.load_and_preprocess_data()
 
-        # Create a log directory with a timestamp
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        self.dir_log = f"{log}/fit/{timestamp}"
+        # Start MLflow experiment
+        self.name = "ANN_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.url=f'{ip}:{port}'
+
+        self.config_mlflow(experiment_name, self.url)
 
         self.model = self.build_model()
+
+    def config_mlflow(self, experiment_name, url):
+        try:
+            mlflow.set_tracking_uri(url)
+            mlflow.set_experiment(experiment_name)
+        except Exception as e:
+            print(f"Error configuring MLflow: {e}")
 
     def build_model(self):
         # Build a simple ANN model for tabular data
         model = Sequential()
         model.add(Dense(64, activation='relu', input_shape=(self.x_train.shape[1],)))
         model.add(Dense(32, activation='relu'))
-        model.add(Dense(3, activation='softmax'))  # Changed output units to match the Iris dataset classes
+        model.add(Dense(3, activation='softmax'))
 
         model.compile(optimizer=self.optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
@@ -45,57 +54,71 @@ class ANNTabularClassification:
         return x_train, y_train, x_test, y_test
 
     def train_model(self, epochs=10, batch_size=32):
-        # Create a TensorBoard callback to log the training process
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.dir_log)
+        try:
+            mlflow.start_run(run_name=f'{self.name}')
 
-        # Train the model and use the TensorBoard callback
-        self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size, callbacks=[tensorboard_callback])
+            # Train the model and log metrics using MLflow
+            mlflow.keras.autolog()
+            self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size)
+
+            mlflow.end_run()
+        except Exception as e:
+            print(f"Error training the model: {e}")
 
     def evaluate_model(self):
         # Evaluate the model on the test data
         test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
         return test_loss, test_accuracy
-    
+
     def save_model(self, model_filename):
-        # Save the model to a file
-        self.model.save(model_filename)
-        print(f"Model saved to {model_filename}")
-    
+        try:
+            # Save the model to a file and log as an artifact
+            model_path = f"mlruns/models/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}/{model_filename}"
+            self.model.save(model_path)
+            mlflow.log_artifact(model_path)
+            mlflow.end_run()
+
+            print(f"Model saved as artifact: {model_filename}")
+        except Exception as e:
+            print(f"Error saving the model: {e}")
+
     def set_weights(self, weights):
         self.model.set_weights(weights)
         return self.model
 
-    def run_tensorboard(self):
-        try:
-            logdir = f"custom_ANN_Classification_log/fit"  # Specify the log directory
-            subprocess.run(["tensorboard", "--logdir", logdir])
-        except Exception as e:
-            print(f"Error running TensorBoard: {e}")
-
-
 class ANNTabularLinearRegression:
-    def __init__(self, optimizer='adam', log="custom_ANN_Linear_log"):
+    def __init__(self,ip="http://localhost",port=5000, optimizer='adam', experiment_name='custom_ANN_LinearRegression_experiment'):
         self.optimizer = optimizer
         self.x_train, self.y_train, self.x_test, self.y_test = self.load_and_preprocess_data()
 
-        # Create a log directory with a timestamp
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        self.dir_log = f"{log}/fit/{timestamp}"
+        # Start MLflow experiment
+        self.name = "ANN_Linear_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.url=f'{ip}:{port}'
+        self.config_mlflow(experiment_name, self.url)
 
         self.model = self.build_model()
+
+    def config_mlflow(self, experiment_name, url):
+        try:
+            mlflow.set_tracking_uri(url)
+            mlflow.set_experiment(experiment_name)
+        except Exception as e:
+            print(f"Error configuring MLflow: {e}")
 
     def build_model(self):
         # Build a simple ANN model for regression
         model = Sequential()
         model.add(Dense(64, activation='relu', input_shape=(self.x_train.shape[1],)))
         model.add(Dense(32, activation='relu'))
-        model.add(Dense(1, activation='linear'))  # Output layer for regression
+        model.add(Dense(1, activation='linear'))
 
         model.compile(optimizer=self.optimizer, loss='mean_squared_error', metrics=['mean_absolute_error'])
 
         return model
 
     def load_and_preprocess_data(self):
+        from sklearn.datasets import fetch_california_housing
+
         # Load the California housing dataset
         data = fetch_california_housing()
 
@@ -111,48 +134,49 @@ class ANNTabularLinearRegression:
         return x_train, y_train, x_test, y_test
 
     def train_model(self, epochs=10, batch_size=32):
-        # Create a TensorBoard callback to log the training process
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=self.dir_log, histogram_freq=1)  # Set up TensorBoard callback
+        try:
+            mlflow.start_run(run_name=f'{self.name}')
 
-        # Train the model and use the TensorBoard callback
-        self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size, callbacks=[tensorboard_callback])
+            # Train the model and log metrics using MLflow
+            mlflow.keras.autolog()
+            self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size)
 
-    def evaluate_model(self):
-        # Evaluate the model on the test data
-        test_loss, test_mae = self.model.evaluate(self.x_test, self.y_test)
-        return test_loss, test_mae
+            mlflow.end_run()
+        except Exception as e:
+            print(f"Error training the model: {e}")
 
-    
     def save_model(self, model_filename):
-        # Save the model to a file
-        self.model.save(model_filename)
-        print(f"Model saved to {model_filename}")
-    
+        try:
+            # Save the model to a file and log as an artifact
+            model_path = f"mlruns/models/{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}/{model_filename}"
+            self.model.save(model_path)
+            mlflow.log_artifact(model_path)
+            mlflow.end_run()
+
+            print(f"Model saved as artifact: {model_filename}")
+        except Exception as e:
+            print(f"Error saving the model: {e}")
+
     def set_weights(self, weights):
         self.model.set_weights(weights)
         return self.model
 
-    def run_tensorboard(self):
-        try:
-            logdir = f"custom_ANN_Classification_log/fit"  # Specify the log directory
-            subprocess.run(["tensorboard", "--logdir", logdir])
-        except Exception as e:
-            print(f"Error running TensorBoard: {e}")
 
-
-            
 if __name__ == '__main__':
-    tabular_model = ANNTabularClassification('adam')
-    tabular_model.train_model(epochs=10, batch_size=32)
-    test_loss, test_accuracy = tabular_model.evaluate_model()
-    print(f'Test loss: {test_loss:.4f}, Test accuracy: {test_accuracy:.4f}')
+    # Example usage:
+    ann_model = ANNTabularClassification()
+    ann_model.train_model(epochs=5, batch_size=32)
+    test_loss, test_accuracy = ann_model.evaluate_model()
+    print(f'Test Loss: {test_loss:.4f}')
+    print(f'Test Accuracy: {test_accuracy:.4f}')
+    ann_model.save_model("ann_model.h5")
+    print("Completed training")
 
-    tabular_model.run_tensorboard()
-
-
-    tabular_regression_model = ANNTabularLinearRegression('adam')
+        # Example usage:
+    tabular_regression_model = ANNTabularLinearRegression()
     tabular_regression_model.train_model(epochs=10, batch_size=32)
     test_loss, test_mae = tabular_regression_model.evaluate_model()
     print(f'Test loss: {test_loss:.4f}, Test Mean Absolute Error: {test_mae:.4f}')
+    tabular_regression_model.save_model("ann_linear_model.h5")
+    print("Completed training")
 
-    tabular_regression_model.run_tensorboard()
