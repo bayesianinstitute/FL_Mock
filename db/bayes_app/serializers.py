@@ -32,10 +32,12 @@ class AdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GlobalModelHashSerializer(serializers.ModelSerializer):
+    training_info = serializers.JSONField(write_only=True)
+
     class Meta:
         model = GlobalModelHash
-        fields = ['global_model_hash']
-
+        fields = ['global_model_hash', 'training_info']
+        
 class TrainingResultAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingResultAdmin
