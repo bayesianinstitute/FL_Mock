@@ -3,7 +3,6 @@ import random
 import json
 import queue
 from core.Logs_System.logger import Logger
-import uuid
 from core.API.endpoint import *
 from core.Role.MsgType import *
 
@@ -16,8 +15,7 @@ class MQTTCluster:
         self.internal_cluster_topic = internal_cluster_topic
         self.client = None
         # Generate a random UUID using a secure random number generator
-        self.uuid = str(uuid.uuid1()) 
-        self.id = f"{role}_UID:{self.uuid}"
+        self.id = f"{role}_IP:{self.ip}"
         self.terimate_status = False
         self.received_admin_data_queue = queue.Queue()
         self.received_user_data_queue=queue.Queue()

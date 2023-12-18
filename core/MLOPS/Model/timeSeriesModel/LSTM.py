@@ -1,20 +1,15 @@
 import yfinance as yf
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-import tensorflow as tf
-from tensorflow.keras.callbacks import TensorBoard
-
-
+from datetime import datetime
+from keras.layers import LSTM, Dense
+from keras.models import Sequential
+import mlflow
+import mlflow.keras
+import warnings
 
 class TimeSeriesLSTM:
-    def __init__(self, ticker="AAPL",
-                 start_date="2022-01-01",
-                 end_date= "2023-01-01",
-                 sequence_length=10, 
-                 num_units=64, 
-                 optimizer='adam',
-                 log_dir='custom_LSTM_logs'):
-        
+    def __init__(self,ip="http://localhost",port=5000, ticker="AAPL", start_date="2022-01-01", end_date="2023-01-01", sequence_length=10, num_units=64, optimizer='adam', experiment_name='custom_LSTM_logs'):
         self.ticker = ticker
         self.start_date = start_date
         self.end_date = end_date
@@ -23,105 +18,124 @@ class TimeSeriesLSTM:
         self.optimizer = optimizer
         self.model = self.build_model()
         self.x_train, self.y_train, self.x_test, self.y_test = self.load_and_preprocess_data()
-        self.log_dir=log_dir
+        self.name = "LSTM_Time" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.url=f'{ip}:{port}'
+
+        self.config_mlflow(experiment_name,self.url)
+
+    def config_mlflow(self,experiment_name,url):
+        try:
+            mlflow.set_tracking_uri(url)  
+            mlflow.set_experiment(experiment_name)
+        except Exception as e:
+            print(f"Error configuring MLflow: {e}")
 
     def build_model(self):
-        model = tf.keras.Sequential()
-        model.add(tf.keras.layers.LSTM(self.num_units, input_shape=(self.sequence_length, 1)))
-        model.add(tf.keras.layers.Dense(1))
-        
-        # Add accuracy as a metric
+        model = Sequential()
+        model.add(LSTM(self.num_units, input_shape=(self.sequence_length, 1)))
+        model.add(Dense(1))
+
         model.compile(optimizer=self.optimizer, loss='mean_squared_error', metrics=['accuracy'])
-        
+
         return model
 
     def load_and_preprocess_data(self):
-        # Fetch historical stock price data from Yahoo Finance
-        data = yf.download(self.ticker, start=self.start_date, end=self.end_date)
-        # Extract the 'Close' prices as the time series data
-        data = data['Close'].values.reshape(-1, 1)
+        try:
+            data = yf.download(self.ticker, start=self.start_date, end=self.end_date)
+            data = data['Close'].values.reshape(-1, 1)
+            scaler = MinMaxScaler()
+            data = scaler.fit_transform(data)
 
-        # Normalize the data to the range [0, 1]
-        scaler = MinMaxScaler()
-        data = scaler.fit_transform(data)
+            train_size = int(len(data) * 0.8)
+            train_data, test_data = data[0:train_size], data[train_size:]
 
-        # Split the data into training and test sets
-        train_size = int(len(data) * 0.8)
-        train_data, test_data = data[0:train_size], data[train_size:]
+            x_train, y_train, x_test, y_test = [], [], [], []
 
-        x_train, y_train, x_test, y_test = [], [], [], []
+            for i in range(self.sequence_length, len(train_data)):
+                x_train.append(train_data[i - self.sequence_length:i, 0])
+                y_train.append(train_data[i, 0])
 
-        for i in range(self.sequence_length, len(train_data)):
-            x_train.append(train_data[i - self.sequence_length:i, 0])
-            y_train.append(train_data[i, 0])
+            for i in range(self.sequence_length, len(test_data)):
+                x_test.append(test_data[i - self.sequence_length:i, 0])
+                y_test.append(test_data[i, 0])
 
-        for i in range(self.sequence_length, len(test_data)):
-            x_test.append(test_data[i - self.sequence_length:i, 0])
-            y_test.append(test_data[i, 0])
+            x_train, y_train, x_test, y_test = np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test)
+            x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+            x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
 
-        x_train, y_train, x_test, y_test = np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test)
-        x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
-        x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+            return x_train, y_train, x_test, y_test
+        except Exception as e:
+            print(f"Error load_and_preprocess_data: {e}")
 
-        return x_train, y_train, x_test, y_test
+    def train_model(self,rounds=None, epochs=10, batch_size=32 ):
+        try:
 
-    def train_model(self, epochs=100, batch_size=32):
-        # Train the LSTM model
-        tensorboard_callback = TensorBoard(log_dir=self.log_dir, histogram_freq=1)
+            mlflow.start_run(run_name=f'{self.name}_Rounds:{rounds}')
 
-        self.model.fit(self.x_train, self.y_train, epochs=epochs, batch_size=batch_size,callbacks=[tensorboard_callback])
+            # Train the model and log metrics using MLflow
+            mlflow.tensorflow.autolog()
+            history = self.model.fit(
+                self.x_train, self.y_train,
+                epochs=epochs, batch_size=batch_size,
+                validation_data=(self.x_test, self.y_test)
+            )
 
-    def evaluate_model(self):
-        # Evaluate the LSTM model on the test data
-        test_loss, test_accuracy = self.model.evaluate(self.x_test, self.y_test)
-        return test_loss, test_accuracy
+            # Extract final values
+            final_loss = history.history['loss'][-1]
+            final_accuracy = history.history['accuracy'][-1]
+            final_val_loss = history.history['val_loss'][-1]
+            final_val_accuracy = history.history['val_accuracy'][-1]
 
-    def forecast(self, input_data):
-        # Make predictions using the trained LSTM model
-        predictions = self.model.predict(input_data)
-        return predictions
-    
+
+            return final_loss, final_accuracy, final_val_loss, final_val_accuracy
+
+        except Exception as e:
+            print(f"Error training the model: {e}")
+
     def save_model(self, model_filename):
-        # Save the model to a file
-        self.model.save(model_filename)
-        print(f"Model saved to {model_filename}")
-    
+        try:
+            # Save the model to a file and log as an artifact
+            model_path = f"mlruns/models/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}/{model_filename}"
+            
+            # Suppress Setuptools warning
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=UserWarning)
+                self.model.save(model_path, save_format='tf')
+                self.model.save(model_filename)
+                print(f"Model saved to {model_filename}")
+
+            # Save model summary to a text file
+            summary_path = f"mlruns/models/{model_filename}_summary.txt"
+            with open(summary_path, "w") as f:
+                self.model.summary(print_fn=lambda x: f.write(x + '\n'))
+
+            mlflow.log_artifact(model_path)
+            mlflow.log_artifact(summary_path)
+            mlflow.end_run()
+
+            print(f"Model and summary saved as artifacts: {model_filename}")
+        except Exception as e:
+            print(f"Error saving the model: {e}")
+
+
     def set_weights(self, weights):
         self.model.set_weights(weights)
         return self.model
-        
 
-    def run_tensorboard(self):
-        import subprocess
-        try:
-            log_dir = f"custom_LSTM_logs/fit"  # Specify the log directory
-            tensorboard_callback = TensorBoard(log_dir=log_dir, write_graph=True)
-            subprocess.Popen(["cmd.exe", "/k", "tensorboard", "--logdir", log_dir])
-        except Exception as e:
-            print(f"Error running TensorBoard: {e}")
 
 # Usage example:
 if __name__ == '__main__':
-    # Specify the stock ticker symbol, start and end dates, sequence length, and number of LSTM units
-    ticker = "AAPL"  # Replace with the desired stock symbol
+    ticker = "AAPL"
     start_date = "2022-01-01"
     end_date = "2023-01-01"
     sequence_length = 10
     num_units = 64
 
-    # Create a TimeSeriesLSTM object
-    lstm_forecast = TimeSeriesLSTM(ticker, start_date, end_date, sequence_length, num_units, optimizer='adam',log_dir='custom_LSTM_logs')
-
-    # Train the LSTM model
-    lstm_forecast.train_model(epochs=100, batch_size=32)
-
-    # Evaluate the model
-    test_loss, test_accuracy = lstm_forecast.evaluate_model()
-    print(f'Test Loss: {test_loss:.4f}')
-    print(f'Test Accuracy: {test_accuracy:.4f}')
-
-
-    # Make forecasts
-    input_data = lstm_forecast.x_test  # Use the test data for forecasting
-    forecasts = lstm_forecast.forecast(input_data)
-    print("Forecasts:", forecasts)
+    lstm_forecast = TimeSeriesLSTM(ticker, start_date, end_date, sequence_length, num_units, optimizer='adam', experiment_name='custom_LSTM_logs')
+    final_loss, final_accuracy, final_val_loss, final_val_accuracy =lstm_forecast.train_model(epochs=100, batch_size=32)
+    print(f'Final Training Loss: {final_loss:.4f}')
+    print(f'Final Training Accuracy: {final_accuracy:.4f}')
+    print(f'Final Validation Loss: {final_val_loss:.4f}')
+    print(f'Final Validation Accuracy: {final_val_accuracy:.4f}')
+    lstm_forecast.save_model("lstm_model.h5")
+    print("Completed training")

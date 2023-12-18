@@ -6,7 +6,7 @@ from datetime import datetime
 import mlflow
 import mlflow.keras
 
-class NLPLSTMMovieReviews:
+class NLPLSTM:
     def __init__(self, ip="http://localhost",port=5000,optimizer='adam', experiment_name='custom_NLPLSTMMovieReviews_experiment'):
         self.optimizer = optimizer
         self.model = self.build_model()
@@ -53,13 +53,20 @@ class NLPLSTMMovieReviews:
 
             # Train the model and log metrics using MLflow
             mlflow.keras.autolog()
-            self.model.fit(
+            history=self.model.fit(
                 self.x_train, self.y_train,
                 epochs=epochs, batch_size=batch_size,
                 validation_data=(self.x_test, self.y_test)
             )
 
-            mlflow.end_run()
+            # Extract final values
+            final_loss = history.history['loss'][-1]
+            final_accuracy = history.history['accuracy'][-1]
+            final_val_loss = history.history['val_loss'][-1]
+            final_val_accuracy = history.history['val_accuracy'][-1]
+
+
+            return final_loss, final_accuracy, final_val_loss, final_val_accuracy
         except Exception as e:
             print(f"Error training the model: {e}")
     
@@ -81,7 +88,7 @@ class NLPLSTMMovieReviews:
 
 if __name__ == '__main__':
     # Example usage:
-    imdb_model = NLPLSTMMovieReviews('adam')
+    imdb_model = NLPLSTM('adam')
     final_loss, final_accuracy, final_val_loss, final_val_accuracy =imdb_model.train_model(epochs=5, batch_size=32)
 
     print(f'Final Training Loss: {final_loss:.4f}')

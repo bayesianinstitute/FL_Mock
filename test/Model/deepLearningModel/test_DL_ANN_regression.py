@@ -1,6 +1,6 @@
 
 import pytest
-from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularLinearRegression
+from core.MLOPS.Model.deepLearningModel.ANN_Classification import ANNTabularLinearRegression
 
 from config.optimizer_settings import optimizers
 

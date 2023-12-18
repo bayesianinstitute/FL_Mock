@@ -1,5 +1,5 @@
 import pytest
-from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularClassification
+from core.MLOPS.Model.deepLearningModel.ANN_Classification import ANNTabularClassification
 # List of optimizers to test
 
 from config.optimizer_settings import optimizers

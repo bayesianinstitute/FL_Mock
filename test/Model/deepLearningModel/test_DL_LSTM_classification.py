@@ -1,5 +1,5 @@
 import pytest
-from core.MLOPS.Model.deepLearningModel.NLPLSTMMovieReviews  import NLPLSTMMovieReviews
+from core.MLOPS.Model.deepLearningModel.NLP_LSTM  import NLPLSTMMovieReviews
 
 from config.optimizer_settings import optimizers
 

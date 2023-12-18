@@ -1,8 +1,8 @@
 
 from core.IPFS.ipfs import IPFS
 from core.Logs_System.logger import Logger
-import requests
 from core.API.endpoint import *
+
 class MLOperations:
     def __init__(self,ip,training_type,optimizer,training_name='ML_training_name'):
         self.ip=ip
@@ -42,21 +42,21 @@ class MLOperations:
 
             elif self.training_type=='ANN-Regression':
                 
-                from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularLinearRegression
-                self.current_model=ANNTabularLinearRegression(self.optimizer)
+                from core.MLOPS.Model.deepLearningModel.ANN_Regression import ANNTabularLinearRegression
+                self.current_model=ANNTabularLinearRegression(self.ip,self.port,self.optimizer)
 
             elif self.training_type=='ANN-Classification':  
-                from core.MLOPS.Model.deepLearningModel.ANN import ANNTabularClassification
+                from core.MLOPS.Model.deepLearningModel.ANN_Classification import ANNTabularClassification
 
-                self.current_model=ANNTabularClassification(self.optimizer)
+                self.current_model=ANNTabularClassification(self.ip,self.port,self.optimizer)
             
             elif self.training_type=='LSTM-(NLP)':
-                from core.MLOPS.Model.deepLearningModel.NLPLSTMMovieReviews import NLPLSTMMovieReviews
-                self.current_model=NLPLSTMMovieReviews(optimizer=self.optimizer,)
+                from core.MLOPS.Model.deepLearningModel.NLP_LSTM import NLPLSTM
+                self.current_model=NLPLSTM(self.ip,self.port,self.optimizer,)
             
             elif self.training_type=='LSTM-(TimeSeries)':
                 from core.MLOPS.Model.timeSeriesModel.LSTM import TimeSeriesLSTM
-                self.current_model=TimeSeriesLSTM(optimizer=self.optimizer,)
+                self.current_model=TimeSeriesLSTM(self.ip,self.port,self.optimizer,)
 
             elif self.training_type=='RNN-(TimeSeries)':
                 from core.MLOPS.Model.timeSeriesModel.RNN import TimeSeriesRNN
