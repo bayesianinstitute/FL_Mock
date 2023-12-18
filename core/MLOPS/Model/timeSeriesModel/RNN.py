@@ -117,6 +117,7 @@ if __name__ == '__main__':
     sequence_length = 10
     num_units = 64
 
+    rnn_forecast = TimeSeriesRNN(ticker, start_date, end_date, sequence_length, num_units, optimizer='adam', log_dir='custom_RNN_logs')
     final_loss, final_accuracy, final_val_loss, final_val_accuracy =rnn_forecast = TimeSeriesRNN(ticker, start_date, end_date, sequence_length, num_units, optimizer='adam', log_dir='custom_RNN_logs')
     rnn_forecast.train_model(epochs=100, batch_size=32)
     print(f'Final Training Loss: {final_loss:.4f}')
