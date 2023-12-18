@@ -185,6 +185,13 @@ class NodeStatus(models.Model):
         choices=NETWORK_STATUS_CHOICES,
         default='disconnected'
     )    
+    training_info = models.ForeignKey(
+        TrainingInformation,
+        on_delete=models.CASCADE,
+        related_name='training_results_node',  # Provide a unique related_name
+        null=True,
+        blank=True
+    )
     model_hash = models.CharField(max_length=255, blank=True, null=True) 
     objects = NodeStatusManager()
     def __str__(self):

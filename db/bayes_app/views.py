@@ -167,16 +167,6 @@ def get_admin_data(request):
 @api_view(['POST'])
 def post_global_model_hash(request):
     data = request.data
-    training_name = data.get('training_name', '')
-
-    # Check if the training name exists in TrainingInformation
-    try:
-        training_info = TrainingInformation.objects.get(training_name=training_name)
-    except TrainingInformation.DoesNotExist:
-        return Response({'message': f'Training name "{training_name}" not available.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Training name exists, create GlobalModelHash entry
-    data['training_info'] = training_info.id  # Use the training_info.id as the foreign key
     serializer = GlobalModelHashSerializer(data=data)
 
     if serializer.is_valid():

@@ -32,11 +32,24 @@ class AdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GlobalModelHashSerializer(serializers.ModelSerializer):
-    training_info = serializers.JSONField(write_only=True)
+    training_info = serializers.CharField(max_length=200, write_only=True)
 
     class Meta:
         model = GlobalModelHash
         fields = ['global_model_hash', 'training_info']
+
+    def validate_training_info(self, value):
+        try:
+            training_info = TrainingInformation.objects.get(training_name=value)
+        except TrainingInformation.DoesNotExist:
+            raise serializers.ValidationError(f'Training name "{value}" not available.')
+        
+        return training_info
+
+    def create(self, validated_data):
+        training_info = validated_data.pop('training_info')
+        global_model_hash = GlobalModelHash.objects.create(training_info=training_info, **validated_data)
+        return global_model_hash
         
 class TrainingResultAdminSerializer(serializers.ModelSerializer):
     class Meta:
