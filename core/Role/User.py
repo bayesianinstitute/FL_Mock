@@ -31,7 +31,6 @@ class User:
 
         self.logger.debug(f"Waiting for grant request from admin")
         try:
-            last_update_time = time.time()
 
             while not self.grant_received:
                 initial_received_message = self.mqtt_obj.handle_user_data()

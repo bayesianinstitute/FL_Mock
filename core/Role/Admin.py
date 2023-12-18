@@ -195,13 +195,24 @@ class Admin:
             self.logger.error("Not Created Node ID in DB")
 
 
-    def handle_network_status(self, node_id,role, network_status):        
-        data = {
-            "role": role,
-            "node_id": node_id,
-            "network_status": network_status,
-            "operation_status": "resume"
-        }
+    def handle_network_status(self, node_id,role, network_status):
+
+        if network_status=="disconnected":
+
+            data = {
+                "role": role,
+                "node_id": node_id,
+                "network_status": network_status,
+                "operation_status": "idle"
+            }
+        else:
+            data = {
+                "role": role,
+                "node_id": node_id,
+                "network_status": network_status,
+                "operation_status": "resume"
+            }
+            
 
         status = self.update_network_status(data)
         if status:

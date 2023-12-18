@@ -9,7 +9,7 @@ import mlflow.keras
 import warnings
 
 class TimeSeriesLSTM:
-    def __init__(self,ip="http://localhost",port=5000, ticker="AAPL", start_date="2022-01-01", end_date="2023-01-01", sequence_length=10, num_units=64, optimizer='adam', experiment_name='custom_LSTM_logs'):
+    def __init__(self,ip="http://localhost",port=5000, ticker="AAPL", start_date="2022-01-01", end_date="2022-02-01", sequence_length=10, num_units=64, optimizer='adam', experiment_name='custom_LSTM_logs'):
         self.ticker = ticker
         self.start_date = start_date
         self.end_date = end_date
@@ -125,9 +125,9 @@ class TimeSeriesLSTM:
 
 # Usage example:
 if __name__ == '__main__':
-    ticker = "AAPL"
+    ticker = "BTC-USD" 
     start_date = "2022-01-01"
-    end_date = "2023-01-01"
+    end_date = "2022-02-01"
     sequence_length = 10
     num_units = 64
 
