@@ -99,7 +99,7 @@ To run the project, follow the steps below:
 Clone this repository to your local machine.
 
 ```bash
-git clone https://github.com/bayesianinstitute/FL_Mock.git
+git clone https://github.com/bayesianinstitute/Bayes_DFL.git
 ```
 
 Navigate to the project directory.
