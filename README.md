@@ -3,8 +3,8 @@
 # Technologies 
 
 
-<!-- IPFS Logo -->
-
+<!-- Tensorflow Logo -->
+![Image Description](doc/static/tensorflow.png)
 
 ## Overview
 
