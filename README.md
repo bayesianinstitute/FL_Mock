@@ -4,7 +4,8 @@
 
 
 <!-- Tensorflow Logo -->
-![Image Description](doc/static/tensorflow.png)
+![Image Description](doc/static/tensorflow.png)![ImageDescription](doc/static/IPFS.png)![Image Description](doc/static/MQTT.jpg)
+![Image Description](doc/static/django.png)![Image Description](doc/static/Sqllite.png)
 
 ## Overview
 
