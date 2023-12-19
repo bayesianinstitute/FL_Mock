@@ -7,6 +7,7 @@ import mlflow.keras
 import mlflow.tensorflow
 import warnings
 import os
+import numpy as np
 
 
 class CNNMnist:
@@ -45,6 +46,64 @@ class CNNMnist:
 
         model.compile(optimizer=self.optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
         return model
+
+    def apply_data_augmentation(self, x_data):
+        # Create an ImageDataGenerator and specify the augmentations
+        from keras.preprocessing.image import ImageDataGenerator
+        datagen = ImageDataGenerator(
+            rotation_range=40,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            shear_range=0.2,
+            zoom_range=0.2,
+            horizontal_flip=True,
+            fill_mode='nearest'
+        )
+
+        augmented_data = []
+        for img in x_data:
+            img = img.reshape((1,) + img.shape)  # Reshape to (1, height, width, channels) for flow
+            for batch in datagen.flow(img, batch_size=1):
+                augmented_data.append(batch[0])
+                break  # Break to avoid infinite loop
+
+        augmented_data = np.array(augmented_data)
+        return augmented_data
+
+    def load_and_preprocess_real_data(self, subset_size=1000):
+        from keras.preprocessing.image import load_img, img_to_array
+        from keras.utils import to_categorical
+
+        # Assuming images are stored in a directory called "custom_dataset"
+        data_dir = "path/to/your/custom_dataset"
+        image_files = os.listdir(data_dir)[:subset_size]
+
+        x_train = []
+        y_train = []
+        x_test = []
+        y_test = []
+
+        for image_file in image_files:
+            image_path = os.path.join(data_dir, image_file)
+            img = load_img(image_path, target_size=(28, 28))
+            img_array = img_to_array(img)
+            img_array /= 255.0
+
+            if "train" in image_file:
+                x_train.append(img_array)
+                label = int(image_file.split("_")[0])
+                y_train.append(label)
+            else:
+                x_test.append(img_array)
+                label = int(image_file.split("_")[0])
+                y_test.append(label)
+
+        x_train = np.array(x_train)
+        y_train = to_categorical(y_train, num_classes=10)
+        x_test = np.array(x_test)
+        y_test = to_categorical(y_test, num_classes=10)
+
+        return x_train, y_train, x_test, y_test
 
     def load_and_preprocess_data(self, subset_size=1000):
         # Load MNIST dataset

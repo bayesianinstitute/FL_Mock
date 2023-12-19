@@ -146,11 +146,7 @@ class User:
                 self.handle_config(message_data)
                 self.grant_received = True
 
-                operation_statuss={
-                        "operation_status": "resume"
-                    }
 
-                self.update_operation_status(operation_statuss)
                 
 
 
@@ -184,7 +180,7 @@ class User:
                 self.logger.info(f"update_operation_status Request Successful: {response.text}")
                 return json.loads(response.text)
             else:
-                self.logger.error(f"update_operation_status  Request Failed: {response.status_code}")
+                # self.logger.error(f"update_operation_status  Request Failed: {response.status_code}")
                 return None
         except Exception as e:
             self.logger.error(f"Error in add_admin: {str(e)}")
@@ -211,6 +207,7 @@ class User:
 
             if connected_status.status_code == 200:
                 self.logger.info(f"PUT network_status Request Successful: {connected_status.text}")
+
                 return json.loads(connected_status.text)
             else:
                 self.logger.info(f"PUT Request Failed: {connected_status.status_code, connected_status.text}")
@@ -344,12 +341,13 @@ class User:
         if node_id==self.id:
 
             self.pause_training = False
-            self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
-        else :
             operation_statuss={
                 "operation_status": "resume"
                 }
             self.update_operation_status(operation_statuss)
+            self.logger.debug(f" got resume training command: {message_data} and paused: {self.pause_training}")
+        else :
+
             self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
             pass
 
@@ -368,7 +366,6 @@ class User:
             self.mqtt_obj.terimate_connection()
             self.logger.debug("Terminate Successfully!!!!!")
             import sys
-
             sys.exit(0)     
         # else :
         #     self.logger.debug(f"id {self.id} is not same as node_id : {node_id}")
