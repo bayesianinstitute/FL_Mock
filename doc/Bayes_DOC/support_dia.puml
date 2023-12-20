@@ -1,12 +1,57 @@
 @startuml
 
-package "DFL System" {
-  [Cluster Network]
-  [Nodes]
-  [Bayes Network]
+class BayesNetwork {
+  +initialize(): void
+  +assignSeedNode(seedNode: SeedNode): void
+  +assignNode(node: Node): void
+  +transformNode(node: Node): void
+  +trackNetworkStatus(): void
 }
 
-[Cluster Network] --> [Nodes]
-[Nodes] --> [Bayes Network]
+class SeedNode {
+  +initialize(): void
+  +assignMaster(master: Master): void
+  +assignBackupMaster(backupMaster: BackupMaster): void
+}
+
+class Node {
+  +initialize(): void
+  +joinNetwork(master: Master): void
+  +leaveNetwork(): void
+  +changeRole(newRole: Role): void
+}
+
+class Master {
+  +initialize(): void
+  +updateNodeRole(node: Node, newRole: Role): void
+  +trackNetworkStatus(): void
+}
+
+class BackupMaster {
+  +initialize(): void
+  +updateNodeRole(node: Node, newRole: Role): void
+  +trackNetworkStatus(): void
+}
+
+enum Role {
+  MASTER
+  BACKUP_MASTER
+  NORMAL
+}
+
+BayesNetwork --> SeedNode: initialize
+BayesNetwork --> SeedNode: assignSeedNode
+BayesNetwork --> Node: assignNode
+BayesNetwork --> Node: transformNode
+BayesNetwork --> BayesNetwork: trackNetworkStatus
+SeedNode --> Master: assignMaster
+SeedNode --> BackupMaster: assignBackupMaster
+Node --> Master: joinNetwork
+Node --> Node: leaveNetwork
+Node --> Node: changeRole
+Master --> Node: updateNodeRole
+Master --> Master: trackNetworkStatus
+BackupMaster --> Node: updateNodeRole
+BackupMaster --> BackupMaster: trackNetworkStatus
 
 @enduml

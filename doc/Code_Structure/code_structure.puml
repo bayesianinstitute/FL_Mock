@@ -1,0 +1,50 @@
+@startuml
+
+' Define nodes
+node "FL_Mock" {
+    folder .github
+    folder config
+    folder core {
+        folder API
+        folder FL_System
+        folder IPFS
+        folder Logs_System
+        folder MLOPS
+        folder MqttOPS
+        folder Role
+    }
+    folder db {
+        folder bayes
+        folder bayes_app
+        file db.sqlite3
+        file manage.py
+    }
+    folder doc {
+        folder Bayes_DOC
+        folder bayes_img
+        folder DFL_DOC
+        folder MQTT_DOC
+        folder static
+        folder system_component
+        folder UI
+    }
+    folder report
+    folder test {
+        folder mock
+        folder Model
+        folder testapi
+        folder testui
+        file test_dfl_workflow.py
+        file test_ipfs.py
+        file test_ml_operation.py
+    }
+    file .gitignore
+    file install_ipfs.sh
+    file main.py
+    file README.md
+    file requirements.txt
+    file run.sh
+    file run_ipfs.sh
+}
+
+@enduml

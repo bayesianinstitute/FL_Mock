@@ -1,0 +1,20 @@
+@startuml
+!define MQTT_AGENT class MQTT_Agent
+!define MQTT_CLIENT class MQTT_Client
+!define MQTT_BROKER class MQTT_Broker
+
+MQTT_AGENT -up-|> MQTT_CLIENT: Inherits
+MQTT_BROKER -down-|> MQTT_CLIENT: Inherits
+
+participant Publisher
+participant Subscriber
+
+Publisher -> MQTT_CLIENT: Publish
+activate MQTT_CLIENT
+MQTT_CLIENT -> MQTT_BROKER: Publish
+activate MQTT_BROKER
+MQTT_BROKER --> Subscriber: Message
+deactivate MQTT_BROKER
+deactivate MQTT_CLIENT
+
+@enduml
