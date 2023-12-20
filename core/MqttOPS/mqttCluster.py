@@ -1,5 +1,4 @@
 import paho.mqtt.client as mqtt
-import random
 import json
 import queue
 from core.Logs_System.logger import Logger
@@ -7,11 +6,10 @@ from core.API.endpoint import *
 from core.Role.MsgType import *
 
 class MQTTCluster:
-    def __init__(self,ip, broker_address, cluster_name,  internal_cluster_topic,  role):
+    def __init__(self,ip, broker_address,  internal_cluster_topic,  role):
         self.ip=ip
         self.logger=Logger(name='MqttComm_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.broker_address = broker_address
-        self.cluster_name = cluster_name
         self.internal_cluster_topic = internal_cluster_topic
         self.client = None
         # Generate a random UUID using a secure random number generator
@@ -44,15 +42,13 @@ class MQTTCluster:
         self.client.loop_start()
 
     def on_message(self, client, userdata, message):
-        client_id = client._client_id.decode('utf-8')
-        cluster_id = self.cluster_name
 
         if message.topic == self.internal_cluster_topic:
-            self.handle_internal_message(message, client_id, cluster_id,client)
+            self.handle_internal_message(message,client)
 
 
 
-    def handle_internal_message(self, message, client_id, cluster_id,client):
+    def handle_internal_message(self, message,client):
         data = message.payload.decode('utf-8')
         self.logger.critical(f"Received data: {data}")
 

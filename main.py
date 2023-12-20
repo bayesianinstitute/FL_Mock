@@ -7,32 +7,24 @@ from core.API.ClientAPI import ApiClient
 from core.API.endpoint import *
 import json
 
-import requests
-
-
 
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
-    def __init__(self, broker_service, internal_cluster_topic, cluster_name):
+    def __init__(self, broker_service, internal_cluster_topic):
         
         self.ip=self.get_public_ip()
         # Setup Logger
         self.logger=Logger(name='DFL_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         # Initialize various attributes and parameters
 
-        self.global_ipfs_link = None
-        self.participant_identification = None
         self.broker_service = broker_service
         self.internal_cluster_topic = internal_cluster_topic
-        self.mqtt_operations = None
-
-        self.cluster_name=cluster_name
-
-
-         
+        self.mqtt_operations = None         
         self.apiClient=ApiClient(ip=self.ip)
 
     def get_public_ip(self):
+        import requests
+
         try:
             response = requests.get("https://api64.ipify.org?format=json")
             if response.status_code == 200:
@@ -95,9 +87,7 @@ class DFLWorkflow:
 
         # Initialize  MQTT operations for communication
         self.mqtt_operations = MqttOperations(self.ip,self.internal_cluster_topic,
-                                              self.cluster_name,
-                                            self.broker_service,
-                                            )
+                                            self.broker_service,)
 
         if role_data['role'] == "Admin":
             from core.Role.Admin import Admin
@@ -149,5 +139,5 @@ if __name__ == "__main__":
 
     internal_cluster_topic=f'{args.cluster_name}'
     
-    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name)
+    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic)
     workflow.run(args.role)
