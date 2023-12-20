@@ -18,12 +18,6 @@ urlpatterns = [
     path('api/v1/update_network_status/<str:new_status>/', update_network_status, name='update_network_status'),
     path('api/v1/toggle_training_status/', toggle_training_status, name='toggle_training_status'),
     path('api/v1/create_or_update_status/', create_or_update_status, name='create_or_update_status'),
-    
-
-   
-   
-
-   
     path('api/v1/logs/', get_logs, name='get_logs'),
     path('api/v1/add_nodes/', add_nodes, name='add_admin'),
     path('api/v1/node_id_count/', unique_node_id_count, name='unique_node_id_count'),

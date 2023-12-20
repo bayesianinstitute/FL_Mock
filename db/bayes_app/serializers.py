@@ -42,7 +42,7 @@ class TrainingResultAdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_data(self, obj):
-        return [obj.accuracy, obj.validation_accuracy, obj.loss]  # Add more fields if needed
+        return [obj.accuracy, obj.validation_accuracy, obj.loss]
     
 class LogsSerializer(serializers.ModelSerializer):
     class Meta:

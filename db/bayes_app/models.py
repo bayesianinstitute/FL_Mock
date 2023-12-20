@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils import timezone
 
-
-# Create your models here.
 class TrainingInformation(models.Model):
     model_name_choices = [
         ('CNN', 'Convolutional Neural Network'),
@@ -126,7 +124,6 @@ class Admin(models.Model):
     
 class NodeStatusManager(models.Manager):
     def get_or_create_single_instance(self):
-        # Attempt to get the single instance, create if not found
         instance, created = self.get_or_create(pk=1)
         return instance
     
@@ -171,7 +168,6 @@ class GlobalModelHash(models.Model):
  
 class TrackManager(models.Manager):
     def get_or_create_single_instance(self):
-        # Attempt to get the single instance, create if not found
         instance, created = self.get_or_create(pk=1)
         return instance
        

@@ -2,18 +2,15 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import TrainingInformation,TrainingResult,Logs,Track,NodeStatus,Admin,GlobalModelHash,TrainingResultAdmin
-from .serializers import AdminModelHashSerializer,TrainingInformationSerializer,TrainingUniqueInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
+from .serializers import AdminModelHashSerializer,TrainingInformationSerializer,TrainingResultSerializer,LogsSerializer,TrackSerializer,NodeStatusSerializer,AdminSerializer,GlobalModelHashSerializer,TrainingResultAdminSerializer,UpdateOperationStatusSerializer,OperationStatusResponseSerializer,OperationStatusRequestSerializer
 from django.shortcuts import render
-import random
 from itertools import groupby
 from django.db.models import F
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
 from django.http import JsonResponse
 from rest_framework import status as drf_status
 from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
 
 
@@ -23,23 +20,17 @@ def dfladmin(request):
     return render(request, 'dfl/config.html')
 
 def mlflow(request):
-    # Get the current request's host (including the dynamic IP address)
     current_host = request.get_host()
-    
-    # Construct the new URL with the desired port (e.g., 5000)
     new_url = f'http://{current_host.replace(":8000", ":5000")}/'
 
     return redirect(new_url)
 
-
 @api_view(['POST'])
 def create_training_information(request):
     serializer = TrainingInformationSerializer(data=request.data)
-    
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
@@ -52,19 +43,12 @@ def get_training_results(request):
 @api_view(['POST'])
 def create_training_result(request):
     if request.method == 'POST':
-        # Extract training_info_name from the request data
         training_info_name = request.data.get('training_info_name')
-
-        # Retrieve the TrainingInformation instance based on the name
         try:
             training_info = TrainingInformation.objects.get(training_name=training_info_name)
         except TrainingInformation.DoesNotExist:
             return Response({'error': f'TrainingInformation with name {training_info_name} does not exist.'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Update the request data with the TrainingInformation instance
         request.data['training_info'] = training_info.id
-
-        # Use the serializer to validate and save the data
         serializer = TrainingResultSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -81,7 +65,6 @@ def get_logs(request):
 @api_view(['PUT'])
 def update_admin_role(request):
     track = Track.objects.get_or_create_single_instance()
-    
     serializer = TrackSerializer(track, data={'role': 'Admin'}, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -92,7 +75,6 @@ def update_admin_role(request):
 def update_backup_admin_role(request):
     track = Track.objects.get_or_create_single_instance()
     serializer = TrackSerializer(track, data={'role': 'BackupAdmin'}, partial=True)
-
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -102,7 +84,6 @@ def update_backup_admin_role(request):
 def update_user_role(request):
     track = Track.objects.get_or_create_single_instance()
     serializer = TrackSerializer(track, data={'role': 'User'}, partial=True)
-
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -111,12 +92,9 @@ def update_user_role(request):
 @api_view(['PUT'])
 def update_network_status(request, new_status):
     node_status = NodeStatus.objects.get_or_create_single_instance()
-
     if new_status not in ['connected', 'disconnected', 'idle']:
         return Response({'error': 'Invalid network status'}, status=status.HTTP_400_BAD_REQUEST)
-
     serializer = NodeStatusSerializer(node_status, data={'network_status': new_status}, partial=True)
-
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -126,11 +104,8 @@ def update_network_status(request, new_status):
 @api_view(['PUT'])
 def toggle_training_status(request):
     node_status = NodeStatus.objects.get_or_create_single_instance()
-    
     new_training_status = 'in_progress' if node_status.training_status != 'in_progress' else 'not_in_progress'
-
     serializer = NodeStatusSerializer(node_status, data={'training_status': new_training_status}, partial=True)
-
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -144,11 +119,9 @@ def create_or_update_status(request):
         serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
     except Admin.DoesNotExist:
         serializer = AdminSerializer(data=request.data)
-
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -156,7 +129,6 @@ def create_or_update_status(request):
 def get_admin_data(request):
     try:
         admin_instances = Admin.objects.order_by('-timestamp')
-
         if not admin_instances.exists():
             return Response({'error': 'Admin data not found'}, status=status.HTTP_404_NOT_FOUND)
         serializer = AdminSerializer(admin_instances, many=True)
@@ -167,7 +139,6 @@ def get_admin_data(request):
 @api_view(['POST'])
 def post_global_model_hash(request):
     serializer = GlobalModelHashSerializer(data=request.data)
-
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -197,17 +168,13 @@ def get_all_users_metrics(request, metric_name):
         allowed_metrics = ['accuracy', 'loss']
         if metric_name not in allowed_metrics:
             return Response({'error': f"Invalid metric parameter. Allowed values: {', '.join(allowed_metrics)}"}, status=400)
-
         training_name = request.data.get('training_name')
         if not training_name:
             return Response({'error': 'Missing training_name in the request body'}, status=400)
-
         metric_field = F(metric_name)
-
         metric_records = TrainingResultAdmin.objects.filter(
             training_info__training_name=training_name
         ).order_by('node_id').values('node_id', metric=metric_field)
-
         grouped_data = []
         for node_id, records in groupby(metric_records, key=lambda x: x['node_id']):
             data = [record['metric'] for record in records]
@@ -224,7 +191,6 @@ def get_all_users_metrics(request, metric_name):
 @api_view(['GET'])
 def get_logs(request):
     try:
-       
         logs = Logs.objects.all().order_by('-timestamp')
         serializer = LogsSerializer(logs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -235,10 +201,8 @@ def get_logs(request):
 def add_nodes(request):
     if request.method == 'POST':
         node_id = request.data.get('node_id')
-        
         if Admin.objects.filter(node_id=node_id).exists():
             return Response({'error': 'Record with the same node_id already exists.'}, status=status.HTTP_400_BAD_REQUEST)
-
         serializer = AdminSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -262,53 +226,40 @@ def add_global_model_hash(request):
     
 @api_view(['POST'])
 def add_training_result(request):
-    # Extract data from the request payload
     training_name = request.data.get('training_name')
     node_id = request.data.get('node_id')
     accuracy = request.data.get('accuracy')
     loss = request.data.get('loss')
-
-    # Query TrainingInformation model to get the instance based on training_name
     try:
         training_info = TrainingInformation.objects.get(training_name=training_name)
     except TrainingInformation.DoesNotExist:
         return Response({'error': f"TrainingInformation with training_name '{training_name}' does not exist."},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    # Create a dictionary with the extracted data and the obtained training_info instance
     data = {
-        'training_info': training_info.id,  # Assuming 'id' is the primary key of TrainingInformation
+        'training_info': training_info.id,  
         'node_id': node_id,
         'accuracy': accuracy,
         'loss': loss,
     }
-
-    # Use the serializer with the extracted data
     serializer = TrainingResultAdminSerializer(data=data)
-
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['PUT'])
 def update_operation_status(request):
     if request.method == 'PUT':
         serializer = UpdateOperationStatusSerializer(data=request.data)
-
         if serializer.is_valid():
             node_id = serializer.validated_data['node_id']
             operation_status = serializer.validated_data['operation_status']
-
             try:
                 admin_instance = Admin.objects.get(node_id=node_id)
                 previous_operation_status = admin_instance.operation_status
-
                 admin_instance.operation_status = operation_status
                 admin_instance.save()
-
                 return Response({
                     "status": "success",
                     "message": "Operation status updated successfully",
@@ -326,7 +277,6 @@ def get_operation_status(request):
         serializer = OperationStatusRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         node_id = serializer.validated_data['node_id']
-
         admin_instance = Admin.objects.get(node_id=node_id)
         serializer = OperationStatusResponseSerializer(admin_instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -347,14 +297,11 @@ def training_information_choices(request):
     model_name_choices = [choice[0] for choice in TrainingInformation.model_name_choices]
     dataset_name_choices = [choice[0] for choice in TrainingInformation.dataset_name_choices]
     optimizer_choices = [choice[0] for choice in TrainingInformation.optimizer_choices]
-
     choices_data = {
-        
         'model_name_choices': model_name_choices,
         'dataset_name_choices': dataset_name_choices,
         'optimizer_choices': optimizer_choices,
     }
-
     return Response(choices_data)
 
 
@@ -369,19 +316,14 @@ def get_model_hashes(request):
 def update_logs(request):
     try:
         new_log_message = request.data.get('logs', '')
-        
-        # Retrieve the latest log entry or create a new one if none exists
         log_entry = Logs.objects.first()
         if log_entry is not None:
             log_entry.message = f"{new_log_message}\n{log_entry.message}"
         else:
             log_entry = Logs.objects.create(message=new_log_message)
-
         log_entry.save()
         serializer = LogsSerializer(log_entry)
-
         return Response({'logs': serializer.data['message']})
-
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
     
@@ -397,12 +339,9 @@ def get_latest_global_model_hash(request):
     
 @api_view(['PUT'])
 def update_node_status(request, status, new_status):
-    # Validate the input status
     valid_statuses = ['operation', 'network']
     if status not in valid_statuses:
         return Response({'error': f'Invalid status type: {status}'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Validate the new_status
     valid_operation_statuses = [choice[0] for choice in NodeStatus.OPERATION_CHOICES]
     valid_network_statuses = [choice[0] for choice in NodeStatus.NETWORK_STATUS_CHOICES]
 
@@ -410,20 +349,12 @@ def update_node_status(request, status, new_status):
         return Response({'error': f'Invalid operation status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
     elif status == 'network' and new_status not in valid_network_statuses:
         return Response({'error': f'Invalid network status: {new_status}'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Try to get an existing NodeStatus instance
     node_status, created = NodeStatus.objects.get_or_create()
-
-    # Update the appropriate status field
     if status == 'operation':
         node_status.operation_status = new_status
     elif status == 'network':
         node_status.network_status = new_status
-
-    # Save the changes
     node_status.save()
-
-    # Return a response
     return Response({'message': f'Successfully updated {status} status to {new_status}'}, status=drf_status.HTTP_200_OK)
 
 
