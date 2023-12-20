@@ -22,9 +22,14 @@ class TrackSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class NodeStatusSerializer(serializers.ModelSerializer):
+    training_name = serializers.SerializerMethodField()
+
     class Meta:
         model = NodeStatus
-        fields = '__all__'
+        fields = ['id', 'operation_status', 'network_status', 'model_hash', 'training_info', 'training_name']
+
+    def get_training_name(self, obj):
+        return obj.training_info.training_name if obj.training_info else None
         
 class AdminSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,24 +37,9 @@ class AdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class GlobalModelHashSerializer(serializers.ModelSerializer):
-    training_info = serializers.CharField(max_length=200, write_only=True)
-
     class Meta:
         model = GlobalModelHash
         fields = ['global_model_hash', 'training_info']
-
-    def validate_training_info(self, value):
-        try:
-            training_info = TrainingInformation.objects.get(training_name=value)
-        except TrainingInformation.DoesNotExist:
-            raise serializers.ValidationError(f'Training name "{value}" not available.')
-        
-        return training_info
-
-    def create(self, validated_data):
-        training_info = validated_data.pop('training_info')
-        global_model_hash = GlobalModelHash.objects.create(training_info=training_info, **validated_data)
-        return global_model_hash
         
 class TrainingResultAdminSerializer(serializers.ModelSerializer):
     class Meta:

@@ -15,6 +15,8 @@ from rest_framework import status as drf_status
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
+from django.db import IntegrityError
+
 
 
 def dfl(request):
@@ -167,13 +169,16 @@ def get_admin_data(request):
 @api_view(['POST'])
 def post_global_model_hash(request):
     data = request.data
-    serializer = GlobalModelHashSerializer(data=data)
-
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    try:
+        training_info = TrainingInformation.objects.get(training_name=data.get('training_info'))
+    except TrainingInformation.DoesNotExist:
+        return Response({'error': f'Training name "{data.get("training_info")}" not available.'}, status=status.HTTP_400_BAD_REQUEST)
+    data.pop('training_info', None)
+    try:
+        global_model_hash = GlobalModelHash.objects.create(training_info=training_info, **data)
+        return Response({'global_model_hash': global_model_hash.global_model_hash}, status=status.HTTP_201_CREATED)
+    except IntegrityError as e:
+        return Response({'error': f'Error creating GlobalModelHash: {str(e)}'}, status=status.HTTP_409_CONFLICT)
     
     
 @api_view(['GET'])
@@ -372,13 +377,26 @@ def get_model_hashes(request):
 def update_logs(request):
     try:
         new_log_message = request.data.get('logs', '')
-        
-        # Retrieve the latest log entry or create a new one if none exists
-        log_entry = Logs.objects.first()
+        training_info_name = request.data.get('training_info', '')
+
+        # Check if TrainingInformation with the given name exists
+        try:
+            training_info = TrainingInformation.objects.get(training_name=training_info_name)
+        except TrainingInformation.DoesNotExist:
+            return JsonResponse({'error': f'Training name "{training_info_name}" not available.'}, status=400)
+
+        # Retrieve the latest log entry for the provided training_info
+        log_entry = Logs.objects.filter(training_info=training_info).first()
+
         if log_entry is not None:
+            # Update the existing log entry
             log_entry.message = f"{new_log_message}\n{log_entry.message}"
         else:
-            log_entry = Logs.objects.create(message=new_log_message)
+            # Create a new log entry
+            log_entry = Logs.objects.create(
+                message=new_log_message,
+                training_info=training_info
+            )
 
         log_entry.save()
         serializer = LogsSerializer(log_entry)
@@ -433,19 +451,44 @@ def update_node_status(request, status, new_status):
 @api_view(['PUT'])
 def update_model_hash(request):
     try:
-        node_status = NodeStatus.objects.get()
+        # Extract training_info from request data
+        training_info_name = request.data.get('training_info')
+
+        # Check if TrainingInformation with the given name exists
+        try:
+            training_info = TrainingInformation.objects.get(training_name=training_info_name)
+        except TrainingInformation.DoesNotExist:
+            return Response({'error': f'Training name "{training_info_name}" not available.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        node_status = NodeStatus.objects.first()
+
+        # Update data dictionary with the primary key of training_info
+        request.data['training_info'] = training_info.pk
+
         serializer = NodeStatusSerializer(node_status, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     except NodeStatus.DoesNotExist:
+        # Create a new NodeStatus instance
         serializer = NodeStatusSerializer(data=request.data)
         if serializer.is_valid():
+            # Check if TrainingInformation with the given name exists
+            try:
+                training_info = TrainingInformation.objects.get(training_name=training_info_name)
+            except TrainingInformation.DoesNotExist:
+                return Response({'error': f'Training name "{training_info_name}" not available.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Assign the primary key of training_info to the serializer data
+            serializer.validated_data['training_info'] = training_info.pk
+
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    except IntegrityError as e:
+        return Response({'error': f'Error updating NodeStatus: {str(e)}'}, status=status.HTTP_409_CONFLICT)
 
 @api_view(['GET'])
 def get_training_information_by_name(request, training_name):
