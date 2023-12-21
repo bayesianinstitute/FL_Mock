@@ -284,9 +284,16 @@ def add_global_model_hash(request):
 def add_training_result(request):
     # Extract data from the request payload
     training_name = request.data.get('training_info')  # Use the string 'training_info'
-    node_id = request.data.get('node_id')
+    node_id_char = request.data.get('node_id')
     accuracy = request.data.get('accuracy')
     loss = request.data.get('loss')
+
+    # Check if node_id_char is present in Admin table
+    try:
+        admin_instance = Admin.objects.get(node_id=node_id_char)
+    except Admin.DoesNotExist:
+        return Response({'error': f"Admin with node_id '{node_id_char}' does not exist."},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     # Query TrainingInformation model to get the instance based on training_name
     try:
@@ -295,10 +302,10 @@ def add_training_result(request):
         return Response({'error': f"TrainingInformation with training_name '{training_name}' does not exist."},
                         status=status.HTTP_400_BAD_REQUEST)
 
-    # Create a dictionary with the extracted data and the obtained training_info instance
+    # Create a dictionary with the extracted data and the obtained training_info and admin_instance
     data = {
         'training_info': training_info.id,  # Assuming 'id' is the primary key of TrainingInformation
-        'node_id': node_id,
+        'node_id': admin_instance.id,  # Use the primary key of the Admin instance
         'accuracy': accuracy,
         'loss': loss,
     }
