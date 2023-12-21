@@ -1,6 +1,6 @@
 @echo off
 REM Hardcoded MQTT broker
-set MQTT_BROKER="test.mosquitto.org"
+set MQTT_BROKER="localhost"
 
 REM Check if the correct number of arguments is provided
 if "%~2"=="" (

@@ -15,9 +15,9 @@ import requests
 class DFLWorkflow:
     def __init__(self, broker_service, internal_cluster_topic, cluster_name):
         
-        self.ip="127.0.0.1:8000/"
+        self.ip="http://127.0.0.1"
         # Setup Logger
-        self.logger=Logger(name='DFL_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+        # self.logger=Logger(internal_cluster_topic,name='DFL_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         # Initialize various attributes and parameters
 
         self.global_ipfs_link = None
@@ -51,10 +51,10 @@ class DFLWorkflow:
                 connected_status = self.apiClient.put_request(update_user,data)
 
                 if connected_status.status_code == 200:
-                    self.logger.info(f"PUT  User Role_status Request Successful: {connected_status.text}")
+                    print(f"PUT  User Role_status Request Successful: {connected_status.text}")
                     return json.loads(connected_status.text)
                 else:
-                    self.logger.info(f"PUT  User Request Failed: {connected_status.status_code, connected_status.text}")
+                    print(f"PUT  User Request Failed: {connected_status.status_code, connected_status.text}")
                     return None
 
             elif role =='Admin':
@@ -62,10 +62,10 @@ class DFLWorkflow:
                 connected_status = self.apiClient.put_request(update_admin,data)
 
                 if connected_status.status_code == 200:
-                    self.logger.info(f"PUT Admin Role_status Request Successful: {connected_status.text}")
+                    print(f"PUT Admin Role_status Request Successful: {connected_status.text}")
                     return json.loads(connected_status.text)
                 else:
-                    self.logger.info(f"PUT Admin Request Failed: {connected_status.status_code, connected_status.text}")
+                    print(f"PUT Admin Request Failed: {connected_status.status_code, connected_status.text}")
                     return None
             else:
                 import sys
@@ -73,7 +73,7 @@ class DFLWorkflow:
                 sys.exit(1)
 
         except Exception as e:
-                self.logger.error(f"Error in update_network_status: {str(e)}")
+                print(f"Error in update_network_status: {str(e)}")
                 return None
         else:
             pass
@@ -81,9 +81,9 @@ class DFLWorkflow:
     # Main function to run the federated learning workflow
     def run(self,role='User'):
 
-        self.logger.debug(self.internal_cluster_topic)
+        print(self.internal_cluster_topic)
 
-        self.logger.info(f"Your IP address is {self.ip}")
+        print(f"Your IP address is {self.ip}")
 
         data={
             "role":role
@@ -102,11 +102,11 @@ class DFLWorkflow:
         if role_data['role'] == "Admin":
             from core.Role.Admin import Admin
 
-            self.logger.info(f"Role Admin")
+            print(f"Role Admin")
 
             model_type = 'CNN'
 
-            optimizer = "Adam"  
+            optimizer = "adam"  
 
             # Fetch from database
             data={
@@ -115,14 +115,14 @@ class DFLWorkflow:
                     "optimizer": optimizer,
                     "training_name": self.internal_cluster_topic }    
             
-            self.logger.warning(data)
+            print(data)
 
             post_response=self.apiClient.post_request(create_training_information,data)
 
             if post_response.status_code == 201:
-                self.logger.info(f"POST Request Successful: {post_response.text}" )
+                print(f"POST Request Successful: {post_response.text}" )
             else:
-                self.logger.error(f"POST Request Failed:{ post_response.status_code, post_response.text}")
+                print(f"POST Request Failed:{ post_response.status_code, post_response.text}")
 
             admin = Admin(self.internal_cluster_topic , model_type, optimizer,self.mqtt_operations,self.ip,role=role_data['role'])
             admin.admin_logic()
@@ -130,7 +130,7 @@ class DFLWorkflow:
         elif role_data['role'] == "User":
             from core.Role.User import User
 
-            self.logger.info(f"Role User")
+            print(f"Role User")
             user = User( self.internal_cluster_topic,self.mqtt_operations,self.ip,role=role_data['role'] )
             user.user_logic()
         else:

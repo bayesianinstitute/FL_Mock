@@ -4,10 +4,10 @@ from core.Logs_System.logger import Logger
 from core.API.endpoint import *
 
 class MLOperations:
-    def __init__(self,ip,training_type,optimizer,training_name='ML_training_name'):
+    def __init__(self,training_name_log,ip,training_type,optimizer,training_name='ML_training_name'):
         self.ip=ip
-        self.logger=Logger(name='MLOPS_Logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
-        self.ipfs=IPFS(self.ip)
+        self.logger=Logger(training_name_log,name='MLOPS_Logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+        self.ipfs=IPFS(training_name_log,self.ip)
         self.path_model="saved_model.h5"
         self.path_global_model="global_model.h5"
         self.global_model_hash=None

@@ -8,9 +8,9 @@ from core.Logs_System.logger import Logger
 from core.API.endpoint import *
 
 class IPFS:
-    def __init__(self,ip,connection_link='/ip4/127.0.0.1/tcp/5001/http'):
+    def __init__(self,training_name_log,ip,connection_link='/ip4/127.0.0.1/tcp/5001/http'):
         self.ip=ip
-        self.logger=Logger(name='ipfs_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+        self.logger=Logger(training_name_log,name='ipfs_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.client = self._connect_to_ipfs(connection_link)
     
     def _connect_to_ipfs(self, connect_link):

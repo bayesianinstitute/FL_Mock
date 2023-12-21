@@ -5,7 +5,7 @@ class MqttOperations:
     def __init__(self,ip,internal_cluster_topic,cluster_name,initial_broker):
         self.ip=ip
         
-        self.logger=Logger(name='MqttOPS_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+        self.logger=None
         self.internal_cluster_topic=internal_cluster_topic
         self.initial_broker=initial_broker
         self.cluster=None
@@ -15,6 +15,8 @@ class MqttOperations:
 
     def start_dfl_using_mqtt(self,role):
         try:
+            self.logger=Logger(self.internal_cluster_topic,name='MqttOPS_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+
             self.cluster = MQTTCluster(self.ip,self.initial_broker, self.cluster_name,
                                        self.internal_cluster_topic,  role)
             

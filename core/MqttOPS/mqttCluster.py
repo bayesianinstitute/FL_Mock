@@ -9,7 +9,7 @@ from core.Role.MsgType import *
 class MQTTCluster:
     def __init__(self,ip, broker_address, cluster_name,  internal_cluster_topic,  role):
         self.ip=ip
-        self.logger=Logger(name='MqttComm_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+        self.logger=Logger(internal_cluster_topic,name='MqttComm_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.broker_address = broker_address
         self.cluster_name = cluster_name
         self.internal_cluster_topic = internal_cluster_topic

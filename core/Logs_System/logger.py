@@ -4,19 +4,21 @@ import requests
 import json
 
 class DatabaseLogger(logging.Handler):
-    def __init__(self, api_endpoint):
+    def __init__(self, api_endpoint,training):
         super().__init__()
         self.api_endpoint = api_endpoint
+        self.training=training
 
     def emit(self, record):
         log_data = {
             'logs': f"{record.levelname} - {self.format(record)} - {record.filename} - {record.exc_info}",
+            "training_info":self.training
         }
 
         print("Log Data:", log_data)  # Add this line for debugging
         try:
             response = requests.put(self.api_endpoint, json=log_data)
-            print("Response Status Code:", response.status_code)  # Add this line for debugging
+            print("Logger Response Status Code:", response.status_code)  # Add this line for debugging
 
             if response.status_code != 200:
                 print(f"Failed to log to API. Status code: {response.status_code}")
@@ -27,15 +29,17 @@ class DatabaseLogger(logging.Handler):
 class Logger:
     _loggers = {}
 
-    def __new__(cls, name='default_logger', api_endpoint=None):
+    def __new__(cls,training_name, name='default_logger', api_endpoint=None):
         if name not in cls._loggers:
             instance = super(Logger, cls).__new__(cls)
             cls._loggers[name] = instance
+            cls._loggers[training_name] = instance
+
             return instance
         else:
             return cls._loggers[name]
 
-    def __init__(self, name='default_logger', api_endpoint=None):
+    def __init__(self,training_name, name='default_logger', api_endpoint=None):
         if not hasattr(self, 'logger'):
             self.logger = logging.getLogger(name)
             self.logger.setLevel(logging.DEBUG)
@@ -57,7 +61,7 @@ class Logger:
             self.logger.addHandler(handler)
 
             if api_endpoint:
-                database_handler = DatabaseLogger(api_endpoint)
+                database_handler = DatabaseLogger(api_endpoint,training_name)
                 database_handler.setLevel(logging.DEBUG)
                 self.logger.addHandler(database_handler)
 
@@ -68,7 +72,8 @@ class Logger:
 
 if __name__ == '__main__':
     api_endpoint = "http://127.0.0.1:8000/api/v1/update_logs/"
-    logger = Logger(name='my_logger', api_endpoint=api_endpoint).get_logger()
+    t='i"'
+    logger = Logger(t,name='my_logger', api_endpoint=api_endpoint).get_logger()
 
     logger.debug("This is a debug message")
     logger.info("This is an info message")

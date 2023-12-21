@@ -11,10 +11,11 @@ import time
 class Admin:
     def __init__(self,training_name, training_type, optimizer,mqtt_operations,ip,role='Admin',):
         self.ip=ip
+        self.training_name=training_name
         self.apiClient=ApiClient(ip=self.ip)
-        self.ml_operations = MLOperations(self.ip,training_type, optimizer,training_name=f'Admin-{training_name}')
+        self.ml_operations = MLOperations(training_name,self.ip,training_type, optimizer,training_name=f'Admin-{training_name}')
 
-        self.logger = Logger(name='admin-role',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
+        self.logger = Logger(training_name,name='admin-role',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         # Start, initialize, and get MQTT communication object
         self.mqtt_obj = mqtt_operations.start_dfl_using_mqtt(role)
 
@@ -108,24 +109,25 @@ class Admin:
             msg_type = message_data.get("msg")
             role = message_data.get("role")
             node_id = message_data.get("node_id")
+            training_info = message_data.get('training_info')
+
 
             
             if msg_type == JOIN_OPERATION: 
-                training_name = message_data.get('training_name')
 
-                self.handle_join(node_id,training_name) 
+                self.handle_join(node_id,training_info) 
 
             elif msg_type == SEND_NETWORK_STATUS:
                 network_status = message_data.get("network_status")
-                self.handle_network_status(node_id,role, network_status)         
+                self.handle_network_status(node_id,role, network_status,training_info)         
 
 
             elif msg_type == RECEIVE_MODEL_INFO:
                 accuracy = message_data.get("accuracy")
                 loss = message_data.get("loss")
-                training_name = message_data.get("training_name")
+                training_info = message_data.get("training_info")
                 model_hash=message_data.get("model_hash")
-                self.handle_receive_model_info(node_id, accuracy,loss,training_name,model_hash)
+                self.handle_receive_model_info(node_id, accuracy,loss,training_info,model_hash)
 
 
         except json.JSONDecodeError as e:
@@ -157,21 +159,23 @@ class Admin:
         else:
             self.logger.error(f"GET Request Failed:{ get_role.status_code, get_role.text}")
 
-    def handle_join(self,node_id,training_name):
+    def handle_join(self,node_id,training_info):
         # store data 
 
         data={
-            "node_id":node_id,
-            "training_name":training_name
+            "node_id":1,
+            "training_info":"fl"
             
         }
+
+        self.logger.info(f"Join request data: {data}")
 
         status = self.update_network_status(data)
         if status:
             self.logger.critical(f"Created  Node ID in DB")
             
             # TODO: Get traning information by traning name and send to user
-            config_json=self.get_configuration(training_name)
+            config_json=self.get_configuration(training_info)
 
             # GRANTED_JOIN = "Granted_JOIN"
             # New JSON data to be added
@@ -179,6 +183,7 @@ class Admin:
                 "receiver": "User",
                 "role": "Admin",
                 "msg": GRANTED_JOIN,
+                "training_info": training_info,
                 "node_id":node_id,
 
             }
@@ -195,7 +200,7 @@ class Admin:
             self.logger.error("Not Created Node ID in DB")
 
 
-    def handle_network_status(self, node_id,role, network_status):
+    def handle_network_status(self, node_id,role, network_status,training_info):
 
         if network_status=="disconnected":
 
@@ -203,6 +208,7 @@ class Admin:
                 "role": role,
                 "node_id": node_id,
                 "network_status": network_status,
+                "training_info":training_info,
                 "operation_status": "idle"
             }
         else:
@@ -210,6 +216,7 @@ class Admin:
                 "role": role,
                 "node_id": node_id,
                 "network_status": network_status,
+                "training_info":training_info,
                 "operation_status": "resume"
             }
             
@@ -247,6 +254,8 @@ class Admin:
         pass
 
     def handle_aggregate_model(self):
+        #TODO: do aggregation based on training name
+
         model_hashes = self.get_all_model_hash()
         self.logger.debug(f"Getting handle_aggregate_model {model_hashes} and len {len(model_hashes)}")
 
@@ -261,7 +270,8 @@ class Admin:
 
         if global_model_hash:
             data = {
-                "global_model_hash": global_model_hash
+                "global_model_hash": global_model_hash,
+                "training_info":self.training_name
             }
 
             respose= self.update_global_model(data)
@@ -271,7 +281,9 @@ class Admin:
                     "role": 'Admin',
                     "msg": SEND_GLOBAL_MODEL_HASH,
                     "Admin": 1,
-                    "global_hash": global_model_hash
+                    "global_hash": global_model_hash,
+                    "training_info":self.training_name
+
                 })
                 
                 self.mqtt_obj.send_internal_messages(message_json)
@@ -281,9 +293,9 @@ class Admin:
 
 
 
-    def handle_receive_model_info(self,node_id, accuracy,loss,training_name,model_hash):
+    def handle_receive_model_info(self,node_id, accuracy,loss,training_info,model_hash):
         data = {
-            "training_name":training_name,
+            "training_info":training_info,
             "node_id": node_id,
             "accuracy": accuracy,
             "loss":loss
@@ -299,6 +311,7 @@ class Admin:
             "node_id": node_id,
             "accuracy": accuracy,
             "loss":loss,
+            "training_info":training_info,
             "model_hash":model_hash
         }
 
@@ -316,6 +329,8 @@ class Admin:
                 "role": 'Admin',
                 "node_id": user_id,
                 "msg": TERMINATE_API,
+                "training_info":self.training_name
+
             })
     
         
@@ -329,6 +344,7 @@ class Admin:
         "role": 'Admin',
         "node_id": node_id,
         "msg": PAUSE_API,
+        "training_info":self.training_name
        })
         self.logger.info(f"Paused API for user {node_id}")
 
@@ -343,20 +359,12 @@ class Admin:
         "role": 'Admin',
         "node_id": user_id,
         "msg": RESUME_API,
+        "training_info":self.training_name
+
        })
         self.logger.info(f"Resume API for user {user_id}")
         self.mqtt_obj.send_internal_messages(message_json)
 
-
-    def send_global_model(hash='QmbWLHYpFhvbD1BB67TfbHisesuq5VutDC5LYEGTxpgATB'):
-        message_json = json.dumps({
-            "receiver": 'User',
-            "msg": SEND_GLOBAL_MODEL_HASH,
-            "Admin": 1,
-            "global_hash":hash
-
-        })
-        return message_json
 
 
     def update_network_status(self, data):
