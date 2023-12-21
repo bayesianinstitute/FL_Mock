@@ -389,10 +389,23 @@ def training_information_choices(request):
 
 @api_view(['GET'])
 def get_model_hashes(request):
+    training_info_name = request.data.get('training_info')
+
+    if not training_info_name:
+        return Response({'error': "Parameter 'training_info' is required in the request body."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
     threshold_time = timezone.now() - timedelta(minutes=2)
-    model_hashes = Admin.objects.filter(timestamp__gte=threshold_time).values_list('model_hash', flat=True)
+    
+    # Filter Admin instances based on training_info and timestamp
+    model_hashes = Admin.objects.filter(
+        training_info__training_name=training_info_name,
+        timestamp__gte=threshold_time
+    ).values_list('model_hash', flat=True)
+
     serializer = AdminModelHashSerializer({'model_hash': list(model_hashes)}, many=False)
     return Response(serializer.data)
+
 
 @api_view(['PUT'])
 def update_logs(request):
