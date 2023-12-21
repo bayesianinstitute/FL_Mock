@@ -142,7 +142,9 @@ def toggle_training_status(request):
 @api_view(['POST'])
 def create_or_update_status(request):
     try:
-        admin_instance = Admin.objects.get(node_id=request.data.get('node_id'))
+        node_id = request.data.get('node_id')
+        admin_instance, created = Admin.objects.get_or_create(node_id=node_id)
+
         training_info_name = request.data.get('training_info')
 
         # Query TrainingInformation model to get the instance based on training_name
@@ -154,17 +156,18 @@ def create_or_update_status(request):
 
         # Update the serializer data with the obtained training_info instance
         request.data['training_info'] = training_info.id  # Assuming 'id' is the primary key of TrainingInformation
+
         serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     except Admin.DoesNotExist:
-        serializer = AdminSerializer(data=request.data)
-
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+        return Response({'error': f"Admin with node_id '{node_id}' does not exist."},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def get_admin_data(request):
