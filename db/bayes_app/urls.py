@@ -17,7 +17,7 @@ urlpatterns = [
 
     # path('api/v1/update_admin/', update_admin_role, name='update_admin_role'),
     # path('api/v1/update_backup_admin/', update_backup_admin_role, name='update_backup_admin_role'),
-    # path('api/v1/update_user/', update_user_role, name='update_user_role'),
+
     # path('api/v1/node_id_count/', unique_node_id_count, name='unique_node_id_count'),
     # path('api/v1/add_global_model_hash/', add_global_model_hash, name='add_global_model_hash'),
 
@@ -49,7 +49,7 @@ urlpatterns = [
     
     #Admin 
     path('api/v1/post_global_model_hash/', post_global_model_hash, name='post_global_model_hash'), 
-    
+    path('api/v1/update_user/', update_user_role, name='update_user_role'),    
     
     #User
     path('api/v1/update_model_hash/', update_model_hash, name='update_model_hash'),
