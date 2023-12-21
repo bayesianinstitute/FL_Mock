@@ -142,7 +142,18 @@ def toggle_training_status(request):
 @api_view(['POST'])
 def create_or_update_status(request):
     try:
-        admin_instance = Admin.objects.get(node_id=request.data['node_id'])
+        admin_instance = Admin.objects.get(node_id=request.data.get('node_id'))
+        training_info_name = request.data.get('training_info')
+
+        # Query TrainingInformation model to get the instance based on training_name
+        try:
+            training_info = TrainingInformation.objects.get(training_name=training_info_name)
+        except TrainingInformation.DoesNotExist:
+            return Response({'error': f"TrainingInformation with training_name '{training_info_name}' does not exist."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Update the serializer data with the obtained training_info instance
+        request.data['training_info'] = training_info.id  # Assuming 'id' is the primary key of TrainingInformation
         serializer = AdminSerializer(admin_instance, data=request.data, partial=True)
     except Admin.DoesNotExist:
         serializer = AdminSerializer(data=request.data)
@@ -152,6 +163,7 @@ def create_or_update_status(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['GET'])
@@ -271,7 +283,7 @@ def add_global_model_hash(request):
 @api_view(['POST'])
 def add_training_result(request):
     # Extract data from the request payload
-    training_name = request.data.get('training_name')
+    training_name = request.data.get('training_info')  # Use the string 'training_info'
     node_id = request.data.get('node_id')
     accuracy = request.data.get('accuracy')
     loss = request.data.get('loss')
@@ -299,7 +311,6 @@ def add_training_result(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['PUT'])
 def update_operation_status(request):
