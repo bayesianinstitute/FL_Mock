@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/v1/update_logs/', update_logs, name='update_logs'),
     path('api/v1/get_global_model_hash/', get_global_model_hash, name='get_global_model_hash'),
     path('api/v1/post_global_model_hash/', post_global_model_hash, name='post_global_model_hash'),
+    
     path('api/v1/update_status/<str:status>/<str:new_status>/', update_node_status, name='update_status'),
     path('api/v1/create_training_information/', create_training_information, name='create_training_information'),
     path('api/v1/create_training_result/', create_training_result, name='create_training_result'),
@@ -45,7 +46,6 @@ urlpatterns = [
     path('api/v1/update_network_status/<str:new_status>/', update_network_status, name='update_network_status'),
     path('api/v1/toggle_training_status/', toggle_training_status, name='toggle_training_status'),
     path('api/v1/add_nodes/', add_nodes, name='add_admin'),
-    
     
     
 ]

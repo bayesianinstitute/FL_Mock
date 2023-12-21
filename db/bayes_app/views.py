@@ -199,11 +199,21 @@ def post_global_model_hash(request):
 @api_view(['GET'])
 def get_global_model_hash(request):
     try:
-        latest_hash = GlobalModelHash.objects.latest('timestamp')
+        training_info_name = request.data.get('training_info')
+
+        if not training_info_name:
+            return Response({'error': "Parameter 'training_info' is required in the request body."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        latest_hash = GlobalModelHash.objects.filter(training_info__training_name=training_info_name).latest('timestamp')
         serializer = GlobalModelHashSerializer(latest_hash)
         return Response(serializer.data)
+
     except GlobalModelHash.DoesNotExist:
-        return Response({"error": "No global model hash found"}, status=404)
+        return Response({"error": "No global model hash found for the specified training_info"}, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 @api_view(['GET'])
 def get_track_role(request):
@@ -247,10 +257,16 @@ def get_all_users_metrics(request, metric_name):
 @api_view(['GET'])
 def get_logs(request):
     try:
-       
-        logs = Logs.objects.all().order_by('-timestamp')
+        training_info_name = request.data.get('training_info')
+
+        if not training_info_name:
+            return Response({'error': "Parameter 'training_info' is required in the request body."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        logs = Logs.objects.filter(training_info__training_name=training_info_name).order_by('-timestamp')
         serializer = LogsSerializer(logs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
@@ -389,10 +405,23 @@ def training_information_choices(request):
 
 @api_view(['GET'])
 def get_model_hashes(request):
+    training_info_name = request.data.get('training_info')
+
+    if not training_info_name:
+        return Response({'error': "Parameter 'training_info' is required in the request body."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
     threshold_time = timezone.now() - timedelta(minutes=2)
-    model_hashes = Admin.objects.filter(timestamp__gte=threshold_time).values_list('model_hash', flat=True)
+    
+    # Filter Admin instances based on training_info and timestamp
+    model_hashes = Admin.objects.filter(
+        training_info__training_name=training_info_name,
+        timestamp__gte=threshold_time
+    ).values_list('model_hash', flat=True)
+
     serializer = AdminModelHashSerializer({'model_hash': list(model_hashes)}, many=False)
     return Response(serializer.data)
+
 
 @api_view(['PUT'])
 def update_logs(request):
