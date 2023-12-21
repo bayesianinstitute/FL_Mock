@@ -15,7 +15,7 @@ import requests
 class DFLWorkflow:
     def __init__(self, broker_service, internal_cluster_topic, cluster_name):
         
-        self.ip=self.get_public_ip()
+        self.ip="127.0.0.1:8000/"
         # Setup Logger
         self.logger=Logger(name='DFL_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         # Initialize various attributes and parameters
