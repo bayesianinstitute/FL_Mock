@@ -4,9 +4,9 @@ class ApiClient:
     def __init__(self, ip='http://127.0.0.1',port=8000):
         self.base_url = f'{ip}:{port}/api/v1'
 
-    def get_request(self, endpoint, params=None):
+    def get_request(self, endpoint, payload=None):
         url = f"{self.base_url}/{endpoint}"
-        response = requests.get(url, params=params)
+        response = requests.get(url, json=payload)
         return response
 
     def post_request(self, endpoint, data=None):

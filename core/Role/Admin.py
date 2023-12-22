@@ -163,8 +163,8 @@ class Admin:
         # store data 
 
         data={
-            "node_id":1,
-            "training_info":"fl"
+            "node_id":node_id,
+            "training_info":training_info
             
         }
 
@@ -240,8 +240,12 @@ class Admin:
         else:
             self.logger.error("Training status not updated")
 
-    def get_all_model_hash(self):
-        get_role=self.apiClient.get_request(get_model_hashes)
+    def get_all_model_hash(self,training_info=None):
+        
+        payload={
+            "training_info":self.training_name
+        }
+        get_role=self.apiClient.get_request(get_model_hashes,payload)
 
         if get_role.status_code == 200:
             self.logger.info(f"Get Request Successful: {get_role.text}" )
