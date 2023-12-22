@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import dfl,dfladmin,mlflow,get_training_information_by_name,update_model_hash,update_node_status
+from .views import dfl,dfladmin,mlflow,changerole,get_training_information_by_name,update_model_hash,update_node_status
 from .views import get_model_hashes,update_logs,training_information_choices,create_training_information,create_training_result
 from .views import get_training_results,get_logs,update_admin_role,update_backup_admin_role,update_user_role,update_network_status
 from .views import toggle_training_status,create_or_update_status,get_admin_data,post_global_model_hash,get_global_model_hash,get_track_role
@@ -13,6 +13,7 @@ urlpatterns = [
     path('', dfl, name='dfl'),
     path('config/', dfladmin, name='dfladmin'),
     path('mlflow/', mlflow, name='mlflow'),
+    path('changerole/', changerole, name='mlflow'),
 
 
     path('api/v1/update_admin/', update_admin_role, name='update_admin_role'),

@@ -33,6 +33,8 @@ def mlflow(request):
 
     return redirect(new_url)
 
+def changerole(request):
+    return render(request, 'dfl/changerole.html')
 
 @api_view(['POST'])
 def create_training_information(request):
