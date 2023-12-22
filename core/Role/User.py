@@ -7,6 +7,8 @@ from core.Role.MsgType import *
 from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
+import requests
+
 class User:
     def __init__(self,training_name,mqtt_operations,ip,role='User'):
         self.ip=ip
@@ -182,48 +184,14 @@ class User:
     
 
     def update_operation_status(self, data):
-
         url = "http://127.0.0.1:8000/api/v1/update_model_hash/"
 
-        headers = {
-            "Content-Type": "application/json",
-            # Add any additional headers if required
-        }
-        import requests
-
-        response = requests.put(url, json=data, headers=headers)
+        response = requests.put(url, json=data)
 
         if response.status_code == 200:
             self.logger.info("PUT in update_operation_status request successful!")
-            # You can print or process the response content if needed
         else:
             self.logger.error(f"Error: in update_operation_status {response.status_code}")
-
-    # if response.status_code == 200:
-    #     print("PUT request successful!")
-    #     # You can print or process the response content if needed
-    # else:
-    #     print(f"Error: {response.status_code}\n{response.text}")
-
-    #     try:
-
-    #         message_data = json.dumps(data)
-    #         self.logger.info(f'Updating operation status {message_data}')
-    #         response = self.apiClient.put_request(update_model_hash, message_data)
-
-    #         if response and response.status_code == 200:
-    #             self.logger.info(f"update_operation_status Request Successful: {response.text}")
-    #             return json.loads(response.text)
-    #         else:
-    #             self.logger.error(f"update_operation_status  Request Failed: {response.status_code}")
-    #             time.sleep(10)
-    #             return None
-    #     except Exception as e:
-    #         self.logger.error(f"Error in update_operation_status: ")
-    #         time.sleep(10)
-
-    #         return None
-
 
     def update_network_status(self):
         try:
