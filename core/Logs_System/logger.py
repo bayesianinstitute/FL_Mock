@@ -15,10 +15,9 @@ class DatabaseLogger(logging.Handler):
             "training_info":self.training
         }
 
-        print("Log Data:", log_data)  # Add this line for debugging
         try:
             response = requests.put(self.api_endpoint, json=log_data)
-            print("Logger Response Status Code:", response.status_code)  # Add this line for debugging
+            # print("Logger Response Status Code:", response.status_code)  # Add this line for debugging
 
             if response.status_code != 200:
                 print(f"Failed to log to API. Status code: {response.status_code}")

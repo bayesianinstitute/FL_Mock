@@ -1,6 +1,5 @@
 import os
 import ipfshttpclient
-import io
 from requests.exceptions import Timeout
 from tensorflow import keras
 import tempfile

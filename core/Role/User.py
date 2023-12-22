@@ -7,6 +7,8 @@ from core.Role.MsgType import *
 from core.API.ClientAPI import ApiClient
 from core.MLOPS.ml_operations import MLOperations
 from core.Logs_System.logger import Logger
+import requests
+
 class User:
     def __init__(self,training_name,mqtt_operations,ip,role='User'):
         self.ip=ip
@@ -60,7 +62,7 @@ class User:
                     data={
                         "accuracy": final_accuracy,
                         "loss": final_loss,
-                        "training_info": self.training_name,
+                        "training_info": self.training_name
                         }
 
                     self.store_user_data(data,create_training_result)
@@ -122,7 +124,7 @@ class User:
             "model_name": model_name,
             "dataset_name": dataset_name,
             "optimizer": optimizer,
-            "training_info": training_info
+            "training_name": training_info
         }
 
         self.logger.info(f"model_type {model_name} , optimizer {optimizer} dataset : {dataset_name}")
@@ -182,28 +184,14 @@ class User:
     
 
     def update_operation_status(self, data):
+        url = "http://127.0.0.1:8000/api/v1/update_model_hash/"
 
-        try:
-            headers = {'Content-Type': 'application/json'}
-            data = {'training_info': 'fl', 'model_hash': 'QmQaWLMUywhkMJKvU4sb6YUdYTk4D7dhiMGtw4umKiPtAD','operation_status': 'resume'}
+        response = requests.put(url, json=data)
 
-            message_data = json.dumps(data)
-            self.logger.info(f'Updating operation status {message_data}')
-            response = self.apiClient.put_request(update_model_hash, message_data,headers=headers)
-
-            if response and response.status_code == 200:
-                self.logger.info(f"update_operation_status Request Successful: {response.text}")
-                return json.loads(response.text)
-            else:
-                self.logger.error(f"update_operation_status  Request Failed: {response.status_code}")
-                time.sleep(10)
-                return None
-        except Exception as e:
-            self.logger.error(f"Error in update_operation_status: ")
-            time.sleep(10)
-
-            return None
-
+        if response.status_code == 200:
+            self.logger.info("PUT in update_operation_status request successful!")
+        else:
+            self.logger.error(f"Error: in update_operation_status {response.status_code}")
 
     def update_network_status(self):
         try:
@@ -316,8 +304,7 @@ class User:
         self.update_operation_status(db_data)
         self.ml_operations.is_global_model_hash(global_model)
         self.logger.debug("Successfully Set global model hash")
-        import sys
-        sys.exit(0)
+
         pass
 
     def handle_pause_training(self,message_data):

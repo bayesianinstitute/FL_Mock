@@ -1,5 +1,4 @@
 import paho.mqtt.client as mqtt
-import random
 import json
 import queue
 from core.Logs_System.logger import Logger
@@ -7,11 +6,10 @@ from core.API.endpoint import *
 from core.Role.MsgType import *
 
 class MQTTCluster:
-    def __init__(self,ip, broker_address, cluster_name,  internal_cluster_topic,  role):
+    def __init__(self,ip, broker_address,   internal_cluster_topic,  role):
         self.ip=ip
         self.logger=Logger(internal_cluster_topic,name='MqttComm_logger',api_endpoint=f"{self.ip}:8000/{update_logs}").get_logger()
         self.broker_address = broker_address
-        self.cluster_name = cluster_name
         self.internal_cluster_topic = internal_cluster_topic
         self.client = None
         # Generate a random UUID using a secure random number generator
@@ -44,15 +42,13 @@ class MQTTCluster:
         self.client.loop_start()
 
     def on_message(self, client, userdata, message):
-        client_id = client._client_id.decode('utf-8')
-        cluster_id = self.cluster_name
 
         if message.topic == self.internal_cluster_topic:
-            self.handle_internal_message(message, client_id, cluster_id,client)
+            self.handle_internal_message(message)
 
 
 
-    def handle_internal_message(self, message, client_id, cluster_id,client):
+    def handle_internal_message(self, message,):
         data = message.payload.decode('utf-8')
         self.logger.critical(f"Received data: {data}")
 
@@ -114,27 +110,7 @@ class MQTTCluster:
                 self.logger.warning("Disconnected from the MQTT broker.")
         except Exception as e:
             self.logger.error(f"Error during disconnection: {str(e)}")
-
-    def handle_terminate_message(self, client_id, cluster_id):
-        self.logger.warning(f"Received terminate message from {client_id} in cluster {cluster_id}")
-
-        self.terimate_status= True
-        
-
-        self.logger.warning(f"ALL Should Disconnected message from client : {client_id}")
-    
-    def send_terminate_message(self, t_msg):
-        message = {
-            "client_id": self.id,
-            "terimate_msg": t_msg
-        }
-        data = json.dumps(message)
-
-        self.client.publish(self.internal_cluster_topic, data,qos=2)
-        self.logger.info("Successfully sent send_terminate_message")
-
-        return True    
-    
+     
     def send_internal_messages(self,message_json):
 
         self.client.publish(self.internal_cluster_topic,message_json)

@@ -13,7 +13,7 @@ import requests
 
 # Define a class for the Federated Learning Workflow
 class DFLWorkflow:
-    def __init__(self, broker_service, internal_cluster_topic, cluster_name):
+    def __init__(self, broker_service, internal_cluster_topic):
         
         self.ip="http://127.0.0.1"
         # Setup Logger
@@ -25,9 +25,6 @@ class DFLWorkflow:
         self.broker_service = broker_service
         self.internal_cluster_topic = internal_cluster_topic
         self.mqtt_operations = None
-
-        self.cluster_name=cluster_name
-
 
          
         self.apiClient=ApiClient(ip=self.ip)
@@ -94,10 +91,7 @@ class DFLWorkflow:
 
 
         # Initialize  MQTT operations for communication
-        self.mqtt_operations = MqttOperations(self.ip,self.internal_cluster_topic,
-                                              self.cluster_name,
-                                            self.broker_service,
-                                            )
+        self.mqtt_operations = MqttOperations(self.ip,self.internal_cluster_topic,self.broker_service)
 
         if role_data['role'] == "Admin":
             from core.Role.Admin import Admin
@@ -149,5 +143,5 @@ if __name__ == "__main__":
 
     internal_cluster_topic=f'{args.cluster_name}'
     
-    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic,args.cluster_name)
+    workflow = DFLWorkflow(args.broker_service,  internal_cluster_topic)
     workflow.run(args.role)
