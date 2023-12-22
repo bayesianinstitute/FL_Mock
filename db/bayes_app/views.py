@@ -55,7 +55,7 @@ def get_training_results(request):
 def create_training_result(request):
     if request.method == 'POST':
         # Extract training_info_name from the request data
-        training_info_name = request.data.get('training_info_name')
+        training_info_name = request.data.get('training_info')
 
         # Retrieve the TrainingInformation instance based on the name
         try:
