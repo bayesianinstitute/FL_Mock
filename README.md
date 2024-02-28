@@ -11,8 +11,9 @@
 
 This project is focused on MQTT communication, IPFS,MLFLOW,DJANGO BACKED TO STORE ON LOCAL STORAGE and Decentralized FL.
 
-
-### AWS Configuration
+### Configuration
+<details>
+<summary><strong>AWS Config</strong></summary>
 
 1. **Create an AWS EC2 Instance:**
 
@@ -88,7 +89,7 @@ This project is focused on MQTT communication, IPFS,MLFLOW,DJANGO BACKED TO STOR
    - In the AWS Console, go to the EC2 Dashboard.
    - Under "Network & Security," click on "Elastic IPs."
    - Allocate a new Elastic IP and associate it with your EC2 instance.
-
+</details>
 
 ## Getting Started
 
@@ -142,6 +143,9 @@ bash run run_ipfs.sh
 
 ### Workflow
 
+<details>
+<summary><strong>Workflow Info</strong></summary>
+
 The DFL workflow implemented in this script consists of the following steps:
 
 - Participant identification.
@@ -159,13 +163,7 @@ The project's core contains the main MqttOPS class that handles the MQTT cluster
 - Creating and managing MQTT clients.
 - Running the logic for the cluster.
 
-## Additional Steps to Run Dependencies Module
-
-Make sure to pull the latest changes from the repository:
-
-```bash
-git pull
-```
+</details>
 
 Run Django server:
 
