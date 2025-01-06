@@ -11,6 +11,14 @@
 
 This project is focused on MQTT communication, IPFS,MLFLOW,DJANGO BACKED TO STORE ON LOCAL STORAGE and Decentralized FL.
 
+### Citation
+
+If you use or refer to this project in your work, please cite the following paper:
+
+**[Enhancing Scalability and Reliability in SemiDecentralized Federated Learning With Blockchain: Trust Penalization and Asynchronous Functionality](https://arxiv.org/pdf/2310.19287)**
+
+Shrestha, A. K., Jaberzadeh, A., Khan, F. A., Geng, J., & Shaikh, M. A. (2023). Enhancing Scalability and Reliability in SemiDecentralized Federated Learning With Blockchain: Trust Penalization and Asynchronous Functionality. arXiv. https://arxiv.org/pdf/2310.19287
+
 ### Configuration
 <details>
 <summary><strong>AWS Config</strong></summary>
